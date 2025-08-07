@@ -1,12 +1,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand-color: #3182ce;
+  --brand-hover: #2c5282;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --brand-color: #4299e1;
+    --brand-hover: #63b3ed;
   }
 }
 
@@ -35,8 +39,62 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Welcome Page Styles */
+.welcomeContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--background);
+}
+
+.welcomeContent {
+  text-align: center;
+  max-width: 600px;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.welcomeTitle {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.welcomeTitle span {
+  color: var(--brand-color);
+}
+
+.welcomeSubtitle {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: var(--foreground);
+  opacity: 0.8;
+  margin-bottom: 3rem;
+}
+
+.loginButton {
+  display: inline-block;
+  background: var(--brand-color);
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loginButton:hover {
+  background: var(--brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
