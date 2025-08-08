@@ -35,17 +35,15 @@ export default function DashboardLayout({ children }) {
        
       ]
     },
-    assetManager: {
+    auditor: {
       icon: '🔍',
       items: [
-        { name: 'Purchased Asset', path: '/dashboard/assetManager/logs' },
-        { name: 'Delivered Asset', path: '/dashboard/assetManager/delivered' },
-        { name: 'Audit Reports', path: '/dashboard/assetManager/reports' },
-        { name: 'Manage Asset', path: '/dashboard/assetManager/manage' },
-        { name: 'Hardware Asset', path: '/dashboard/assetManager/hardware' },
-        { name: 'Software Asset', path: '/dashboard/assetManager/software' },
-        { name: 'Asset Documentation', path: '/dashboard/assetManager/documentation'},
-        { name: 'Settings', path: '/dashboard/assetManager/settings' }
+        { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
+        { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
+        { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
+        { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
+        { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
+        { name: 'Settings', path: '/dashboard/auditor/settings' }
       ]
     },
 
@@ -64,7 +62,7 @@ export default function DashboardLayout({ children }) {
   const getActiveCategory = () => {
     if (pathname.includes('/admin')) return 'admin';
     if (pathname.includes('/projectManager')) return 'projectManager';
-    if (pathname.includes('/assetManager')) return 'assetManager';
+    if (pathname.includes('/auditor')) return 'auditor';
     if (pathname.includes('/client')) return 'client';
     return null;
   };
