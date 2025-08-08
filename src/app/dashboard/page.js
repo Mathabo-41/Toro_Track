@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -13,18 +13,19 @@ export default function DashboardLayout({ children }) {
 
   // Categories and their sub-items
   const categories = {
-    admin: {
-      icon: '👑',
-      items: [
-        { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-        { name: 'Permissions', path: '/dashboard/admin/permissions' },    
-        { name: 'Resource Allocation', path: '/dashboard/admin/resources' },
-        { name: 'User Authentication', path: '/dashboard/admin/authentication' },
-        { name: 'Perfomance Report', path: '/dashboard/admin/projects' },
-        { name: 'Settings', path: '/dashboard/admin/settings' }
-
-      ]
-    },
+   admin: {
+  icon: '👑',
+  items: [
+    { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
+  { name: 'Projects', path: '/dashboard/admin/projects' },
+  { name: 'Teams & Users', path: '/dashboard/admin/users' },
+  { name: 'Permissions', path: '/dashboard/admin/permissions' },
+  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
+  { name: 'Settings', path: '/dashboard/admin/settings' }                    // Profile, app-wide settings
+  ]
+}
+,
     projectManager: {
       icon: '👔',
       items: [
@@ -32,7 +33,6 @@ export default function DashboardLayout({ children }) {
         { name: 'Project Teams', path: '/dashboard/projectManager/teams' },
         { name: 'Clients', path: '/dashboard/projectManager/clients' },
         { name: 'Settings', path: '/dashboard/projectManager/settings' }
-       
       ]
     },
     auditor: {
@@ -46,11 +46,10 @@ export default function DashboardLayout({ children }) {
         { name: 'Settings', path: '/dashboard/auditor/settings' }
       ]
     },
-
     client: {
       icon: '👔',
       items: [
-        { name: 'Project Details', path: '/dashboard/client/projects' },
+        { name: 'Project Details', path: '/dashboard/client/details' },
         { name: 'Raise Query', path: '/dashboard/client/query' },
         { name: 'Meetings,Messages & Notifications', path: '/dashboard/client/messages' },
         { name: 'Settings', path: '/dashboard/client/settings' }
@@ -96,22 +95,57 @@ export default function DashboardLayout({ children }) {
         flexDirection: 'column',
         boxShadow: '2px 0 10px rgba(0,0,0,0.05)'
       }}>
-        {/* Logo/Collapse Button */}
+        {/* Logo Section with Image */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: '2rem',
-          padding: '0.5rem'
+          padding: '0.5rem',
+          gap: '0.5rem'
         }}>
-          {sidebarOpen && (
-            <h2 style={{ 
-              fontWeight: '700',
-              color: 'var(--brand-color)',
-              fontSize: '1.25rem'
+          {sidebarOpen ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* actual image path */}
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                position: 'relative',
+                flexShrink: 0
+              }}>
+                <Image
+                  src="/toroLogo.jpg" //  //  logo path
+                  alt="Toro Track Logo"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
+              <h2 style={{ 
+                fontWeight: '700',
+                color: 'var(--brand-color)',
+                fontSize: '1.25rem',
+                whiteSpace: 'nowrap'
+              }}>
+                Toro Track
+              </h2>
+            </div>
+          ) : (
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              position: 'relative'
             }}>
-              Toro Track Dashboard
-            </h2>
+              <Image
+                src="/toroLogo.jpg" // Update with your icon path
+                alt="Toro Track Icon"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
           )}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -120,7 +154,8 @@ export default function DashboardLayout({ children }) {
               border: 'none',
               cursor: 'pointer',
               color: 'var(--foreground)',
-              fontSize: '1.2rem'
+              fontSize: '1.2rem',
+              flexShrink: 0
             }}
           >
             {sidebarOpen ? '◀' : '▶'}
@@ -162,7 +197,7 @@ export default function DashboardLayout({ children }) {
                         fontWeight: '600',
                         textTransform: 'capitalize'
                       }}>
-                        {category}
+                        {category.replace(/([A-Z])/g, ' $1').trim()} {/* Adds space before capital letters */}
                       </span>
                     )}
                   </div>
@@ -220,7 +255,7 @@ export default function DashboardLayout({ children }) {
           </ul>
         </nav>
 
-        {/* User Profile & Logout */}
+        {/* User Profile Section with Picture */}
         <div style={{
           padding: '1rem',
           borderTop: '1px solid #e2e8f0',
@@ -230,21 +265,24 @@ export default function DashboardLayout({ children }) {
             display: 'flex', 
             alignItems: 'center', 
             marginBottom: '1rem',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            gap: '0.75rem'
           }}>
             <div style={{
               width: '40px',
               height: '40px',
               borderRadius: '50%',
-              background: 'var(--brand-color)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              marginRight: sidebarOpen ? '0.75rem' : '0',
-              flexShrink: 0
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid var(--brand-color)'
             }}>
-              U
+              <Image
+                src="/toroLogo.jpg" // user image path
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
             </div>
             {sidebarOpen && (
               <div style={{ minWidth: 0 }}>
@@ -255,7 +293,7 @@ export default function DashboardLayout({ children }) {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis'
                 }}>
-                  User Name
+                  John Doe
                 </p>
                 <p style={{ 
                   fontSize: '0.8rem', 
@@ -265,7 +303,7 @@ export default function DashboardLayout({ children }) {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis'
                 }}>
-                  {activeCategory}@example.com
+                  {activeCategory ? `${activeCategory.replace(/([A-Z])/g, ' $1').trim()}@toro.com` : 'user@toro.com'}
                 </p>
               </div>
             )}
@@ -303,11 +341,39 @@ export default function DashboardLayout({ children }) {
         background: 'var(--background)',
         color: 'var(--foreground)',
         overflowY: 'auto',
-        maxHeight: '100vh'
+        maxHeight: '100vh',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+
       }}>
+        {/*background image/pattern */}
         <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto'
+          position: 'absolute',
+          top: 0,
+          left: 0,
+         right: 0,
+          bottom: 0,
+          backgroundImage: 'url(/toroLogo.jpg)', // Add your pattern
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+transform: 'scale(0.)',
+
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          pointerEvents: 'none',
+          zIndex: 0,
+          //filter: 'blur(1px)', // Optional: adds depth effect
+          transition: 'all 0.3s ease' // Smooth resizing
+        }} />
+        
+        <div style={{
+          maxWidth: '1000px',
+          //maxHeight: '1000px',
+          marginBottom: '20',
+          position: 'relative',
+          zIndex: 1
         }}>
           {children}
         </div>

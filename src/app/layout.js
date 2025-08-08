@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Toro Track",
-  description: "A Customer Relationship Management System",
+  description: "A Customer Relationship Management",
 };
 
 export default function RootLayout({ children }) {

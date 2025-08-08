@@ -1,65 +1,89 @@
 'use client';
 
-// Import necessary hooks and components
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Login() {
-  // Initialize router for navigation
   const router = useRouter();
-  
-  // State variables for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  /**
-   * Handle form submission
-   * @param {Event} e - Form submit event
-   */
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Log credentials (in a real app, you would authenticate here)
     console.log("Logging in:", email, password);
-    
-    // Redirect to dashboard after successful login
     router.push("/dashboard");
   };
 
   return (
-    // Main container with centering and animation
-    <main className="loginContainer" style={{
+    <main style={{
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      minHeight: "100vh", // Full viewport height
+      minHeight: "100vh",
       padding: "2rem",
       background: "var(--background)",
-      animation: "fadeIn 0.6s ease-out forwards" // Fade-in animation
+      animation: "fadeIn 0.6s ease-out forwards",
+      flexDirection: "column", // Added to stack logo and form vertically
+     // gap: "1.5rem" //gap between the logo and the login form 
     }}>
-      {/* Content wrapper with max width */}
-      <div className="loginContent" style={{
-        textAlign: "center",
-        maxWidth: "600px", // Max width for larger screens
-        width: "100%" // Full width on smaller screens
+      {/* Logo Section */}
+      <div style={{
+        marginBottom: "-2.5rem",
+        textAlign: "center"
       }}>
-        {/* Login title */}
-        <h1 className="loginTitle" style={{
-          fontSize: "clamp(2rem, 5vw, 3rem)", // Responsive font size
+        <div style={{
+          width: "400px",
+          height: "300px",
+          borderRadius: "12px",
+          overflow: "hidden",
+          position: "relative",
+          margin: "0 auto 1rem",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+           border: "3px solid rgba(var(--brand-color-rgb), 0.2)" 
+        }}>
+          <Image
+            src="/toroLogo.jpg"
+            alt="Toro Track Logo"
+            fill
+            style={{ objectFit: "cover" }}
+            priority
+          />
+        </div>
+        <h1 style={{
+          fontSize: "2.25rem",
           fontWeight: "700",
+          color: "var(--brand-color)",
+          margin: "0.5rem 0 0"
+        }}>
+         
+        </h1>
+      </div>
+
+      {/* Form Container */}
+      <div style={{
+        textAlign: "center",
+        maxWidth: "600px",
+        width: "100%",
+        background: "var(--background)",
+        padding: "2rem",
+        borderRadius: "16px",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+      }}>
+        <h2 style={{
+          fontSize: "clamp(1.5rem, 4vw, 2rem)",
+          fontWeight: "600",
           color: "var(--foreground)",
-          marginBottom: "1rem",
-          lineHeight: "1.2"
+          marginBottom: "1.5rem"
         }}>
           Login
-        </h1>
+        </h2>
         
-        {/* Login form */}
         <form onSubmit={handleSubmit} style={{
-          width: "80%", // Form takes 80% of container width
-          margin: "0 auto" // Center the form
+          width: "80%",
+          margin: "0 auto"
         }}>
-          {/* Email input field */}
           <input
             type="email"
             placeholder="Email"
@@ -75,12 +99,11 @@ export default function Login() {
               fontSize: "1rem",
               background: "var(--background)",
               color: "var(--foreground)",
-              transform: "scale(0.8)", // Scale down by 20%
-              transformOrigin: "center" // Scale from center
+              transform: "scale(0.9)",
+              transformOrigin: "center"
             }}
           />
           
-          {/* Password input field */}
           <input
             type="password"
             placeholder="Password"
@@ -90,21 +113,19 @@ export default function Login() {
             style={{
               width: "100%",
               padding: "1rem",
-              marginBottom: "2rem", // Extra space before button
+              marginBottom: "2rem",
               borderRadius: "8px",
               border: "1px solid #e2e8f0",
               fontSize: "1rem",
               background: "var(--background)",
               color: "var(--foreground)",
-              transform: "scale(0.8)", // Scale down by 20%
-              transformOrigin: "center" // Scale from center
+              transform: "scale(0.9)",
+              transformOrigin: "center"
             }}
           />
           
-          {/* Submit button */}
           <button 
-            type="submit" 
-            className="loginButton"
+            type="submit"
             style={{
               display: "inline-block",
               background: "var(--brand-color)",
@@ -115,20 +136,26 @@ export default function Login() {
               fontWeight: "600",
               border: "none",
               cursor: "pointer",
-              transition: "all 0.3s ease", // Smooth hover transition
+              transition: "all 0.3s ease",
               boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
               width: "80%",
-              transform: "scale(0.8)", // Scale down by 20%
-              transformOrigin: "center" // Scale from center
+              transform: "scale(0.9)",
+              transformOrigin: "center",
+              marginBottom: "1.5rem"
             }}
           >
             Sign In
           </button>
         </form>
-        
-        {/* Sign up link */}
-      
       </div>
+
+      {/* Animation styles */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </main>
   );
 }
