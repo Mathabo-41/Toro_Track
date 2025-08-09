@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "next/image"; // Image import is necessary
 
 export default function Login() {
   const router = useRouter();
@@ -18,135 +18,149 @@ export default function Login() {
 
   return (
     <main style={{
+      position: 'relative',
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       minHeight: "100vh",
       padding: "2rem",
-      background: "var(--background)",
-      animation: "fadeIn 0.6s ease-out forwards",
-      flexDirection: "column", // Added to stack logo and form vertically
-     // gap: "1.5rem" //gap between the logo and the login form 
+      flexDirection: "column",
+      overflow: 'hidden',
     }}>
-      {/* Logo Section */}
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '100vw',
+          height: '100vh',
+          objectFit: 'cover',
+          transform: 'translate(-50%, -50%)',
+          zIndex: -2,
+        }}
+      >
+        <source src="/appImages/login_animation.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* Subtle overlay for better text readability */}
       <div style={{
-        marginBottom: "-2.5rem",
-        textAlign: "center"
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        zIndex: -1,
+      }}></div>
+
+      {/* Main content container */}
+      <div style={{
+        textAlign: "center",
+        maxWidth: "500px",
+        width: "100%",
+        zIndex: 1,
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: "2rem",
+        borderRadius: "16px",
       }}>
-        <div style={{
-          width: "400px",
-          height: "300px",
-          borderRadius: "12px",
-          overflow: "hidden",
-          position: "relative",
-          margin: "0 auto 1rem",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-           border: "3px solid rgba(var(--brand-color-rgb), 0.2)" 
-        }}>
+        {/* Logo Image (no container) */}
+        <div style={{ marginBottom: "1.5rem" }}>
           <Image
-            src="/toroLogo.jpg"
+            src="/appImages/logo.png"
             alt="Toro Track Logo"
-            fill
-            style={{ objectFit: "cover" }}
+            width={240}
+            height={240}
             priority
           />
         </div>
-        <h1 style={{
-          fontSize: "2.25rem",
-          fontWeight: "700",
-          color: "var(--brand-color)",
-          margin: "0.5rem 0 0"
-        }}>
-         
-        </h1>
-      </div>
 
-      {/* Form Container */}
-      <div style={{
-        textAlign: "center",
-        maxWidth: "600px",
-        width: "100%",
-        background: "var(--background)",
-        padding: "2rem",
-        borderRadius: "16px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
-      }}>
-        <h2 style={{
-          fontSize: "clamp(1.5rem, 4vw, 2rem)",
-          fontWeight: "600",
-          color: "var(--foreground)",
-          marginBottom: "1.5rem"
+        {/* Form Container */}
+        <div style={{
+          width: "100%",
+          background: "rgba(255, 255, 255, 0.2)",
+          backdropFilter: 'blur(10px)',
+          padding: "2rem",
+          borderRadius: "16px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}>
-          Login
-        </h2>
-        
-        <form onSubmit={handleSubmit} style={{
-          width: "80%",
-          margin: "0 auto"
-        }}>
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "1rem",
-              marginBottom: "1rem",
-              borderRadius: "8px",
-              border: "1px solid #e2e8f0",
-              fontSize: "1rem",
-              background: "var(--background)",
-              color: "var(--foreground)",
-              transform: "scale(0.9)",
-              transformOrigin: "center"
-            }}
-          />
-          
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "1rem",
-              marginBottom: "2rem",
-              borderRadius: "8px",
-              border: "1px solid #e2e8f0",
-              fontSize: "1rem",
-              background: "var(--background)",
-              color: "var(--foreground)",
-              transform: "scale(0.9)",
-              transformOrigin: "center"
-            }}
-          />
-          
-          <button 
-            type="submit"
-            style={{
-              display: "inline-block",
-              background: "var(--brand-color)",
-              color: "white",
-              padding: "1rem 2.5rem",
-              borderRadius: "8px",
-              fontSize: "1.125rem",
-              fontWeight: "600",
-              border: "none",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              width: "80%",
-              transform: "scale(0.9)",
-              transformOrigin: "center",
-              marginBottom: "1.5rem"
-            }}
-          >
-            Sign In
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} style={{
+            width: "80%",
+            margin: "0 auto"
+          }}>
+            <input
+              type="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "1rem",
+                marginBottom: "1rem",
+                borderRadius: "8px",
+                border: "1px solid #e2e8f0",
+                fontSize: "1rem",
+                fontFamily: "Disekt Mono, monospace",
+                background: "rgba(255, 255, 255, 0.6)",
+                color: "var(--foreground)",
+                transform: "scale(0.9)",
+                transformOrigin: "center"
+              }}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "1rem",
+                marginBottom: "2rem",
+                borderRadius: "8px",
+                border: "1px solid #e2e8f0",
+                fontSize: "1rem",
+                fontFamily: "Disekt Mono, monospace",
+                background: "rgba(255, 255, 255, 0.6)",
+                color: "var(--foreground)",
+                transform: "scale(0.9)",
+                transformOrigin: "center"
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                display: "inline-block",
+                background: "#494949",
+                color: "white",
+                padding: "1rem 2.5rem",
+                borderRadius: "8px",
+                fontSize: "1.125rem",
+                fontWeight: "600",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                width: "80%",
+                transform: "scale(0.9)",
+                transformOrigin: "center",
+                marginBottom: "1.5rem",
+                fontFamily: "Disekt Mono, monospace",
+              }}
+            >
+              Login
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Animation styles */}
