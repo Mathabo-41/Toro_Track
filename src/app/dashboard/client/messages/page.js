@@ -33,7 +33,8 @@ import {
   Circle as UnreadIcon,
   MoreVert as MoreIcon,
   Search as SearchIcon,
-  Add as NewMeetingIcon
+  Add as NewMeetingIcon,
+  ArrowBack as BackIcon
 } from '@mui/icons-material';
 
 /**
@@ -129,7 +130,7 @@ export default function ClientMessages() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' // Pure black background
+      backgroundColor: '#000000'
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -141,9 +142,9 @@ export default function ClientMessages() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#000000',
+            borderRight: '1px solid #222',
+            color: '#fff'
           }
         }}
       >
@@ -162,7 +163,7 @@ export default function ClientMessages() {
                   color: '#fff',
                   backgroundColor: item.name === 'Messages & Notifications' ? '#1a1a1a' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#1a1a1a'
                   }
                 }}
               >
@@ -177,7 +178,7 @@ export default function ClientMessages() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' // Pure black background
+        backgroundColor: '#000000'
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
@@ -188,7 +189,7 @@ export default function ClientMessages() {
             <ChatIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-             color: '#f4c10f' // Gold accent
+             color: '#f4c10f'
             }} />
             Messages & Notifications
           </Typography>
@@ -203,7 +204,7 @@ export default function ClientMessages() {
           onChange={(e, newValue) => setActiveTab(newValue)}
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#f4c10f' // Gold indicator
+              backgroundColor: '#f4c10f'
             },
             mb: 3
           }}
@@ -214,14 +215,13 @@ export default function ClientMessages() {
         </Tabs>
 
         {/* Tab Content */}
-        {activeTab === 0 && ( /* Messages Tab */
+        {activeTab === 0 && (
           <Card sx={{ 
             backgroundColor: '#0a0a0a',
             border: '1px solid #222'
           }}>
             <CardContent>
               {!activeConversation ? (
-                /* Conversation List */
                 <Box>
                   <TextField
                     fullWidth
@@ -314,9 +314,7 @@ export default function ClientMessages() {
                   </List>
                 </Box>
               ) : (
-                /* Active Conversation */
                 <Box>
-                  {/* Conversation Header */}
                   <Stack 
                     direction="row" 
                     justifyContent="space-between" 
@@ -341,7 +339,6 @@ export default function ClientMessages() {
                     </IconButton>
                   </Stack>
 
-                  {/* Messages */}
                   <Box sx={{ 
                     height: '50vh', 
                     overflow: 'auto',
@@ -377,7 +374,7 @@ export default function ClientMessages() {
                           borderRadius: 2,
                           position: 'relative'
                         }}>
-                          <Typography variant="body1">{message.text}</Typography>
+                          <Typography component="div" variant="body1">{message.text}</Typography>
                           <Stack 
                             direction="row" 
                             justifyContent="flex-end" 
@@ -385,7 +382,7 @@ export default function ClientMessages() {
                             spacing={0.5}
                             sx={{ mt: 1 }}
                           >
-                            <Typography variant="caption" sx={{ 
+                            <Typography component="span" variant="caption" sx={{ 
                               color: message.sender === 'You' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.5)'
                             }}>
                               {message.time}
@@ -403,7 +400,6 @@ export default function ClientMessages() {
                     ))}
                   </Box>
 
-                  {/* Message Input */}
                   <Box component="form" onSubmit={handleSendMessage}>
                     <Stack direction="row" spacing={1}>
                       <TextField
@@ -443,7 +439,7 @@ export default function ClientMessages() {
           </Card>
         )}
 
-        {activeTab === 1 && ( /* Meetings Tab */
+        {activeTab === 1 && (
           <Card sx={{ 
             backgroundColor: '#0a0a0a',
             border: '1px solid #222'
@@ -477,41 +473,50 @@ export default function ClientMessages() {
                   {meetings.map((meeting) => (
                     <div key={meeting.id}>
                       <ListItem 
-                        secondaryAction={
-                          <Chip 
-                            label={meeting.status}
-                            size="small"
-                            sx={{
-                              backgroundColor: meeting.status === 'confirmed' ? 'rgba(46, 125, 50, 0.2)' : 
-                                            meeting.status === 'completed' ? 'rgba(97, 97, 97, 0.2)' : 
-                                            'rgba(255, 152, 0, 0.2)',
-                              color: meeting.status === 'confirmed' ? '#81c784' : 
-                                    meeting.status === 'completed' ? '#bdbdbd' : '#ffb74d',
-                              border: meeting.status === 'confirmed' ? '1px solid #2e7d32' : 
-                                     meeting.status === 'completed' ? '1px solid #616161' : 
-                                     '1px solid #ff9800'
-                            }}
-                          />
-                        }
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography variant="subtitle1" sx={{ color: '#fff' }}>
-                              {meeting.title}
-                            </Typography>
-                          }
-                          secondary={
-                            <>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                                {meeting.date}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                                With: {meeting.participants.join(', ')}
-                              </Typography>
-                            </>
-                          }
-                        />
-                      </ListItem>
+  secondaryAction={
+    <Chip 
+      label={meeting.status}
+      size="small"
+      sx={{
+        backgroundColor: meeting.status === 'confirmed' ? 'rgba(46, 125, 50, 0.2)' : 
+                        meeting.status === 'completed' ? 'rgba(97, 97, 97, 0.2)' : 
+                        'rgba(255, 152, 0, 0.2)',
+        color: meeting.status === 'confirmed' ? '#81c784' : 
+              meeting.status === 'completed' ? '#bdbdbd' : '#ffb74d',
+        border: meeting.status === 'confirmed' ? '1px solid #2e7d32' : 
+               meeting.status === 'completed' ? '1px solid #616161' : 
+               '1px solid #ff9800'
+      }}
+    />
+  }
+>
+  <ListItemText
+    primary={
+      <Typography variant="subtitle1" sx={{ color: '#fff' }}>
+        {meeting.title}
+      </Typography>
+    }
+    secondary={
+      <>
+        <Typography 
+          component="span" 
+          variant="body2" 
+          display="block" 
+          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+        >
+          {meeting.date}
+        </Typography>
+        <Typography 
+          component="span" 
+          variant="caption" 
+          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
+        >
+          With: {meeting.participants.join(', ')}
+        </Typography>
+      </>
+    }
+  />
+</ListItem>
                       <Divider sx={{ backgroundColor: '#333' }} />
                     </div>
                   ))}
@@ -532,7 +537,7 @@ export default function ClientMessages() {
           </Card>
         )}
 
-        {activeTab === 2 && ( /* Notifications Tab */
+        {activeTab === 2 && (
           <Card sx={{ 
             backgroundColor: '#0a0a0a',
             border: '1px solid #222'
@@ -571,6 +576,7 @@ export default function ClientMessages() {
                         <ListItemText
                           primary={
                             <Typography 
+                              component="div"
                               variant="subtitle1" 
                               sx={{ 
                                 color: notification.read ? 'rgba(255, 255, 255, 0.7)' : '#fff',
@@ -581,7 +587,7 @@ export default function ClientMessages() {
                             </Typography>
                           }
                           secondary={
-                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                            <Typography component="span" variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                               {notification.time}
                             </Typography>
                           }

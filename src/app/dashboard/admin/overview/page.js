@@ -104,7 +104,7 @@ export default function AdminOverview() {
             boxSizing: 'border-box',
             backgroundColor: '#000000', // Pure black
             borderRight: '1px solid #222', // Subtle border
-           color: '#f4c10f' // Gold text
+           color: '#fff' // white text
           }
         }}
       >

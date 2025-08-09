@@ -111,7 +111,7 @@ export default function Login() {
                 fontSize: "1rem",
                 fontFamily: "Disekt Mono, monospace",
                 background: "rgba(255, 255, 255, 0.6)",
-                color: "var(--foreground)",
+                color: "#000",
                 transform: "scale(0.9)",
                 transformOrigin: "center"
               }}
@@ -129,9 +129,11 @@ export default function Login() {
                 borderRadius: "8px",
                 border: "1px solid #e2e8f0",
                 fontSize: "1rem",
+                //dark color for input fields 
+                color: "#000",
                 fontFamily: "Disekt Mono, monospace",
                 background: "rgba(255, 255, 255, 0.6)",
-                color: "var(--foreground)",
+                //color: "var(--foreground)",
                 transform: "scale(0.9)",
                 transformOrigin: "center"
               }}

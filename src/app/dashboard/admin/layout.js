@@ -1,8 +1,4 @@
-// src/app/dashboard/admin/layout.js
-//'use client';
-
-import DashboardLayout from '../../layout';
-import { Box, Typography, styled } from '@mui/material';
+import { Box } from '@mui/material';
 
 /**
  * Admin Layout Wrapper
@@ -10,10 +6,8 @@ import { Box, Typography, styled } from '@mui/material';
  */
 export default function AdminLayout({ children }) {
   return (
-    <DashboardLayout>
-      <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto' }}>
-        {children}
-      </Box>
-    </DashboardLayout>
+    <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto' }}>
+      {children}
+    </Box>
   );
 }

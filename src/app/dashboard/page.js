@@ -22,11 +22,11 @@ export default function DashboardLayout({ children }) {
   { name: 'Teams & Users', path: '/dashboard/admin/users' },
   { name: 'Permissions', path: '/dashboard/admin/permissions' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }                    // Profile, app-wide settings
+  { name: 'Settings', path: '/dashboard/admin/settings' } // Profile, app-wide settings
   ]
 }
 ,
-    projectManager: {
+   /* projectManager: {
       icon: '👔',
       items: [
         { name: 'Projects ,Project Documentation & Progresss', path: '/dashboard/projectManager/projects' },
@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }) {
         { name: 'Clients', path: '/dashboard/projectManager/clients' },
         { name: 'Settings', path: '/dashboard/projectManager/settings' }
       ]
-    },
+    },*/
     auditor: {
       icon: '🔍',
       items: [
@@ -358,7 +358,7 @@ export default function DashboardLayout({ children }) {
           backgroundImage: 'url(/toroLogo.jpg)', // Add your pattern
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
-transform: 'scale(0.)',
+          transform: 'scale(0.)',
 
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
