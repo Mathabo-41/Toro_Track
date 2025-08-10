@@ -1,31 +1,53 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
-  Container,
-  List,
-  ListItemIcon,
-  Grid,
-  IconButton,
   Box,
   Typography,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  Drawer,
+  ListItemButton,
+  Paper,
+  TextField
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-
 import {
-  ComplianceContainer,
-  ComplianceTitle,
-  ComplianceSubtitle,
-  CompliancePaper,
-  ComplianceFeatureTitle,
-  ComplianceFeatureDescription,
-  ComplianceListItem,
-  ComplianceTitleBar,
-  ComplianceTitleText,
-  ComplianceSearchInput,
-} from '../styles'; 
+  AccountCircle as AccountCircleIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+} from '@mui/icons-material';
+import {
+  fullScreenContainerStyles,
+  drawerStyles,
+  drawerHeaderStyles,
+  listItemButtonStyles,
+  mainContentBoxStyles,
+  headerBoxStyles,
+  pageTitleStyles,
+  headerRightSectionStyles,
+  searchFieldStyles,
+  userProfileStyles,
+  userInfoStyles,
+  auditorTextStyles,
+  complianceContainerStyles,
+  complianceTitleStyles,
+  complianceSubtitleStyles,
+  compliancePaperStyles,
+  complianceFeatureTitleStyles,
+  complianceFeatureDescriptionStyles,
+  complianceListItemStyles,
+} from '../styles';
+
+const auditTrailMenu = [
+  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
+  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
+  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
+  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
+  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
+  { name: 'Settings', path: '/dashboard/auditor/settings' }
+];
 
 const features = [
   {
@@ -47,99 +69,94 @@ const features = [
 
 export default function CompliancePage() {
   const [search, setSearch] = useState('');
+  const currentPath = '/dashboard/auditor/complianceAlerting';
+
+  const filteredFeatures = features.filter((feature) =>
+    feature.title.toLowerCase().includes(search.toLowerCase()) ||
+    feature.description.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <ComplianceContainer>
-      {/* Title Bar */}
-      <ComplianceTitleBar>
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item>
-            <IconButton
-              edge="start"
-              aria-label="back"
-              onClick={() => window.history.back()}
-              sx={{ color: "#000" }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          </Grid>
+    <Box sx={fullScreenContainerStyles}>
+      {/* Sidebar Navigation */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={drawerStyles}
+      >
+        <Box sx={drawerHeaderStyles}>
+          <Typography variant="h6">
+            Auditor Portal
+          </Typography>
+        </Box>
+        <List>
+          {auditTrailMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                selected={item.path === currentPath}
+                sx={listItemButtonStyles(item.name, currentPath)}
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
 
-          <Grid item>
-            <Box
-              component="img"
-              src="/appImages/logo.png"
-              alt="Logo"
-              sx={{
-                width: 60,
-                height: 60,
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
+      {/* Main Content */}
+      <Box component="main" sx={mainContentBoxStyles}>
+        <Box sx={headerBoxStyles}>
+          <Typography variant="h4" sx={pageTitleStyles}>
+            Compliance & Alerting
+          </Typography>
+          <Box sx={headerRightSectionStyles}>
+            <TextField
+              variant="outlined"
+              placeholder="Search compliance features"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={searchFieldStyles}
             />
-          </Grid>
-
-          <Grid item xs>
-            <ComplianceTitleText>Compliance & Alerting</ComplianceTitleText>
-          </Grid>
-
-          <Grid item xs={12} sm>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <ComplianceSearchInput
-                type="text"
-                placeholder="Search compliance features"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Box>
-          </Grid>
-
-          <Grid item>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: "#000",
-                minWidth: "140px",
-              }}
-            >
-              <Box sx={{ textAlign: "right" }}>
+            <Box sx={userProfileStyles}>
+              <Box sx={userInfoStyles}>
                 <Typography variant="body2">Sipho Ellen</Typography>
-                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                <Typography variant="caption" sx={auditorTextStyles}>
                   Auditor
                 </Typography>
               </Box>
               <AccountCircleIcon sx={{ fontSize: 32 }} />
             </Box>
-          </Grid>
-        </Grid>
-      </ComplianceTitleBar>
+          </Box>
+        </Box>
 
-      {/* Main Content */}
-      <Container maxWidth="md">
-        <ComplianceTitle>Compliance & Alerting</ComplianceTitle>
-        <ComplianceSubtitle>
-          Keeps the company aligned with internal policies and external regulations.
-        </ComplianceSubtitle>
+        {/* Compliance Content */}
+        <Container maxWidth="md" sx={complianceContainerStyles}>
+          <Typography variant="h4" sx={complianceTitleStyles}>
+            Compliance & Alerting
+          </Typography>
+          <Typography variant="subtitle1" sx={complianceSubtitleStyles}>
+            Keeps the company aligned with internal policies and external regulations.
+          </Typography>
 
-        <CompliancePaper elevation={3}>
-          <List>
-            {features.map((feature, index) => (
-              <ComplianceListItem key={index}>
-                <ListItemIcon>
+          <Paper elevation={3} sx={compliancePaperStyles}>
+            <List>
+              {filteredFeatures.map((feature, index) => (
+                <ListItem key={index} sx={complianceListItemStyles}>
                   <CheckCircleOutlineIcon color="primary" />
-                </ListItemIcon>
-                <div>
-                  <ComplianceFeatureTitle>{feature.title}</ComplianceFeatureTitle>
-                  <ComplianceFeatureDescription>
-                    {feature.description}
-                  </ComplianceFeatureDescription>
-                </div>
-              </ComplianceListItem>
-            ))}
-          </List>
-        </CompliancePaper>
-      </Container>
-    </ComplianceContainer>
+                  <div>
+                    <Typography variant="h6" sx={complianceFeatureTitleStyles}>{feature.title}</Typography>
+                    <Typography variant="body1" sx={complianceFeatureDescriptionStyles}>
+                      {feature.description}
+                    </Typography>
+                  </div>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Container>
+      </Box>
+    </Box>
   );
 }

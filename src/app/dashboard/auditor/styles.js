@@ -1,467 +1,315 @@
 // styles.js
+import { alpha } from '@mui/material/styles';
 
-import { styled } from "@mui/material/styles";
-import {
-  Box,
-  Typography,
-  TableCell,
-  TableContainer,
-  AppBar,
-  Toolbar,
-  TextField,
-  Select,
-  Button,
-  Paper,
-  Card,
-  List,
-  ListItem,
-  Dialog,
-  Chip,
-  Container,
-  InputBase
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+const sidebarWidth = 280;
 
-/* ──────────────── Audit Trail & Logging Styles ──────────────── */
-export const AuditTrailContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#fff",
-  margin: 0,
-  padding: 0,
-  width: "100%",
-  minHeight: "100vh",
-  boxSizing: "border-box",
-  fontFamily: "monospace",
-}));
+/* Audit Trail Screen */
+export const fullScreenContainerStyles = {
+  display: 'flex',
+  minHeight: '100vh',
+  backgroundColor: '#000000',
+  width: '100vw',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+};
 
-
-export const AuditTrailCell = styled(TableCell)(({ theme }) => ({
-  fontFamily: "monospace",
-  color: "#000",
-}));
-
-export const AuditTrailTitleBar = styled(Box)(({ theme }) => ({
-  backgroundColor: "#FF6B00",
-  color: "#000",
-  padding: theme.spacing(2),
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  fontFamily: "monospace",
-}));
-
-export const AuditTrailTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1.25rem",
-  fontWeight: 600,
-  fontFamily: "monospace",
-  color: "#000",
-  whiteSpace: "nowrap",
-}));
-
-export const AuditTrailSearch = styled("input")(({ theme }) => ({
-  fontFamily: "monospace",
-  padding: "8px 12px",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-  fontSize: "0.9rem",
-  width: "500px",
-}));
-
-export const AuditTrailTableContainer = styled(TableContainer)(({ theme }) => ({
-  marginTop: theme.spacing(3),
-  backgroundColor: "#fff",
-  fontFamily: "monospace",
-}));
-
-export const AuditTrailHeaderCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: "bold",
-  backgroundColor: "#FF6B00",
-  color: "#000",
-  fontFamily: "monospace",
-}));
-
-export const AuditTrailSerialCell = styled(TableCell)(({ theme }) => ({
-  fontFamily: "monospace",
-  color: theme.palette.text.primary,
-}));
-
-
-/* ──────────────── License & Configuration Tracking Styles ──────────────── */
-
-// Root container
-export const LicenseTrackingContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  padding: theme.spacing(2),
-  fontFamily: "monospace",
-}));
-
-// AppBar
-export const LicenseAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: "#FF4D00",
-  color: "#000000",
-}));
-
-// Title Text
-export const LicenseAppTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: "1.25rem",
-  whiteSpace: "nowrap",
-}));
-
-// Toolbar container
-export const LicenseToolbar = styled(Toolbar)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "space-between",
-}));
-
-// Flex container for controls
-export const LicenseControls = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  gap: theme.spacing(2),
-}));
-
-// Search bar container
-export const LicenseSearchContainer = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: "#f1f1f1",
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    width: "500px",
+export const drawerStyles = {
+  width: sidebarWidth,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: sidebarWidth,
+    boxSizing: 'border-box',
+    backgroundColor: '#000000',
+    borderRight: '1px solid #222',
+    color: '#fff',
   },
-}));
+};
 
-// Search icon wrapper
-export const LicenseSearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
+export const drawerHeaderStyles = {
+  p: 2,
+  borderBottom: '1px solid #222',
+};
 
-// Search input
-export const LicenseSearchInput = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  width: "100%",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
+export const listItemButtonStyles = (name, currentPath) => ({
+  color: '#fff',
+  backgroundColor: name === currentPath ? '#1a1a1a' : 'transparent',
+  '&:hover': {
+    backgroundColor: '#1a1a1a',
   },
-}));
+});
 
-// Section box (common for left/right/bottom sections)
-export const LicenseSectionBox = styled(Box)(({ theme }) => ({
-  border: "1px solid #ccc",
-  borderRadius: theme.shape.borderRadius,
-  padding: theme.spacing(2),
-  backgroundColor: "#fff",
-}));
+export const mainContentBoxStyles = {
+  flexGrow: 1,
+  p: 1,
+  backgroundColor: '#000000',
+  width: '100%',
+  minHeight: '100%',
+};
 
-// Section titles
-export const LicenseSectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  marginBottom: theme.spacing(1),
-}));
+export const headerBoxStyles = {
+  mb: 4,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+};
 
-/* Dashboard Style */
-
-// Optional: Paper wrapper for the dashboard area
-export const LicenseDashboardPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: "#fff",
-}));
-
-// Optional: Box for summary row
-export const LicenseDashboardSummaryRow = styled(Box)(({ theme }) => ({
-  marginTop: theme.spacing(3),
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  flexWrap: "wrap",
-  gap: theme.spacing(2),
-}));
-
-export const LicenseDashboardTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: "1.25rem",
-  marginBottom: theme.spacing(2),
-}));
-
-/* Expiry & Renewal Alerts Styles */
-
-export const RenewalCard = styled(Card)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: "#fff",
-}));
-
-export const RenewalTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  marginBottom: theme.spacing(2),
-}));
-
-export const RenewalSection = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
-}));
-
-export const LicenseChip = styled(Chip)(({ theme }) => ({
-  marginBottom: theme.spacing(1),
+export const pageTitleStyles = {
+  color: '#fff',
   fontWeight: 500,
-}));
+};
 
-export const LicenseKeyList = styled(List)(({ theme }) => ({
-  paddingLeft: theme.spacing(2),
-}));
+export const headerRightSectionStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 2,
+};
 
-export const LicenseKeyItem = styled(ListItem)(({ theme }) => ({
-  padding: 0,
-  fontSize: "0.875rem",
-  color: theme.palette.text.secondary,
-  cursor: "pointer",
-  "&:hover": {
-    textDecoration: "underline",
+export const searchFieldStyles = {
+  '& .MuiInputBase-input': { color: '#fff' },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: alpha('#fff', 0.23) },
+    '&:hover fieldset': { borderColor: '#f4c10f' },
+    '&.Mui-focused fieldset': { borderColor: '#f4c10f' },
+    backgroundColor: '#1a1a1a',
+    height: '40px',
+    width: '500px',
   },
-}));
+  '& .MuiInputBase-root': {
+    color: '#fff',
+  },
+};
 
-export const MoreText = styled(Typography)(({ theme }) => ({
-  fontSize: "0.8rem",
-  fontStyle: "italic",
-  paddingLeft: theme.spacing(2),
-  cursor: "pointer",
-  color: theme.palette.primary.main,
-}));
+export const userProfileStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+  color: '#fff',
+  minWidth: '140px',
+};
 
-/* ──────────────── Asset Status & Documentation ──────────────── */
-// Container with white background and black text
-export const AssetStatusContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  width: "100%",      
-  padding: theme.spacing(4),
-  boxSizing: "border-box",
-  fontFamily: "monospace",
-}));
+export const userInfoStyles = {
+  textAlign: 'right',
+};
 
-
-// Section paper wrapper
-export const AssetStatusPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(4),
-}));
-
-// Title for page main header
-export const AssetStatusTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 700,
-  marginBottom: theme.spacing(1),
-}));
-
-// Subtitle under main header
-export const AssetStatusSubtitle = styled(Typography)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-}));
-
-// Section headers inside the page
-export const AssetStatusSectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 700,
-  marginBottom: theme.spacing(1),
-}));
-
-/* ──────────────── Reporting & Export ──────────────── */
-// Root container for the page
-export const ReportingExportContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  padding: theme.spacing(4),
-  fontFamily: "monospace",
-}));
-
-// Main title
-export const ReportingExportTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 700,
-  fontSize: "2rem",
-  marginBottom: theme.spacing(1),
-}));
-
-// Subtitle
-export const ReportingExportSubtitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1rem",
-  marginBottom: theme.spacing(3),
-}));
-
-// Section paper wrapper
-export const ReportingExportSection = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(4),
-  backgroundColor: "#ffffff",
-}));
-
-// Section title
-export const ReportingExportSectionTitle = styled(Typography)(({ theme }) => ({
+export const auditorTextStyles = {
   fontWeight: 600,
-  fontSize: "1.2rem",
-  marginBottom: theme.spacing(1),
-}));
+};
 
-// Section description text
-export const ReportingExportSectionDescription = styled(Typography)(({ theme }) => ({
-  fontSize: "0.95rem",
-  marginBottom: theme.spacing(2),
-}));
+export const tablePaperStyles = {
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #222',
+  overflow: 'hidden',
+};
 
-// Button styles (if you want to customize further)
-export const ReportingExportButton = styled(Button)(({ theme }) => ({
-  textTransform: "none",
-  fontWeight: 500,
-}));
+export const tableCellHeaderStyles = {
+  color: '#fff',
+  fontWeight: 'bold',
+  borderBottom: '1px solid #222',
+};
 
-export const ReportingExportTitleBar = styled(Box)(({ theme }) => ({
-  backgroundColor: "#FF6B00",
-  color: "#000",
-  padding: theme.spacing(2),
-  display: "flex",
-  flexDirection: "column",
-  gap: theme.spacing(2),
-  fontFamily: "monospace",
-}));
+export const tableCellBodyStyles = {
+  color: '#fff',
+};
 
-export const ReportingExportTitleText = styled(Typography)(({ theme }) => ({
-  fontSize: "1.25rem",
+/* License & Configuration Tracking Screen */
+export const perClientLicenseRegisterStyles = {
+  p: 2,
+  border: '1px solid #ddd',
+  mb: 2,
+};
+
+export const expiryRenewalAlertsStyles = {
+  p: 2,
+  border: '1px solid #ddd',
+  mb: 2,
+};
+
+export const licenseUsageEntitlementDashboardStyles = {
+  p: 2,
+  border: '1px solid #ddd',
+  mb: 2,
+};
+
+export const licenseUsageChartContainerStyles = {
+  width: '100%',
+  height: 300,
+};
+
+export const licenseTotalsBoxStyles = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  mt: 2,
+  px: 1,
+};
+
+export const overUsageAlertStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 0.5,
+  color: '#d32f2f',
+};
+
+/* Asset Status & Documentation Screen */
+export const assetStatusContainer = {
+  padding: '24px',
+};
+
+export const assetStatusTitle = {
   fontWeight: 600,
-  fontFamily: "monospace",
-  color: "#000",
-  whiteSpace: "nowrap",
-}));
+  marginBottom: '8px',
+  color: '#fff',
+};
 
-export const ReportingExportSearch = styled("input")(({ theme }) => ({
-  fontFamily: "monospace",
-  padding: "8px 12px",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-  fontSize: "0.9rem",
-  width: "500px",
-}));
+export const assetStatusSubtitle = {
+  marginBottom: '24px',
+  color: '#aaa',
+};
 
-/* ──────────────── Compliance & Alerting ──────────────── */
-// Root container
-export const ComplianceContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  paddingBottom: theme.spacing(8),
-  paddingTop: 0,
-  fontFamily: "monospace",
-}));
+export const assetStatusPaper = {
+  padding: '16px',
+  marginBottom: '16px',
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #222',
+};
 
-// Title text
-export const ComplianceTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "2rem",
-  fontWeight: 700,
-  marginBottom: theme.spacing(1),
-})) ;
-
-// Subtitle/Intro text
-export const ComplianceSubtitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1rem",
-  marginBottom: theme.spacing(4),
-})) ;
-
-// Paper wrapper for features list
-export const CompliancePaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  backgroundColor: "#ffffff",
-})) ;
-
-// Feature title
-export const ComplianceFeatureTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1.125rem",
+export const assetStatusSectionTitle = {
   fontWeight: 600,
-})) ;
+  marginBottom: '8px',
+  color: '#fff',
+};
 
-// Feature description
-export const ComplianceFeatureDescription = styled(Typography)(({ theme }) => ({
-  fontSize: "0.95rem",
-  color: theme.palette.text.primary,
-})) ;
+/* Reporting & Export Screen */
+export const reportingExportContainerStyles = {
+  padding: '24px',
+  backgroundColor: '#000000',
+  color: '#fff',
+};
 
-// Optional: List item customization (if needed)
-export const ComplianceListItem = styled(ListItem)(({ theme }) => ({
-  alignItems: "flex-start",
-})) ;
-
-// Title bar container
-export const ComplianceTitleBar = styled(Box)(({ theme }) => ({
-  backgroundColor: "#FF6B00",
-  color: "#000",
-  padding: theme.spacing(2),
-  display: "flex",
-  flexDirection: "column",
-  gap: theme.spacing(2),
-  fontFamily: "monospace",
-}));
-
-// Title text inside title bar
-export const ComplianceTitleText = styled(Typography)(({ theme }) => ({
-  fontSize: "1.25rem",
+export const reportingExportTitle = {
   fontWeight: 600,
-  fontFamily: "monospace",
-  color: "#000",
-  whiteSpace: "nowrap",
-}));
+  marginBottom: '8px',
+  color: '#fff',
+};
 
-// Search input in title bar
-export const ComplianceSearchInput = styled("input")(({ theme }) => ({
-  fontFamily: "monospace",
-  padding: "8px 12px",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-  fontSize: "0.9rem",
-  width: "500px",
-}));
+export const reportingExportSubtitle = {
+  marginBottom: '24px',
+  color: '#aaa',
+};
 
-/* ──────────────── Settings Styles ──────────────── */
-export const SettingsContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  width: "100%",
-  padding: theme.spacing(4),
-  boxSizing: "border-box",
-  fontFamily: "monospace",
-}));
+export const reportingExportSection = {
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #222',
+  padding: '16px',
+  marginBottom: '16px',
+};
 
-// Title bar container
-export const SettingsTitleBar = styled(Box)(({ theme }) => ({
-  backgroundColor: "#FF6B00",
-  color: "#000000",
-  padding: theme.spacing(2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  marginBottom: theme.spacing(4),
-}));
-
-// Title text
-export const SettingsTitleText = styled("h1")(({ theme }) => ({
-  fontSize: "1.5rem",
+export const reportingExportSectionTitle = {
   fontWeight: 600,
-  fontFamily: "monospace",
-  margin: 0,
-}));
+  marginBottom: '8px',
+  color: '#fff',
+};
 
-// Search input
-export const SettingsSearch = styled(InputBase)(({ theme }) => ({
-  backgroundColor: "#f5f5f5",
-  padding: theme.spacing(1, 2),
-  borderRadius: theme.shape.borderRadius,
-  width: "100%",
-  maxWidth: 360,
-  border: "1px solid #ccc",
-  fontFamily: "monospace",
-}));
+export const reportingExportSectionDescription = {
+  marginBottom: '16px',
+  color: '#aaa',
+};
+
+export const reportingExportButton = {
+  contained: {
+    backgroundColor: '#f4c10f',
+    color: '#000',
+    fontWeight: 'bold',
+    height: '56px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 0.9,
+    },
+  },
+  outlined: {
+    border: '1px solid #f4c10f',
+    color: '#f4c10f',
+    fontWeight: 'bold',
+    height: '56px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: alpha('#f4c10f', 0.1),
+    },
+  },
+};
+
+export const reportingExportFormControl = {
+  '& .MuiInputBase-input': { color: '#fff' },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: alpha('#fff', 0.23) },
+    '&:hover fieldset': { borderColor: '#f4c10f' },
+    '&.Mui-focused fieldset': { borderColor: '#f4c10f' },
+    backgroundColor: '#1a1a1a',
+  },
+};
+
+export const reportingExportSelect = {
+  color: '#fff',
+};
+
+export const reportingExportMenuItem = {
+  backgroundColor: '#1a1a1a',
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: '#2a2a2a',
+  },
+};
+
+/* Compliance & Alerting Screen */
+export const complianceContainerStyles = {
+  padding: '24px',
+};
+
+export const complianceTitleStyles = {
+  fontWeight: 600,
+  marginBottom: '8px',
+  color: '#fff',
+};
+
+export const complianceSubtitleStyles = {
+  marginBottom: '24px',
+  color: '#aaa',
+};
+
+export const compliancePaperStyles = {
+  padding: '16px',
+  marginBottom: '16px',
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #222',
+};
+
+export const complianceFeatureTitleStyles = {
+  fontWeight: 600,
+  color: '#fff',
+};
+
+export const complianceFeatureDescriptionStyles = {
+  color: '#aaa',
+};
+
+export const complianceListItemStyles = {
+  display: 'flex',
+  gap: 2,
+};
+
+/* Settings Screen */
+export const settingsContainerStyles = {
+  padding: '24px',
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #222',
+  color: '#fff',
+  margin: '24px',
+};

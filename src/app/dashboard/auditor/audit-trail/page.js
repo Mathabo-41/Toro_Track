@@ -1,31 +1,54 @@
-"use client";
+// page.js
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import Link from 'next/link';
 import {
+  Box,
+  Typography,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Drawer,
+  ListItemButton,
   Paper,
   Table,
   TableBody,
   TableHead,
   TableRow,
   TableCell,
-  Box,
-  Typography,
-  Grid,
-  IconButton,
-} from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
+  TextField
+} from '@mui/material';
 import {
-  AuditTrailContainer,
-  AuditTrailTableContainer,
-  AuditTrailHeaderCell,
-  AuditTrailCell,
-  AuditTrailSerialCell,
-  ComplianceTitleBar,
-  ComplianceTitleText,
-  ComplianceSearchInput,
-} from "../styles";
+  AccountCircle as AccountCircleIcon
+} from '@mui/icons-material';
+import {
+  fullScreenContainerStyles,
+  drawerStyles,
+  drawerHeaderStyles,
+  listItemButtonStyles,
+  mainContentBoxStyles,
+  headerBoxStyles,
+  pageTitleStyles,
+  headerRightSectionStyles,
+  searchFieldStyles,
+  userProfileStyles,
+  userInfoStyles,
+  auditorTextStyles,
+  tablePaperStyles,
+  tableCellHeaderStyles,
+  tableCellBodyStyles
+} from '../styles';
+
+const auditTrailMenu = [
+  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
+  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
+  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
+  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
+  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
+  { name: 'Settings', path: '/dashboard/auditor/settings' }
+];
 
 const rows = [
   {
@@ -77,108 +100,97 @@ const rows = [
 
 export default function AuditTrailPage() {
   const [search, setSearch] = useState("");
+  const currentPath = '/dashboard/client/details';
 
   const filteredRows = rows.filter((r) =>
     r.orderId.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <AuditTrailContainer>
-      {/* Title Bar  */}
-      <ComplianceTitleBar>
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item>
-            <IconButton
-              edge="start"
-              aria-label="back"
-              onClick={() => window.history.back()}
-              sx={{ color: "#000" }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          </Grid>
+    <Box sx={fullScreenContainerStyles}>
+      {/* Sidebar Navigation */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={drawerStyles}
+      >
+        <Box sx={drawerHeaderStyles}>
+          <Typography variant="h6" >
+            Auditor Portal
+          </Typography>
+        </Box>
+        <List>
+          {auditTrailMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                sx={listItemButtonStyles(item.name, currentPath)}
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
 
-          <Grid item>
-            <Box
-              component="img"
-              src="/appImages/logo.png"
-              alt="Logo"
-              sx={{
-                width: 60,
-                height: 60,
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
+      {/* Main Content */}
+      <Box component="main" sx={mainContentBoxStyles}>
+        <Box sx={headerBoxStyles}>
+          <Typography variant="h4" sx={pageTitleStyles}>
+            Audit Trail & Logging
+          </Typography>
+          <Box sx={headerRightSectionStyles}>
+            <TextField
+              variant="outlined"
+              placeholder="Search Order ID"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={searchFieldStyles}
             />
-          </Grid>
-
-          <Grid item xs>
-            <ComplianceTitleText>Audit Trail & Logging</ComplianceTitleText>
-          </Grid>
-
-          <Grid item xs={12} sm>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <ComplianceSearchInput
-                type="text"
-                placeholder="Search Order ID"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Box>
-          </Grid>
-
-          <Grid item>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: "#000",
-                minWidth: "140px",
-              }}
-            >
-              <Box sx={{ textAlign: "right" }}>
+            <Box sx={userProfileStyles}>
+              <Box sx={userInfoStyles}>
                 <Typography variant="body2">Sipho Ellen</Typography>
-                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                <Typography variant="caption" sx={auditorTextStyles}>
                   Auditor
                 </Typography>
               </Box>
               <AccountCircleIcon sx={{ fontSize: 32 }} />
             </Box>
-          </Grid>
-        </Grid>
-      </ComplianceTitleBar>
+          </Box>
+        </Box>
 
-      {/* Audit trail table */}
-      <AuditTrailTableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <AuditTrailHeaderCell>Order ID</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Order Sign-Off</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Timestamp</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Delivery Status</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Order Receiver</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Asset Type</AuditTrailHeaderCell>
-              <AuditTrailHeaderCell>Serial Number</AuditTrailHeaderCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {filteredRows.map((r) => (
-              <TableRow key={r.orderId}>
-                <AuditTrailCell>{r.orderId}</AuditTrailCell>
-                <AuditTrailCell>{r.signOff}</AuditTrailCell>
-                <AuditTrailCell>{r.timestamp}</AuditTrailCell>
-                <AuditTrailCell>{r.status}</AuditTrailCell>
-                <AuditTrailCell>{r.receiver}</AuditTrailCell>
-                <AuditTrailCell>{r.type}</AuditTrailCell>
-                <AuditTrailSerialCell>{r.serial}</AuditTrailSerialCell>
+        {/* Audit trail table */}
+        <Box component={Paper} sx={tablePaperStyles}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={tableCellHeaderStyles}>Order ID</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Order Sign-Off</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Timestamp</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Delivery Status</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Order Receiver</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Asset Type</TableCell>
+                <TableCell sx={tableCellHeaderStyles}>Serial Number</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AuditTrailTableContainer>
-    </AuditTrailContainer>
+            </TableHead>
+
+            <TableBody>
+              {filteredRows.map((r) => (
+                <TableRow key={r.orderId} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell sx={tableCellBodyStyles}>{r.orderId}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.signOff}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.timestamp}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.status}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.receiver}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.type}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.serial}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      </Box>
+    </Box>
   );
 }

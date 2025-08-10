@@ -1,28 +1,49 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import Link from 'next/link';
 import {
-  AssetStatusContainer,
-  AssetStatusPaper,
-  AssetStatusTitle,
-  AssetStatusSubtitle,
-  AssetStatusSectionTitle,
-  AuditTrailTitleBar,
-  AuditTrailTitle,
-  AuditTrailSearch,
-} from "../styles";
-
-import {
+  Box,
   Typography,
   List,
   ListItem,
   ListItemText,
-  Box,
-  IconButton,
-} from "@mui/material";
+  Drawer,
+  ListItemButton,
+  Paper,
+  TextField
+} from '@mui/material';
+import {
+  AccountCircle as AccountCircleIcon
+} from '@mui/icons-material';
+import {
+  fullScreenContainerStyles,
+  drawerStyles,
+  drawerHeaderStyles,
+  listItemButtonStyles,
+  mainContentBoxStyles,
+  headerBoxStyles,
+  pageTitleStyles,
+  headerRightSectionStyles,
+  searchFieldStyles,
+  userProfileStyles,
+  userInfoStyles,
+  auditorTextStyles,
+  assetStatusContainer,
+  assetStatusTitle,
+  assetStatusSubtitle,
+  assetStatusPaper,
+  assetStatusSectionTitle
+} from '../styles';
 
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+const auditTrailMenu = [
+  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
+  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
+  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
+  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
+  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
+  { name: 'Settings', path: '/dashboard/auditor/settings' }
+];
 
 const statusData = [
   { id: 1, asset: "Laptop - Dell XPS 13", status: "Deployed" },
@@ -45,129 +66,133 @@ const digitalSignatures = [
 
 export default function AssetStatusDocumentation() {
   const [search, setSearch] = useState("");
+  const currentPath = '/dashboard/auditor/assetStatusDoc';
+
+  const filteredStatusData = statusData.filter(item =>
+    item.asset.toLowerCase().includes(search.toLowerCase()) ||
+    item.status.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredDocumentsData = documentsData.filter(doc =>
+    doc.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredSignatures = digitalSignatures.filter(sig =>
+    sig.client.toLowerCase().includes(search.toLowerCase()) ||
+    sig.status.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <>
-      {/* Title Bar */}
-      <AuditTrailTitleBar>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton
-            edge="start"
-            aria-label="back"
-            onClick={() => window.history.back()}
-            sx={{ color: "#000" }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-
-          <Box
-            component="img"
-            src="/appImages/logo.png"
-            alt="Logo"
-            sx={{
-              width: 60,
-              height: 60,
-              borderRadius: "4px",
-              objectFit: "cover",
-            }}
-          />
-          <AuditTrailTitle sx={{ whiteSpace: "nowrap" }}>
-            Asset Status & Documentation
-          </AuditTrailTitle>
+    <Box sx={fullScreenContainerStyles}>
+      {/* Sidebar Navigation */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={drawerStyles}
+      >
+        <Box sx={drawerHeaderStyles}>
+          <Typography variant="h6">
+            Auditor Portal
+          </Typography>
         </Box>
+        <List>
+          {auditTrailMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                selected={item.path === currentPath}
+                sx={listItemButtonStyles(item.name, currentPath)}
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
 
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <AuditTrailSearch
-              type="text"
+      {/* Main Content */}
+      <Box component="main" sx={mainContentBoxStyles}>
+        <Box sx={headerBoxStyles}>
+          <Typography variant="h4" sx={pageTitleStyles}>
+            Asset Status & Documentation
+          </Typography>
+          <Box sx={headerRightSectionStyles}>
+            <TextField
+              variant="outlined"
               placeholder="Search assets or documents"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              sx={searchFieldStyles}
             />
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              color: "#000",
-              minWidth: "140px",
-            }}
-          >
-            <Box sx={{ textAlign: "right" }}>
-              <Typography variant="body2">Sipho Ellen</Typography>
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                Auditor
-              </Typography>
+            <Box sx={userProfileStyles}>
+              <Box sx={userInfoStyles}>
+                <Typography variant="body2">Sipho Ellen</Typography>
+                <Typography variant="caption" sx={auditorTextStyles}>
+                  Auditor
+                </Typography>
+              </Box>
+              <AccountCircleIcon sx={{ fontSize: 32 }} />
             </Box>
-            <AccountCircleIcon sx={{ fontSize: 32 }} />
           </Box>
         </Box>
-      </AuditTrailTitleBar>
 
-      {/* Main Content */}
-      <AssetStatusContainer>
-        <AssetStatusTitle variant="h4">
-          Asset Status & Documentation
-        </AssetStatusTitle>
-        <AssetStatusSubtitle variant="subtitle1">
-          Gives auditors a clear view of each asset’s lifecycle and associated
-          paperwork.
-        </AssetStatusSubtitle>
+        {/* Content Section */}
+        <Box sx={assetStatusContainer}>
+          <Typography variant="h4" sx={assetStatusTitle}>
+            Asset Status & Documentation
+          </Typography>
+          <Typography variant="subtitle1" sx={assetStatusSubtitle}>
+            Gives auditors a clear view of each asset’s lifecycle and associated
+            paperwork.
+          </Typography>
 
-        <AssetStatusPaper elevation={2}>
-          <AssetStatusSectionTitle variant="h6">
-            Status Dashboard
-          </AssetStatusSectionTitle>
-          <List>
-            {statusData.map(({ id, asset, status }) => (
-              <ListItem key={id} divider>
-                <ListItemText
-                  primary={asset}
-                  secondary={`Current Status: ${status}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </AssetStatusPaper>
+          <Paper elevation={2} sx={assetStatusPaper}>
+            <Typography variant="h6" sx={assetStatusSectionTitle}>
+              Status Dashboard
+            </Typography>
+            <List>
+              {filteredStatusData.map(({ id, asset, status }) => (
+                <ListItem key={id} divider>
+                  <ListItemText
+                    primary={asset}
+                    secondary={`Current Status: ${status}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
 
-        <AssetStatusPaper elevation={2}>
-          <AssetStatusSectionTitle variant="h6">
-            Document Attachment Support
-          </AssetStatusSectionTitle>
-          <List>
-            {documentsData.map((doc, idx) => (
-              <ListItem key={idx} divider>
-                <ListItemText primary={doc} />
-              </ListItem>
-            ))}
-          </List>
-        </AssetStatusPaper>
+          <Paper elevation={2} sx={assetStatusPaper}>
+            <Typography variant="h6" sx={assetStatusSectionTitle}>
+              Document Attachment Support
+            </Typography>
+            <List>
+              {filteredDocumentsData.map((doc, idx) => (
+                <ListItem key={idx} divider>
+                  <ListItemText primary={doc} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
 
-        <AssetStatusPaper elevation={2}>
-          <AssetStatusSectionTitle variant="h6">
-            Digital Signature Capture
-          </AssetStatusSectionTitle>
-          <List>
-            {digitalSignatures.map(({ client, date, status }, idx) => (
-              <ListItem key={idx} divider>
-                <ListItemText
-                  primary={`${client} - ${date}`}
-                  secondary={`Signature Status: ${status}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </AssetStatusPaper>
-      </AssetStatusContainer>
-    </>
+          <Paper elevation={2} sx={assetStatusPaper}>
+            <Typography variant="h6" sx={assetStatusSectionTitle}>
+              Digital Signature Capture
+            </Typography>
+            <List>
+              {filteredSignatures.map(({ client, date, status }, idx) => (
+                <ListItem key={idx} divider>
+                  <ListItemText
+                    primary={`${client} - ${date}`}
+                    secondary={`Signature Status: ${status}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 }
