@@ -113,7 +113,7 @@ export default function ProjectDetails() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' // Pure black background
+      backgroundColor: '#fefae0' // Light, earthy background
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -125,15 +125,15 @@ export default function ProjectDetails() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#283618', // Dark green sidebar
+            borderRight: '2px solid #6b705c', // Subtle border
+            color: '#fefae0' // Light text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6" > 
-            👔 Client Portal
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5" > 
+            Client Portal
           </Typography>
         </Box>
         <List>
@@ -143,10 +143,10 @@ export default function ProjectDetails() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Project Details' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Project Details' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#6b705c' // Darker background on hover
                   }
                 }}
               >
@@ -161,19 +161,19 @@ export default function ProjectDetails() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' // Pure black background
+        backgroundColor: '#fefae0' // Light, earthy background
       }}>
         {/* Project Header */}
         <Box sx={{ mb: 4 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" sx={{ 
-              color: '#fff',
+              color: '#525252',
               fontWeight: 500
             }}>
               <ProjectIcon sx={{ 
                 mr: 1, 
                 verticalAlign: 'middle',
-                color: '#f4c10f' // Gold accent
+                color: '#f3722c' // Orange accent
               }} />
               {projectData.name}
             </Typography>
@@ -188,7 +188,7 @@ export default function ProjectDetails() {
             />
           </Stack>
           <Typography variant="body1" sx={{ 
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: '#525252',
             mt: 1
           }}>
             Project ID: {projectData.id} | {projectData.description}
@@ -197,13 +197,13 @@ export default function ProjectDetails() {
 
         {/* Project Progress */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
+          backgroundColor: '#fefae0',
           mb: 3,
           border: '1px solid #222'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff',
+              color: '#525252',
               mb: 2,
               fontWeight: 500
             }}>
@@ -214,34 +214,34 @@ export default function ProjectDetails() {
                 <Box sx={{ 
                   width: '100%',
                   height: 10,
-                  backgroundColor: '#333',
+                  backgroundColor: '#e9e9e9',
                   borderRadius: 5,
                   overflow: 'hidden'
                 }}>
                   <Box sx={{ 
                     width: `${projectData.progress}%`,
                     height: '100%',
-                    backgroundColor: '#f4c10f'
+                    backgroundColor: '#f3722c' // Orange progress bar
                   }} />
                 </Box>
                 <Typography variant="body2" sx={{ 
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: '#525252',
                   mt: 1
                 }}>
                   {projectData.progress}% completed
                 </Typography>
               </Box>
               <Box sx={{ 
-                backgroundColor: '#1a1a1a',
+                backgroundColor: '#e0e0e0',
                 p: 2,
                 borderRadius: 1,
-                border: '1px solid #333',
+                border: '1px solid #999',
                 minWidth: 120
               }}>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography variant="body2" sx={{ color: '#525252' }}>
                   Deadline
                 </Typography>
-                <Typography variant="h6" sx={{ color: '#fff' }}>
+                <Typography variant="h6" sx={{ color: '#283618' }}>
                   {projectData.deadline}
                 </Typography>
               </Box>
@@ -255,16 +255,16 @@ export default function ProjectDetails() {
           onChange={handleTabChange}
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#f4c10f' // Gold indicator
+              backgroundColor: '#f3722c' // Orange indicator
             },
             mb: 3
           }}
         >
-          <Tab label="Overview" sx={{ color: '#fff' }} />
-          <Tab label="Milestones" sx={{ color: '#fff' }} />
-          <Tab label="Team" sx={{ color: '#fff' }} />
-          <Tab label="Files" sx={{ color: '#fff' }} />
-          <Tab label="Discussion" sx={{ color: '#fff' }} />
+          <Tab label="Overview" sx={{ color: '#283618' }} />
+          <Tab label="Milestones" sx={{ color: '#283618' }} />
+          <Tab label="Team" sx={{ color: '#283618' }} />
+          <Tab label="Files" sx={{ color: '#283618' }} />
+          <Tab label="Discussion" sx={{ color: '#283618' }} />
         </Tabs>
 
         {/* Tab Content */}
@@ -273,13 +273,13 @@ export default function ProjectDetails() {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <Card sx={{ 
-                  backgroundColor: '#0a0a0a',
+                  backgroundColor: '#fefae0',
                   border: '1px solid #222',
                   height: '100%'
                 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ 
-                      color: '#fff',
+                      color: '#525252',
                       mb: 2,
                       fontWeight: 500
                     }}>
@@ -287,26 +287,26 @@ export default function ProjectDetails() {
                     </Typography>
                     <Stack spacing={2}>
                       <Box>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        <Typography variant="body2" sx={{ color: '#525252' }}>
                           Start Date
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#fff' }}>
+                        <Typography variant="body1" sx={{ color: '#283618' }}>
                           {projectData.startDate}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        <Typography variant="body2" sx={{ color: '#525252' }}>
                           Budget
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#fff' }}>
+                        <Typography variant="body1" sx={{ color: '#283618' }}>
                           {projectData.budget}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        <Typography variant="body2" sx={{ color: '#525252' }}>
                           Description
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#fff' }}>
+                        <Typography variant="body1" sx={{ color: '#283618' }}>
                           {projectData.description}
                         </Typography>
                       </Box>
@@ -316,12 +316,12 @@ export default function ProjectDetails() {
               </Grid>
               <Grid item xs={12} md={6}>
                 <Card sx={{ 
-                  backgroundColor: '#0a0a0a',
+                  backgroundColor: '#fefae0',
                   border: '1px solid #222'
                 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ 
-                      color: '#fff',
+                      color: '#525252',
                       mb: 2,
                       fontWeight: 500
                     }}>
@@ -329,11 +329,11 @@ export default function ProjectDetails() {
                     </Typography>
                     <List>
                       {['Project status updated', 'New files uploaded', 'Meeting scheduled'].map((activity, index) => (
-                        <ListItem key={index} sx={{ color: '#fff' }}>
+                        <ListItem key={index} sx={{ color: '#283618' }}>
                           <ListItemText
                             primary={activity}
                             secondary={
-                              <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                              <Typography component="span" sx={{ color: '#525252' }}>
                                 {index === 0 ? 'Today' : index === 1 ? 'Yesterday' : '2 days ago'}
                               </Typography>
                             }
@@ -349,12 +349,12 @@ export default function ProjectDetails() {
 
           {activeTab === 1 && (
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -362,20 +362,20 @@ export default function ProjectDetails() {
                 </Typography>
                 <TableContainer component={Paper} sx={{ 
                   backgroundColor: 'transparent',
-                  border: '1px solid #333'
+                  border: '2px solid #525252'
                 }}>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Milestone</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Status</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Due Date</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Milestone</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Status</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Due Date</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {projectData.milestones.map((milestone) => (
                         <TableRow key={milestone.id}>
-                          <TableCell sx={{ color: '#fff' }}>{milestone.name}</TableCell>
+                          <TableCell sx={{ color: '#283618' }}>{milestone.name}</TableCell>
                           <TableCell>
                             <Chip
                               icon={milestone.status === 'completed' ? <CompletedIcon /> : 
@@ -395,7 +395,7 @@ export default function ProjectDetails() {
                               }}
                             />
                           </TableCell>
-                          <TableCell sx={{ color: '#fff' }}>{milestone.dueDate}</TableCell>
+                          <TableCell sx={{ color: '#283618' }}>{milestone.dueDate}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -407,12 +407,12 @@ export default function ProjectDetails() {
 
           {activeTab === 2 && (
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -422,8 +422,8 @@ export default function ProjectDetails() {
                   {projectData.team.map((member) => (
                     <Grid item xs={12} sm={6} key={member.id}>
                       <Card sx={{ 
-                        backgroundColor: '#1a1a1a',
-                        border: '1px solid #333'
+                        backgroundColor: '#ccd5ae', 
+                        border: '2px solid #606c38',
                       }}>
                         <CardContent>
                           <Stack direction="row" spacing={2} alignItems="center">
@@ -432,10 +432,10 @@ export default function ProjectDetails() {
                               sx={{ width: 56, height: 56 }}
                             />
                             <Box>
-                              <Typography variant="body1" sx={{ color: '#fff' }}>
+                              <Typography variant="body1" sx={{ color: '#283618' }}>
                                 {member.name}
                               </Typography>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                              <Typography variant="body2" sx={{ color: '#525252' }}>
                                 {member.role}
                               </Typography>
                             </Box>
@@ -451,12 +451,12 @@ export default function ProjectDetails() {
 
           {activeTab === 3 && (
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -464,32 +464,32 @@ export default function ProjectDetails() {
                 </Typography>
                 <TableContainer component={Paper} sx={{ 
                   backgroundColor: 'transparent',
-                  border: '1px solid #333'
+                  border: '2px solid #525252'
                 }}>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>File Name</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Type</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Size</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Date</TableCell>
-                        <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Actions</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>File Name</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Type</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Size</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Date</TableCell>
+                        <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {projectData.files.map((file) => (
                         <TableRow key={file.id}>
-                          <TableCell sx={{ color: '#fff' }}>
+                          <TableCell sx={{ color: '#283618' }}>
                             <Stack direction="row" alignItems="center" spacing={1}>
-                              <FilesIcon fontSize="small" />
+                              <FilesIcon fontSize="small" sx={{ color: '#f3722c' }} />
                               <Typography>{file.name}</Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell sx={{ color: '#fff' }}>{file.type.toUpperCase()}</TableCell>
-                          <TableCell sx={{ color: '#fff' }}>{file.size}</TableCell>
-                          <TableCell sx={{ color: '#fff' }}>{file.date}</TableCell>
+                          <TableCell sx={{ color: '#283618' }}>{file.type.toUpperCase()}</TableCell>
+                          <TableCell sx={{ color: '#283618' }}>{file.size}</TableCell>
+                          <TableCell sx={{ color: '#283618' }}>{file.date}</TableCell>
                           <TableCell>
-                            <IconButton sx={{ color: '#f4c10f' }}>
+                            <IconButton sx={{ color: '#f3722c' }}>
                               <DownloadIcon />
                             </IconButton>
                           </TableCell>
@@ -504,12 +504,12 @@ export default function ProjectDetails() {
 
           {activeTab === 4 && (
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -521,23 +521,23 @@ export default function ProjectDetails() {
                       <ListItem alignItems="flex-start">
                         <ListItemText
                           primary={
-                            <Typography sx={{ color: '#fff', fontWeight: 500 }}>
+                            <Typography sx={{ color: '#283618', fontWeight: 500 }}>
                               {comment.user}
                             </Typography>
                           }
                           secondary={
                             <>
-                              <Typography sx={{ color: '#fff', mt: 0.5 }}>
+                              <Typography component="span" sx={{ color: '#525252', mt: 0.5 }}>
                                 {comment.text}
                               </Typography>
-                              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem', mt: 0.5 }}>
+                              <Typography component="span" sx={{ color: 'rgba(40, 54, 24, 0.5)', fontSize: '0.75rem', mt: 0.5 }}>
                                 {comment.time}
                               </Typography>
                             </>
                           }
                         />
                       </ListItem>
-                      <Divider sx={{ backgroundColor: '#333' }} />
+                      <Divider sx={{ backgroundColor: '#6b705c' }} />
                     </div>
                   ))}
                 </List>
@@ -550,10 +550,10 @@ export default function ProjectDetails() {
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       sx={{
-                        '& .MuiInputBase-input': { color: '#fff' },
+                        '& .MuiInputBase-input': { color: '#283618' },
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': {
-                            borderColor: 'rgba(255, 255, 255, 0.23)',
+                            borderColor: '#6b705c',
                           },
                         },
                       }}
@@ -562,10 +562,10 @@ export default function ProjectDetails() {
                       type="submit"
                       variant="contained"
                       sx={{
-                        backgroundColor: '#f4c10f',
-                        color: '#000',
+                        backgroundColor: '#f3722c',
+                        color: '#fefae0',
                         '&:hover': {
-                          backgroundColor: '#d1a20b'
+                          backgroundColor: '#e65c19'
                         }
                       }}
                     >

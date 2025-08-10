@@ -34,6 +34,7 @@ import {
   userProfileStyles,
   userInfoStyles,
   auditorTextStyles,
+  saveButton,
   settingsContainerStyles,
 } from '../styles';
 
@@ -65,7 +66,7 @@ export default function SettingsPage() {
         sx={drawerStyles}
       >
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             Auditor Portal
           </Typography>
         </Box>
@@ -356,7 +357,7 @@ export default function SettingsPage() {
                 </Stack>
 
                 {/* ───── Submit Button ───── */}
-                <Button variant="contained" type="submit">
+                <Button variant="contained" type="submit" sx={saveButton}>
                   Save Settings
                 </Button>
               </Stack>

@@ -102,10 +102,11 @@ export default function PerformanceReports() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000', // Pure black background
-      color: 'rgba(255, 255, 255, 0.92)' // High contrast text
+      minWidth: '90vw',
+      backgroundColor: '#fefae0', // Light cream background
+      color: '#525252' // Dark gray text color
     }}>
-      {/* Sidebar Navigation - Pure black with subtle border */}
+      {/* Sidebar Navigation - Dark olive green with light cream text */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -115,15 +116,15 @@ export default function PerformanceReports() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000',
-            borderRight: '1px solid #222', // Subtle dark border
-            color: '#fff'
+            backgroundColor: '#283618', // Dark olive green
+            borderRight: '1px solid #6b705c',
+            color: '#fefae0' // Light cream text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6" sx={{ color: '#fff' }}>
-            👑 Admin Panel
+        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
+          <Typography variant="h5" sx={{ color: '#fefae0' }}>
+            Admin Panel
           </Typography>
         </Box>
         <List>
@@ -133,10 +134,10 @@ export default function PerformanceReports() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Performance Reports' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Performance Reports' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a'
+                    backgroundColor: '#6b705c' // Grayish green hover
                   }
                 }}
               >
@@ -147,54 +148,54 @@ export default function PerformanceReports() {
         </List>
       </Drawer>
 
-      {/* Main Content - Pure black background */}
+      {/* Main Content - Light cream background */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000'
+        backgroundColor: '#fefae0'
       }}>
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <ReportsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f' // Gold accent
+              color: '#f3722c' // Orange accent
             }} />
             Performance Reports
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: 'rgba(255, 255, 255, 0.8)' // Slightly muted white
+            color: '#525252' // Dark gray text
           }}>
             Analytics and insights for your CRM system
           </Typography>
         </Box>
 
-        {/* Key Metrics Cards - Dark gray cards for contrast */}
+        {/* Key Metrics Cards - Light cream cards with dark gray borders */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reportData).map(([key, metric], index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Card sx={{ 
-                backgroundColor: '#0a0a0a', // Very dark gray
+                backgroundColor: '#fefae0', // Light cream card
                 height: '100%',
-                border: '1px solid #222', // Subtle border
+                border: '1px solid #525252', // Dark gray border
                 '&:hover': {
-                  borderColor: '#f4c10f' // Gold border on hover
+                  borderColor: '#f3722c' // Orange border on hover
                 }
               }}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between">
                     <Box>
                       <Typography variant="body2" sx={{ 
-                        color: 'rgba(255, 255, 255, 0.7)' 
+                        color: '#525252' 
                       }}>
                         {metric.title}
                       </Typography>
                       <Typography variant="h4" sx={{ 
-                        color: '#fff', 
+                        color: '#283618', // Dark olive green text
                         my: 1,
                         fontWeight: 500
                       }}>
@@ -202,9 +203,9 @@ export default function PerformanceReports() {
                       </Typography>
                       <Stack direction="row" alignItems="center" spacing={0.5}>
                         {metric.trend === 'up' ? (
-                          <TrendingUpIcon color="success" fontSize="small" />
+                          <TrendingUpIcon sx={{ color: '#4caf50' }} fontSize="small" />
                         ) : (
-                          <TrendingDownIcon color="error" fontSize="small" />
+                          <TrendingDownIcon sx={{ color: '#f44336' }} fontSize="small" />
                         )}
                         <Typography variant="body2" sx={{ 
                           color: metric.trend === 'up' ? '#4caf50' : '#f44336'
@@ -214,16 +215,16 @@ export default function PerformanceReports() {
                       </Stack>
                     </Box>
                     <Avatar sx={{ 
-                      bgcolor: 'rgba(244, 193, 15, 0.1)', // Gold tint
+                      bgcolor: '#e0e0d1', // Grayish green tint
                       width: 56,
                       height: 56,
-                      border: '1px solid rgba(244, 193, 15, 0.3)' // Gold border
+                      border: '1px solid #6b705c' // Grayish green border
                     }}>
-                      {key.includes('Client') && <PeopleIcon color="primary" />}
-                      {key.includes('Project') && <WorkIcon color="secondary" />}
-                      {key.includes('Revenue') && <StarIcon color="success" />}
-                      {key.includes('Satisfaction') && <StarIcon color="warning" />}
-                      {key.includes('Performance') && <BarChartIcon color="info" />}
+                      {key.includes('Client') && <PeopleIcon sx={{ color: '#525252' }} />}
+                      {key.includes('Project') && <WorkIcon sx={{ color: '#525252' }} />}
+                      {key.includes('Revenue') && <StarIcon sx={{ color: '#525252' }} />}
+                      {key.includes('Satisfaction') && <StarIcon sx={{ color: '#525252' }} />}
+                      {key.includes('Performance') && <BarChartIcon sx={{ color: '#525252' }} />}
                     </Avatar>
                   </Stack>
                 </CardContent>
@@ -237,20 +238,20 @@ export default function PerformanceReports() {
           {/* Client Acquisition Chart */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               height: '100%',
-              border: '1px solid #222'
+              border: '1px solid #525252'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff', 
+                  color: '#525252', 
                   mb: 2,
                   fontWeight: 500
                 }}>
                   <PeopleIcon sx={{ 
                     mr: 1, 
                     verticalAlign: 'middle',
-                    color: '#f4c10f'
+                    color: '#f3722c'
                   }} />
                   Client Acquisition Trend
                 </Typography>
@@ -260,10 +261,10 @@ export default function PerformanceReports() {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  border: '1px dashed rgba(255, 255, 255, 0.2)',
+                  color: '#6b705c',
+                  border: '1px dashed #6b705c',
                   borderRadius: '4px',
-                  backgroundColor: 'rgba(30, 30, 30, 0.3)' // Slightly lighter than card
+                  backgroundColor: '#e0e0d1' // Slightly darker than card
                 }}>
                   <BarChartIcon sx={{ fontSize: 60, mb: 1 }} />
                   <Typography>Client Acquisition Chart</Typography>
@@ -275,20 +276,20 @@ export default function PerformanceReports() {
           {/* Revenue Breakdown Chart */}
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               height: '100%',
-              border: '1px solid #222'
+              border: '1px solid #525252'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff', 
+                  color: '#525252', 
                   mb: 2,
                   fontWeight: 500
                 }}>
                   <StarIcon sx={{ 
                     mr: 1, 
                     verticalAlign: 'middle',
-                    color: '#f4c10f'
+                    color: '#f3722c'
                   }} />
                   Revenue Breakdown
                 </Typography>
@@ -298,10 +299,10 @@ export default function PerformanceReports() {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  border: '1px dashed rgba(255, 255, 255, 0.2)',
+                  color: '#6b705c',
+                  border: '1px dashed #6b705c',
                   borderRadius: '4px',
-                  backgroundColor: 'rgba(30, 30, 30, 0.3)'
+                  backgroundColor: '#e0e0d1'
                 }}>
                   <PieChartIcon sx={{ fontSize: 60, mb: 1 }} />
                   <Typography>Revenue Breakdown Chart</Typography>
@@ -313,34 +314,34 @@ export default function PerformanceReports() {
 
         {/* Recent Activities */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
+          backgroundColor: '#fefae0',
           mb: 3,
-          border: '1px solid #222'
+          border: '1px solid #525252'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff', 
+              color: '#525252', 
               mb: 2,
               fontWeight: 500
             }}>
               <TimelineIcon sx={{ 
                 mr: 1, 
                 verticalAlign: 'middle',
-                color: '#f4c10f'
+                color: '#f3722c'
               }} />
               Recent Client Activities
             </Typography>
             <TableContainer component={Paper} sx={{ 
               backgroundColor: 'transparent',
-              border: '1px solid #222'
+              border: '1px solid #525252'
             }}>
               <Table>
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ color: '#fff' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>Activity</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>Date</TableCell>
-                    <TableCell sx={{ color: '#fff' }}>Status</TableCell>
+                  <TableRow sx={{ backgroundColor: '#283618' }}>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Activity</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Date</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -356,13 +357,13 @@ export default function PerformanceReports() {
                       hover 
                       sx={{ 
                         '&:hover': { 
-                          backgroundColor: '#1a1a1a' 
+                          backgroundColor: '#e0e0d1' 
                         }
                       }}
                     >
-                      <TableCell sx={{ color: '#fff' }}>{row.client}</TableCell>
-                      <TableCell sx={{ color: '#fff' }}>{row.activity}</TableCell>
-                      <TableCell sx={{ color: '#fff' }}>{row.date}</TableCell>
+                      <TableCell sx={{ color: '#283618' }}>{row.client}</TableCell>
+                      <TableCell sx={{ color: '#283618' }}>{row.activity}</TableCell>
+                      <TableCell sx={{ color: '#283618' }}>{row.date}</TableCell>
                       <TableCell>
                         <Chip
                           label={row.status.replace('-', ' ')}
@@ -371,8 +372,8 @@ export default function PerformanceReports() {
                               row.status === 'completed' ? 'rgba(46, 125, 50, 0.2)' :
                               row.status === 'pending' ? 'rgba(97, 97, 97, 0.2)' : 'rgba(2, 136, 209, 0.2)',
                             color: 
-                              row.status === 'completed' ? '#81c784' :
-                              row.status === 'pending' ? '#bdbdbd' : '#4fc3f7',
+                              row.status === 'completed' ? '#2e7d32' :
+                              row.status === 'pending' ? '#616161' : '#0288d1',
                             border: 
                               row.status === 'completed' ? '1px solid #2e7d32' :
                               row.status === 'pending' ? '1px solid #616161' : '1px solid #0288d1',
@@ -390,19 +391,19 @@ export default function PerformanceReports() {
 
         {/* Data Export Section */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
-          border: '1px solid #222'
+          backgroundColor: '#fefae0',
+          border: '1px solid #525252'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff', 
+              color: '#525252', 
               mb: 2,
               fontWeight: 500
             }}>
               <DownloadIcon sx={{ 
                 mr: 1, 
                 verticalAlign: 'middle',
-                color: '#f4c10f'
+                color: '#f3722c'
               }} />
               Export Reports
             </Typography>
@@ -413,11 +414,11 @@ export default function PerformanceReports() {
                   variant="outlined"
                   startIcon={<DownloadIcon />}
                   sx={{
-                    color: '#f4c10f',
-                    borderColor: '#f4c10f',
+                    color: '#283618',
+                    borderColor: '#283618',
                     '&:hover': {
-                      backgroundColor: 'rgba(244, 193, 15, 0.1)',
-                      borderColor: '#ffd700'
+                      backgroundColor: '#e0e0d1',
+                      borderColor: '#283618'
                     }
                   }}
                 >

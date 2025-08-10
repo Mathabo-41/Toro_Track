@@ -85,10 +85,11 @@ export default function SystemSettings() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000', // Pure black background
-      color: 'rgba(255, 255, 255, 0.92)' // High-contrast white text
+      minWidth: '89vw',
+      backgroundColor: '#fefae0', // Light cream background
+      color: '#525252' // Dark gray text color
     }}>
-      {/* Jet Black Sidebar */}
+      {/* Sidebar Navigation - Dark olive green with light cream text */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -98,15 +99,15 @@ export default function SystemSettings() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000',
-            borderRight: '1px solid #222',
-            color: '#fff'
+            backgroundColor: '#283618', // Dark olive green
+            borderRight: '1px solid #6b705c',
+            color: '#fefae0' // Light cream text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6"> 
-            👑 Admin Panel
+        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
+          <Typography variant="h5" sx={{ color: '#fefae0' }}>
+            Admin Panel
           </Typography>
         </Box>
         <List>
@@ -116,10 +117,10 @@ export default function SystemSettings() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Settings' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Settings' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a'
+                    backgroundColor: '#6b705c' // Grayish green hover
                   }
                 }}
               >
@@ -130,57 +131,60 @@ export default function SystemSettings() {
         </List>
       </Drawer>
 
-      {/* Main Content with Pure Black Background */}
+      {/* Main Content - Light cream background */}
       <Box 
         component="main" 
         sx={{ 
           flexGrow: 1, 
           p: 3,
-          backgroundColor: '#000000'
+          backgroundColor: '#fefae0'
         }}
       >
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ color: '#fff', fontWeight: 600 }}>
+          <Typography variant="h4" sx={{ 
+            color: '#525252', 
+            fontWeight: 500 
+          }}>
             <SettingsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle', 
-              color: '#f4c10f',
-              
-              fontSize: '2.5rem'
+              color: '#f3722c' // Orange accent
             }} />
             System Settings
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             Configure application-wide preferences and options
           </Typography>
         </Box>
 
-        {/* Settings Cards with Dark Gray Contrast */}
+        {/* Settings Cards */}
         <Grid container spacing={3}>
           {settingsCategories.map((category, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Card sx={{ 
-                backgroundColor: '#0a0a0a',
+                backgroundColor: '#fefae0',
                 height: '100%',
-                border: '1px solid #222',
+                border: '1px solid #525252',
                 '&:hover': {
-                  borderColor: '#f4c10f',
-                  boxShadow: '0 0 15px rgba(244, 193, 15, 0.3)'
+                  borderColor: '#f3722c',
+                  boxShadow: '0 0 15px rgba(243, 114, 44, 0.3)'
                 }
               }}>
                 <CardContent>
                   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
                     <Avatar sx={{ 
-                      bgcolor: 'rgba(244, 193, 15, 0.1)',
+                      bgcolor: '#e0e0d1', // Grayish green tint
                       width: 48,
                       height: 48,
-                      border: '1px solid rgba(244, 193, 15, 0.3)'
+                      border: '1px solid #6b705c'
                     }}>
-                      {category.icon}
+                      <Box sx={{ color: '#525252' }}>
+                        {category.icon}
+                      </Box>
                     </Avatar>
                     <Box>
-                      <Typography variant="h6" sx={{ color: '#fff', fontWeight: 500 }}>
+                      <Typography variant="h6" sx={{ color: '#283618', fontWeight: 500 }}>
                         {category.name}
                       </Typography>
                       <Chip
@@ -200,7 +204,7 @@ export default function SystemSettings() {
                     </Box>
                   </Stack>
                   <Typography variant="body2" sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: '#525252',
                     mb: 2
                   }}>
                     {category.description}
@@ -210,11 +214,11 @@ export default function SystemSettings() {
                     startIcon={<EditIcon />}
                     fullWidth
                     sx={{
-                      color: '#f4c10f',
-                      borderColor: '#f4c10f',
+                      color: '#283618',
+                      borderColor: '#283618',
                       '&:hover': {
-                        backgroundColor: 'rgba(244, 193, 15, 0.15)',
-                        borderColor: '#ffd700'
+                        backgroundColor: '#e0e0d1',
+                        borderColor: '#283618'
                       }
                     }}
                   >
@@ -230,11 +234,11 @@ export default function SystemSettings() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
-              border: '1px solid #333'
+              backgroundColor: '#fefae0',
+              border: '1px solid #525252'
             }}>
               <CardContent>
-                <Typography variant="h6" sx={{ color: '#fff', mb: 2, fontWeight: 500 }}>
+                <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 500 }}>
                   System Maintenance
                 </Typography>
                 <Stack spacing={2}>
@@ -243,11 +247,11 @@ export default function SystemSettings() {
                     startIcon={<BackupIcon />}
                     fullWidth
                     sx={{
-                      backgroundColor: '#f4c10f',
-                      color: '#000',
+                      backgroundColor: '#283618',
+                      color: '#fefae0',
                       fontWeight: 600,
                       '&:hover': {
-                        backgroundColor: '#ffd700'
+                        backgroundColor: '#606c38'
                       }
                     }}
                   >
@@ -258,11 +262,11 @@ export default function SystemSettings() {
                     startIcon={<CachedIcon />}
                     fullWidth
                     sx={{
-                      color: '#f4c10f',
-                      borderColor: '#f4c10f',
+                      color: '#283618',
+                      borderColor: '#283618',
                       '&:hover': {
-                        backgroundColor: 'rgba(244, 193, 15, 0.15)',
-                        borderColor: '#ffd700'
+                        backgroundColor: '#e0e0d1',
+                        borderColor: '#283618'
                       }
                     }}
                   >
@@ -274,7 +278,7 @@ export default function SystemSettings() {
           </Grid>
           <Grid item xs={12} md={6}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #f44336'
             }}>
               <CardContent>

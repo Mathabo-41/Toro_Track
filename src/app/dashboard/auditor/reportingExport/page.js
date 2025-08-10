@@ -67,7 +67,7 @@ export default function ReportingExportPage() {
         sx={drawerStyles}
       >
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             Auditor Portal
           </Typography>
         </Box>
@@ -156,7 +156,7 @@ export default function ReportingExportPage() {
                     <TextField label="Client" placeholder="Select client" fullWidth />
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <FormControl fullWidth sx={reportingExportFormControl}>
+                    <FormControl fullWidth sx={{reportingExportFormControl,}}>
                       <InputLabel id="asset-type-label">Asset Type</InputLabel>
                       <Select labelId="asset-type-label" label="Asset Type" value="" sx={reportingExportSelect}>
                         <MenuItem value="">All</MenuItem>
@@ -172,7 +172,7 @@ export default function ReportingExportPage() {
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <Box sx={reportingExportButton.outlined}>
+                    <Box sx={reportingExportButton.contained}>
                       <Typography>Export CSV</Typography>
                     </Box>
                   </Grid>

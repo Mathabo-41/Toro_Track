@@ -144,10 +144,11 @@ export default function PermissionSettings() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000',
-      color: 'rgba(255, 255, 255, 0.92)'
+      minWidth: '90vw',
+      backgroundColor: '#fefae0', // Light cream background
+      color: '#525252' // Dark gray text color
     }}>
-      {/* Sidebar Navigation - Pure black */}
+      {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -157,15 +158,15 @@ export default function PermissionSettings() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000',
+            backgroundColor: '#283618', // Dark olive green
             borderRight: '1px solid #222',
-            color: '#fff'
+            color: '#fefae0' // Light cream text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6">
-            👑 Admin Panel
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5">
+            Admin Portal
           </Typography>
         </Box>
         <List>
@@ -175,10 +176,10 @@ export default function PermissionSettings() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Permissions' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Permissions' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a'
+                    backgroundColor: '#6b705c' // Grayish green hover
                   }
                 }}
               >
@@ -189,27 +190,27 @@ export default function PermissionSettings() {
         </List>
       </Drawer>
 
-      {/* Main Content - Pure black */}
+      {/* Main Content */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000'
+        backgroundColor: '#fefae0' // Light cream background
       }}>
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <LockIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f'
+              color: '#f3722c' // Orange accent
             }} />
             Permissions
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: 'rgba(255, 255, 255, 0.8)'
+            color: '#525252' // Dark gray text
           }}>
             Manage role-based access control for your organization
           </Typography>
@@ -217,13 +218,13 @@ export default function PermissionSettings() {
 
         {/* Permissions Table */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
+          backgroundColor: '#fefae0',
           mb: 3,
-          border: '1px solid #222'
+          border: '1px solid #525252' // Dark gray border
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff',
+              color: '#525252',
               mb: 2,
               fontWeight: 500
             }}>
@@ -231,16 +232,16 @@ export default function PermissionSettings() {
             </Typography>
             <TableContainer component={Paper} sx={{ 
               backgroundColor: 'transparent',
-              border: '1px solid #222'
+              border: '2px solid #525252' // Dark gray border
             }}>
               <Table>
-                <TableHead>
+                <TableHead sx={{ backgroundColor: '#283618' }}> {/* Dark olive green header */}
                   <TableRow>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Role</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Projects</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Clients</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Team</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Settings</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Role</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Clients</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Team</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Settings</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -251,12 +252,12 @@ export default function PermissionSettings() {
                       selected={selectedRole === role.name}
                       onClick={() => setSelectedRole(role.name)}
                       sx={{ 
-                        '&:hover': { backgroundColor: '#1a1a1a' },
+                        '&:hover': { backgroundColor: '#e0e0d1' },
                         cursor: 'pointer',
-                        backgroundColor: selectedRole === role.name ? '#1a1a1a' : 'transparent'
+                        backgroundColor: selectedRole === role.name ? '#e0e0d1' : 'transparent'
                       }}
                     >
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#283618' }}> {/* Dark olive green text */}
                         <Stack direction="row" alignItems="center" spacing={1}>
                           {role.icon}
                           <Typography>{role.name}</Typography>
@@ -266,17 +267,17 @@ export default function PermissionSettings() {
                         const level = role.permissions[category];
                         const permission = permissionLevels.find(p => p.value === level);
                         return (
-                          <TableCell key={category} sx={{ color: '#fff' }}>
+                          <TableCell key={category} sx={{ color: '#283618' }}>
                             <FormControl fullWidth size="small">
                               <Select
                                 value={level}
                                 onChange={(e) => handlePermissionChange(role.name, category, e.target.value)}
                                 sx={{ 
                                   color: permission.color,
-                                  backgroundColor: '#1a1a1a',
-                                  border: '1px solid #333',
+                                  backgroundColor: '#fefae0',
+                                  border: '1px solid #525252',
                                   '& .MuiSvgIcon-root': {
-                                    color: '#fff'
+                                    color: '#283618'
                                   }
                                 }}
                                 renderValue={(selected) => (
@@ -296,9 +297,10 @@ export default function PermissionSettings() {
                                     value={level.value}
                                     sx={{ 
                                       color: level.color,
-                                      backgroundColor: '#0a0a0a',
+                                      backgroundColor: '#fefae0',
                                       '&:hover': {
-                                        backgroundColor: '#1a1a1a'
+                                        backgroundColor: '#6b705c',
+                                        color: '#fefae0'
                                       }
                                     }}
                                   >
@@ -306,7 +308,7 @@ export default function PermissionSettings() {
                                       <Box sx={{ color: level.color }}>
                                         {level.icon}
                                       </Box>
-                                      <Typography>{level.label}</Typography>
+                                      <Typography sx={{ color: '#283618' }}>{level.label}</Typography>
                                     </Stack>
                                   </MenuItem>
                                 ))}
@@ -326,13 +328,13 @@ export default function PermissionSettings() {
         {/* Selected Role Details */}
         {selectedRole && (
           <Card sx={{ 
-            backgroundColor: '#0a0a0a',
+            backgroundColor: '#fefae0',
             mb: 3,
-            border: '1px solid #222'
+            border: '1px solid #525252' // Dark gray border
           }}>
             <CardContent>
               <Typography variant="h6" sx={{ 
-                color: '#fff',
+                color: '#525252',
                 mb: 2,
                 fontWeight: 500
               }}>
@@ -344,13 +346,13 @@ export default function PermissionSettings() {
                   return (
                     <Grid item xs={12} sm={6} md={3} key={category}>
                       <Card sx={{ 
-                        backgroundColor: '#1a1a1a',
-                        border: '1px solid #333',
+                        backgroundColor: '#fefae0',
+                        border: '1px solid #525252', // Dark gray border
                         height: '100%'
                       }}>
                         <CardContent>
                           <Typography variant="subtitle1" sx={{ 
-                            color: '#fff', 
+                            color: '#525252', 
                             mb: 1,
                             fontWeight: 500
                           }}>
@@ -373,7 +375,7 @@ export default function PermissionSettings() {
                             </Typography>
                           </Stack>
                           <Typography variant="body2" sx={{ 
-                            color: 'rgba(255, 255, 255, 0.7)'
+                            color: '#525252'
                           }}>
                             {level === 'Full' && 'Can create, edit, delete, and view all content'}
                             {level === 'Edit' && 'Can edit and view existing content'}
@@ -397,11 +399,11 @@ export default function PermissionSettings() {
             startIcon={<SaveIcon />}
             onClick={handleSave}
             sx={{
-              backgroundColor: '#f4c10f',
-              color: '#000',
+              backgroundColor: '#283618',
+              color: '#fefae0',
               fontWeight: 500,
               '&:hover': {
-                backgroundColor: '#d1a20b'
+                backgroundColor: '#606c38'
               }
             }}
           >

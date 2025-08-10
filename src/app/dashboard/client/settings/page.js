@@ -40,8 +40,7 @@ import {
 
 /**
  * Client Settings Screen
- * 
- * Features:
+ * * Features:
  * - Account management (profile, security, notifications)
  * - Dark mode toggle
  * - Language selection
@@ -60,7 +59,7 @@ const clientMenu = [
 export default function ClientSettings() {
   const [activeTab, setActiveTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [formData, setFormData] = useState({
     name: 'toro track',
     email: 'trtrack@yahoo.com',
@@ -99,7 +98,7 @@ export default function ClientSettings() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' //  black background
+      backgroundColor: '#fefae0' // Light, earthy background
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -111,15 +110,15 @@ export default function ClientSettings() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#283618', // Dark green sidebar
+            borderRight: '1px solid #6b705c', // Subtle border
+            color: '#fefae0' // Light text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6"> 
-            👔 Client Portal
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5"> 
+            Client Portal
           </Typography>
         </Box>
         <List>
@@ -129,10 +128,10 @@ export default function ClientSettings() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Settings' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Settings' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#6b705c' // Darker background on hover
                   }
                 }}
               >
@@ -147,22 +146,22 @@ export default function ClientSettings() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' //  black background
+        backgroundColor: '#fefae0' // Light, earthy background
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <SettingsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f' // Gold accent
+              color: '#f3722c' // Orange accent
             }} />
             Settings
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             Manage your account preferences and security settings
           </Typography>
         </Box>
@@ -173,27 +172,27 @@ export default function ClientSettings() {
           onChange={(e, newValue) => setActiveTab(newValue)}
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#f4c10f' // Gold indicator
+              backgroundColor: '#f3722c' // Orange indicator
             },
             mb: 3
           }}
         >
-          <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={{ color: '#fff' }} />
-          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={{ color: '#fff' }} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={{ color: '#fff' }} />
-          <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={{ color: '#fff' }} />
+          <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={{ color: '#283618' }} />
         </Tabs>
 
         {/* Tab Content */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
-          border: '1px solid #222'
+          backgroundColor: '#ccd5ae', 
+          border: '2px solid #606c38',
         }}>
           <CardContent>
             {activeTab === 0 && ( /* Profile Tab */
               <Box component="form" onSubmit={handleSubmit}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#fff' }}>
+                  <Typography variant="h6" sx={{ color: '#283618' }}>
                     Personal Information
                   </Typography>
                   {editMode ? (
@@ -203,10 +202,11 @@ export default function ClientSettings() {
                         variant="contained"
                         startIcon={<CheckIcon />}
                         sx={{
-                          backgroundColor: '#f4c10f',
-                          color: '#000',
+                          backgroundColor: '#283618',
+                          color: '#606c38',
                           '&:hover': {
-                            backgroundColor: '#d1a20b'
+                            backgroundColor: '#344e41',
+                            
                           }
                         }}
                       >
@@ -217,10 +217,11 @@ export default function ClientSettings() {
                         startIcon={<CloseIcon />}
                         onClick={handleCancelEdit}
                         sx={{
-                          color: '#f4c10f',
-                          borderColor: '#f4c10f',
-                          '&:hover': {
-                            borderColor: '#d1a20b'
+                          color: '#606c38',
+                            borderColor: '#606c38',
+                            '&:hover': {
+                              border: '#283618',
+                              backgroundColor: '#283618',
                           }
                         }}
                       >
@@ -233,10 +234,11 @@ export default function ClientSettings() {
                       startIcon={<EditIcon />}
                       onClick={() => setEditMode(true)}
                       sx={{
-                        color: '#f4c10f',
-                        borderColor: '#f4c10f',
-                        '&:hover': {
-                          borderColor: '#d1a20b'
+                        color: '#606c38',
+                            borderColor: '#606c38',
+                            '&:hover': {
+                              border: '#283618',
+                              backgroundColor: '#283618',
                         }
                       }}
                     >
@@ -258,17 +260,17 @@ export default function ClientSettings() {
                           width: 120, 
                           height: 120,
                           mb: 2,
-                          border: '2px solid #f4c10f'
+                          border: '2px solid #f3722c'
                         }}
                       />
                       {editMode && (
                         <Button 
                           variant="outlined"
                           sx={{
-                            color: '#f4c10f',
-                            borderColor: '#f4c10f',
+                            color: '#f3722c',
+                            borderColor: '#f3722c',
                             '&:hover': {
-                              borderColor: '#d1a20b'
+                              borderColor: '#e65c19'
                             }
                           }}
                         >
@@ -288,14 +290,14 @@ export default function ClientSettings() {
                           onChange={handleChange}
                           disabled={!editMode}
                           sx={{
-                            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                            '& .MuiInputLabel-root': { color: '#525252' },
                             '& .MuiOutlinedInput-root': {
                               '& fieldset': {
-                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                borderColor: '#a3a699',
                               },
                             },
                             '& .MuiInputBase-input': { 
-                              color: '#fff',
+                              color: '#283618',
                               opacity: editMode ? 1 : 0.7
                             }
                           }}
@@ -311,14 +313,14 @@ export default function ClientSettings() {
                           onChange={handleChange}
                           disabled={!editMode}
                           sx={{
-                            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                            '& .MuiInputLabel-root': { color: '#525252' },
                             '& .MuiOutlinedInput-root': {
                               '& fieldset': {
-                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                borderColor: '#a3a699',
                               },
                             },
                             '& .MuiInputBase-input': { 
-                              color: '#fff',
+                              color: '#283618',
                               opacity: editMode ? 1 : 0.7
                             }
                           }}
@@ -333,14 +335,14 @@ export default function ClientSettings() {
                           onChange={handleChange}
                           disabled={!editMode}
                           sx={{
-                            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                            '& .MuiInputLabel-root': { color: '#525252' },
                             '& .MuiOutlinedInput-root': {
                               '& fieldset': {
-                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                borderColor: '#a3a699',
                               },
                             },
                             '& .MuiInputBase-input': { 
-                              color: '#fff',
+                              color: '#283618',
                               opacity: editMode ? 1 : 0.7
                             }
                           }}
@@ -355,14 +357,14 @@ export default function ClientSettings() {
                           onChange={handleChange}
                           disabled={!editMode}
                           sx={{
-                            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                            '& .MuiInputLabel-root': { color: '#525252' },
                             '& .MuiOutlinedInput-root': {
                               '& fieldset': {
-                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                borderColor: '#a3a699',
                               },
                             },
                             '& .MuiInputBase-input': { 
-                              color: '#fff',
+                              color: '#283618',
                               opacity: editMode ? 1 : 0.7
                             }
                           }}
@@ -377,14 +379,14 @@ export default function ClientSettings() {
                           onChange={handleChange}
                           disabled={!editMode}
                           sx={{
-                            '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                            '& .MuiInputLabel-root': { color: '#525252' },
                             '& .MuiOutlinedInput-root': {
                               '& fieldset': {
-                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                borderColor: '#a3a699',
                               },
                             },
                             '& .MuiInputBase-input': { 
-                              color: '#fff',
+                              color: '#283618',
                               opacity: editMode ? 1 : 0.7
                             }
                           }}
@@ -399,7 +401,7 @@ export default function ClientSettings() {
             {activeTab === 1 && ( /* Security Tab */
               <Box component="form" onSubmit={handleSubmit}>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#283618',
                   mb: 3
                 }}>
                   Security Settings
@@ -408,7 +410,7 @@ export default function ClientSettings() {
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle1" sx={{ 
-                      color: '#fff',
+                      color: '#283618',
                       mb: 2
                     }}>
                       Change Password
@@ -423,13 +425,13 @@ export default function ClientSettings() {
                         value={formData.currentPassword}
                         onChange={handleChange}
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                          '& .MuiInputLabel-root': { color: '#525252' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#a3a699',
                             },
                           },
-                          '& .MuiInputBase-input': { color: '#fff' }
+                          '& .MuiInputBase-input': { color: '#283618' }
                         }}
                       />
                       <TextField
@@ -440,13 +442,13 @@ export default function ClientSettings() {
                         value={formData.newPassword}
                         onChange={handleChange}
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                          '& .MuiInputLabel-root': { color: '#525252' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#a3a699',
                             },
                           },
-                          '& .MuiInputBase-input': { color: '#fff' }
+                          '& .MuiInputBase-input': { color: '#283618' }
                         }}
                       />
                       <TextField
@@ -457,13 +459,13 @@ export default function ClientSettings() {
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                          '& .MuiInputLabel-root': { color: '#525252' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#a3a699',
                             },
                           },
-                          '& .MuiInputBase-input': { color: '#fff' }
+                          '& .MuiInputBase-input': { color: '#283618' }
                         }}
                       />
                     </Stack>
@@ -474,10 +476,10 @@ export default function ClientSettings() {
                       startIcon={<SaveIcon />}
                       sx={{
                         mt: 3,
-                        backgroundColor: '#f4c10f',
-                        color: '#000',
+                        backgroundColor: '#f3722c',
+                        color: '#fefae0',
                         '&:hover': {
-                          backgroundColor: '#d1a20b'
+                          backgroundColor: '#e65c19'
                         }
                       }}
                     >
@@ -487,7 +489,7 @@ export default function ClientSettings() {
 
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle1" sx={{ 
-                      color: '#fff',
+                      color: '#283618',
                       mb: 2
                     }}>
                       Two-Factor Authentication
@@ -496,8 +498,8 @@ export default function ClientSettings() {
                     <Paper sx={{ 
                       p: 2,
                       mb: 3,
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333'
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
                     }}>
                       <FormControlLabel
                         control={
@@ -508,14 +510,14 @@ export default function ClientSettings() {
                           />
                         }
                         label={
-                          <Typography sx={{ color: '#fff' }}>
+                          <Typography sx={{ color: '#283618' }}>
                             Enable Two-Factor Authentication
                           </Typography>
                         }
                         sx={{ ml: 0 }}
                       />
                       <Typography variant="body2" sx={{ 
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        color: 'rgba(40, 54, 24, 0.7)',
                         mt: 1
                       }}>
                         Adds an extra layer of security to your account
@@ -523,7 +525,7 @@ export default function ClientSettings() {
                     </Paper>
 
                     <Typography variant="subtitle1" sx={{ 
-                      color: '#fff',
+                      color: '#283618',
                       mb: 2
                     }}>
                       Active Sessions
@@ -531,13 +533,13 @@ export default function ClientSettings() {
 
                     <Paper sx={{ 
                       p: 2,
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333'
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
                     }}>
-                      <Typography variant="body2" sx={{ color: '#fff' }}>
+                      <Typography variant="body2" sx={{ color: '#283618' }}>
                         Current Device (Chrome, Windows)
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(40, 54, 24, 0.5)' }}>
                         Last active: Just now
                       </Typography>
                       <Button 
@@ -545,10 +547,10 @@ export default function ClientSettings() {
                         size="small"
                         sx={{
                           mt: 1,
-                          color: '#f44336',
-                          borderColor: '#f44336',
+                          color: '#d32f2f',
+                          borderColor: '#d32f2f',
                           '&:hover': {
-                            borderColor: '#d32f2f'
+                            borderColor: '#b71c1c'
                           }
                         }}
                       >
@@ -563,7 +565,7 @@ export default function ClientSettings() {
             {activeTab === 2 && ( /* Notifications Tab */
               <Box component="form" onSubmit={handleSubmit}>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#283618',
                   mb: 3
                 }}>
                   Notification Preferences
@@ -574,11 +576,11 @@ export default function ClientSettings() {
                     <Paper sx={{ 
                       p: 2,
                       mb: 2,
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333'
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
                     }}>
                       <Typography variant="subtitle1" sx={{ 
-                        color: '#fff',
+                        color: '#283618',
                         mb: 1
                       }}>
                         Email Notifications
@@ -591,11 +593,18 @@ export default function ClientSettings() {
                               name="notifications"
                               checked={formData.notifications}
                               onChange={handleChange}
-                              color="primary"
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#f3722c'
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#f3722c'
+                                }
+                              }}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#fff' }}>
+                            <Typography sx={{ color: '#283618' }}>
                               Project Updates
                             </Typography>
                           }
@@ -606,11 +615,18 @@ export default function ClientSettings() {
                               name="newsletter"
                               checked={formData.newsletter}
                               onChange={handleChange}
-                              color="primary"
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#f3722c'
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#f3722c'
+                                }
+                              }}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#fff' }}>
+                            <Typography sx={{ color: '#283618' }}>
                               Newsletter
                             </Typography>
                           }
@@ -623,11 +639,11 @@ export default function ClientSettings() {
                     <Paper sx={{ 
                       p: 2,
                       mb: 2,
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333'
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
                     }}>
                       <Typography variant="subtitle1" sx={{ 
-                        color: '#fff',
+                        color: '#283618',
                         mb: 1
                       }}>
                         In-App Notifications
@@ -639,11 +655,18 @@ export default function ClientSettings() {
                             <Switch 
                               checked={true}
                               onChange={() => {}}
-                              color="primary"
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#f3722c'
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#f3722c'
+                                }
+                              }}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#fff' }}>
+                            <Typography sx={{ color: '#283618' }}>
                               Messages
                             </Typography>
                           }
@@ -653,11 +676,18 @@ export default function ClientSettings() {
                             <Switch 
                               checked={true}
                               onChange={() => {}}
-                              color="primary"
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#f3722c'
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#f3722c'
+                                }
+                              }}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#fff' }}>
+                            <Typography sx={{ color: '#283618' }}>
                               Meeting Reminders
                             </Typography>
                           }
@@ -673,10 +703,10 @@ export default function ClientSettings() {
                   startIcon={<SaveIcon />}
                   sx={{
                     mt: 3,
-                    backgroundColor: '#f4c10f',
-                    color: '#000',
+                    backgroundColor: '#f3722c',
+                    color: '#fefae0',
                     '&:hover': {
-                      backgroundColor: '#d1a20b'
+                      backgroundColor: '#e65c19'
                     }
                   }}
                 >
@@ -685,30 +715,83 @@ export default function ClientSettings() {
               </Box>
             )}
 
-    {/* Preferences Tab */} 
+            {/* Preferences Tab */} 
             {activeTab === 3 && (
-  <Box component="form" onSubmit={handleSubmit}>
-    <Typography variant="h6" sx={{ color: '#fff', mb: 3 }}>
-      App Preferences
-    </Typography>
+              <Box component="form" onSubmit={handleSubmit}>
+                <Typography variant="h6" sx={{ color: '#283618', mb: 3 }}>
+                  App Preferences
+                </Typography>
 
-    <Grid container spacing={3}>
-      <Grid item xs={12} md={6}>
-        {/* Dark mode switch remains the same */}
-      </Grid>
-      
-      <Grid item xs={12} md={6}>
-        <Typography variant="subtitle1" sx={{ color: '#fff', mb: 2 }}>
-          Language & Region
-        </Typography>
-        
-        <Paper sx={{ 
-          p: 2,
-          backgroundColor: '#1a1a1a',
-          border: '1px solid #333'
-        }}>
-         
-        </Paper>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Paper sx={{ 
+                      p: 2,
+                      mb: 2,
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
+                    }}>
+                      <Typography variant="subtitle1" sx={{ 
+                        color: '#283618',
+                        mb: 1
+                      }}>
+                        Display Settings
+                      </Typography>
+                      <FormControlLabel
+                        control={
+                          <Switch 
+                            checked={darkMode}
+                            onChange={(e) => setDarkMode(e.target.checked)}
+                            sx={{
+                              '& .MuiSwitch-switchBase.Mui-checked': {
+                                color: '#f3722c'
+                              },
+                              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                backgroundColor: '#f3722c'
+                              }
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography sx={{ color: '#283618' }}>
+                            Dark Mode
+                          </Typography>
+                        }
+                      />
+                    </Paper>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle1" sx={{ color: '#283618', mb: 2 }}>
+                      Language & Region
+                    </Typography>
+                    <Paper sx={{ 
+                      p: 2,
+                      backgroundColor: '#a3a699',
+                      border: '1px solid #6b705c'
+                    }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Language"
+                        name="language"
+                        value={formData.language}
+                        onChange={handleChange}
+                        sx={{
+                          '& .MuiInputLabel-root': { color: '#525252' },
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                              borderColor: '#6b705c',
+                            },
+                          },
+                          '& .MuiInputBase-input': { color: '#283618' },
+                          '& .MuiSvgIcon-root': { color: '#6b705c' }
+                        }}
+                      >
+                        <MenuItem value="en">English</MenuItem>
+                        <MenuItem value="es">Spanish</MenuItem>
+                        <MenuItem value="fr">French</MenuItem>
+                      </TextField>
+                    </Paper>
                   </Grid>
                 </Grid>
 
@@ -718,10 +801,10 @@ export default function ClientSettings() {
                   startIcon={<SaveIcon />}
                   sx={{
                     mt: 3,
-                    backgroundColor: '#f4c10f',
-                    color: '#000',
+                    backgroundColor: '#f3722c',
+                    color: '#fefae0',
                     '&:hover': {
-                      backgroundColor: '#d1a20b'
+                      backgroundColor: '#e65c19'
                     }
                   }}
                 >
@@ -738,10 +821,10 @@ export default function ClientSettings() {
             variant="outlined"
             startIcon={<LogoutIcon />}
             sx={{
-              color: '#f44336',
-              borderColor: '#f44336',
+              color: '#d32f2f',
+              borderColor: '#d32f2f',
               '&:hover': {
-                borderColor: '#d32f2f'
+                borderColor: '#b71c1c'
               }
             }}
           >

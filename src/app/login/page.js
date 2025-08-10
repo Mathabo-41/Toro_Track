@@ -44,7 +44,7 @@ export default function Login() {
           zIndex: -2,
         }}
       >
-        <source src="/appImages/login_animation.mp4" type="video/mp4" />
+        <source src="/appImages/logo_animation.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
@@ -72,16 +72,22 @@ export default function Login() {
         padding: "2rem",
         borderRadius: "16px",
       }}>
-        {/* Logo Image (no container) */}
+        {/* Logo Image (no container) 
         <div style={{ marginBottom: "1.5rem" }}>
-          <Image
-            src="/appImages/logo.png"
-            alt="Toro Track Logo"
-            width={240}
-            height={240}
-            priority
-          />
-        </div>
+          <img
+          src="/appImages/logo.png"
+          alt="Logo"
+          style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '500px', // Adjust the width as needed
+          height: 'auto', // Maintain aspect ratio
+          zIndex: 1, // Ensure the logo is above the video and overlay
+        }}
+      />
+        </div>*/}
 
         {/* Form Container */}
         <div style={{
@@ -92,10 +98,22 @@ export default function Login() {
           borderRadius: "16px",
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}>
+          {/* Login Text */}
+          <h2 style={{
+            fontFamily: "'Disket Mono', monospace",
+            color: "#283618",
+            marginBottom: "1rem", // Add some space below the title
+            textAlign: "center", // Center the text within the container
+            fontSize: "2rem", // Adjust font size as needed
+            fontWeight: "bold", // Make the text bold
+          }}>
+            Login
+          </h2>
           <form onSubmit={handleSubmit} style={{
             width: "80%",
             margin: "0 auto"
           }}>
+
             <input
               type="email"
               placeholder="Email"
@@ -111,7 +129,7 @@ export default function Login() {
                 fontSize: "1rem",
                 fontFamily: "Disekt Mono, monospace",
                 background: "rgba(255, 255, 255, 0.6)",
-                color: "#000",
+                color: "#525252",
                 transform: "scale(0.9)",
                 transformOrigin: "center"
               }}
@@ -130,7 +148,7 @@ export default function Login() {
                 border: "1px solid #e2e8f0",
                 fontSize: "1rem",
                 //dark color for input fields 
-                color: "#000",
+                color: "#525252",
                 fontFamily: "Disekt Mono, monospace",
                 background: "rgba(255, 255, 255, 0.6)",
                 //color: "var(--foreground)",
@@ -142,8 +160,8 @@ export default function Login() {
               type="submit"
               style={{
                 display: "inline-block",
-                background: "#494949",
-                color: "white",
+                background: "#283618",
+                color: "#606c38",
                 padding: "1rem 2.5rem",
                 borderRadius: "8px",
                 fontSize: "1.125rem",

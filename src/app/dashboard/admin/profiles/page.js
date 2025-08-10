@@ -174,7 +174,8 @@ export default function ClientProfiles() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' //  black background
+      minWidth:'90vw',
+      backgroundColor: '#fefae0' 
     }}>
       {/* ===== SIDEBAR NAVIGATION ===== */}
       <Drawer
@@ -186,16 +187,16 @@ export default function ClientProfiles() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#283618',
+            borderRight: '2px solid #222',
+           color: '#fefae0'
           }
         }}
       >
         {/* Sidebar Header */}
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6">
-            👑 Admin Panel
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5">
+            Admin Portal
           </Typography>
         </Box>
         
@@ -207,10 +208,9 @@ export default function ClientProfiles() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Client Profiles' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#6b705c'
                   }
                 }}
               >
@@ -225,7 +225,7 @@ export default function ClientProfiles() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' //  black background
+        backgroundColor: '#fefae0' 
       }}>
         {/* Page Header with Search and Add Client Button */}
         <Box sx={{ 
@@ -237,13 +237,13 @@ export default function ClientProfiles() {
           gap: 2
         }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <PeopleIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f' // Gold accent
+              color: '#525252' 
             }} />
             Client Profiles
           </Typography>
@@ -255,15 +255,15 @@ export default function ClientProfiles() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                    <SearchIcon sx={{ color: '#525252' }} />
                   </InputAdornment>
                 ),
                 sx: { 
-                  color: '#fff',
-                  backgroundColor: '#0a0a0a', // Dark field background
+                  color: '#525252',
+                  backgroundColor: '#fefae0',
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.23)', // Light border
+                      borderColor: '#525252', 
                     },
                   },
                 }
@@ -272,14 +272,15 @@ export default function ClientProfiles() {
             />
             {/* Add Client Button */}
             <Button 
-              variant="contained" 
+              variant="outlined" 
               startIcon={<AddIcon />}
               sx={{
-                backgroundColor: '#f4c10f', // Gold button
-                color: '#000', // Dark text
+                backgroundColor: '#283618', 
+                color: '#fefae0', 
                 fontWeight: 500,
                 '&:hover': { 
-                  backgroundColor: '#d1a20b' // Darker gold on hover
+                  backgroundColor: '#606c38',
+                  borderColor: '#fefae0'
                 },
                 whiteSpace: 'nowrap'
               }}
@@ -291,13 +292,13 @@ export default function ClientProfiles() {
 
         {/* Clients Table */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a', // Dark card background
+          backgroundColor: '#fefae0', 
           mb: 3,
           border: '1px solid #222' // Subtle border
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff',
+              color: '#525252',
               mb: 2,
               fontWeight: 500
             }}>
@@ -305,16 +306,16 @@ export default function ClientProfiles() {
             </Typography>
             <TableContainer component={Paper} sx={{ 
               backgroundColor: 'transparent',
-              border: '1px solid #222'
+              border: '2px solid #525252'
             }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Contact</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Projects</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Actions</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Contact</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Status</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -324,12 +325,12 @@ export default function ClientProfiles() {
                       hover 
                       sx={{ 
                         '&:hover': { 
-                          backgroundColor: '#1a1a1a' // Darker background on hover
+                          backgroundColor: '#1a1a1a' 
                         } 
                       }}
                     >
                       {/* Client Name with Logo */}
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#283618' }}>
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Avatar 
                             src={client.logo} 
@@ -347,17 +348,17 @@ export default function ClientProfiles() {
                       </TableCell>
                       
                       {/* Contact Email */}
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <EmailIcon fontSize="small" sx={{ color: '#f4c10f' }} />
+                          <EmailIcon fontSize="small" sx={{ color: '#f3722c' }} />
                           <Typography>{client.contact}</Typography>
                         </Stack>
                       </TableCell>
                       
                       {/* Project Count */}
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#14213d'}}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <WorkIcon fontSize="small" sx={{ color: '#f4c10f' }} />
+                          <WorkIcon fontSize="small" sx={{ color: '#f3722c' }} />
                           <Typography>{client.projects}</Typography>
                         </Stack>
                       </TableCell>
@@ -380,7 +381,7 @@ export default function ClientProfiles() {
                       {/* Action Menu */}
                       <TableCell>
                         <IconButton 
-                          sx={{ color: '#fff' }}
+                          sx={{ color: '#525252' }}
                           onClick={(e) => handleMenuOpen(e, client.id)}
                         >
                           <MoreVertIcon />
@@ -399,25 +400,25 @@ export default function ClientProfiles() {
           {/* Total Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222',
               height: '100%'
             }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252'}}>
                       Total Clients
                     </Typography>
-                    <Typography variant="h4" sx={{ color: '#f4c10f', fontWeight: 500 }}>
+                    <Typography variant="h4" sx={{ color: '#f3722c', fontWeight: 500 }}>
                       {clients.length}
                     </Typography>
                   </Box>
                   <Avatar sx={{ 
-                    bgcolor: 'rgba(244, 193, 15, 0.1)', // Light gold background
+                    bgcolor: 'rgba(244, 193, 15, 0.1)',
                     width: 56, 
                     height: 56,
-                    border: '1px solid #f4c10f'
+                    border: '1px solid #f3722c'
                   }}>
                     <PeopleIcon color="primary" />
                   </Avatar>
@@ -429,14 +430,14 @@ export default function ClientProfiles() {
           {/* Active Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222',
               height: '100%'
             }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
                       Active Clients
                     </Typography>
                     <Typography variant="h4" sx={{ color: '#4fc3f7', fontWeight: 500 }}>
@@ -459,14 +460,14 @@ export default function ClientProfiles() {
           {/* Premium Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
+              backgroundColor: '#fefae0',
               border: '1px solid #222',
               height: '100%'
             }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
                       Premium Clients
                     </Typography>
                     <Typography variant="h4" sx={{ color: '#81c784', fontWeight: 500 }}>
@@ -503,25 +504,25 @@ export default function ClientProfiles() {
         }}
         PaperProps={{
           sx: {
-            backgroundColor: '#0a0a0a',
-            color: '#fff',
-            border: '1px solid #333',
+            backgroundColor: '#f1faee',
+            color: '#283618',
+            border: '2px solid #283618',
             minWidth: '200px'
           }
         }}
       >
-        <MenuItem onClick={handleMenuClose} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
+        <MenuItem onClick={handleMenuClose} sx={{ '&:hover': { backgroundColor: '#606c38' } }}>
           <EditIcon sx={{ mr: 1, color: '#2196f3' }} />
           Edit Client
         </MenuItem>
-        <MenuItem onClick={handleDeleteClient} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
+        <MenuItem onClick={handleDeleteClient} sx={{ '&:hover': { backgroundColor: '#606c38'} }}>
           <DeleteIcon sx={{ mr: 1, color: '#f44336' }} />
           Delete Client
         </MenuItem>
         <Divider sx={{ backgroundColor: '#333' }} />
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'premium')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c' } }}
         >
           <Chip 
             icon={<PremiumIcon color="success" />}
@@ -537,7 +538,7 @@ export default function ClientProfiles() {
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'active')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c'} }}
         >
           <Chip 
             label="Active" 
@@ -552,15 +553,15 @@ export default function ClientProfiles() {
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'inactive')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c' } }}
         >
           <Chip 
             label="Inactive" 
             size="small" 
             sx={{ 
-              backgroundColor: 'rgba(97, 97, 97, 0.2)',
-              color: '#bdbdbd',
-              border: '1px solid #616161',
+              bgcolor: 'rgba(244, 193, 15, 0.1)',
+              color: '#f3722c',
+              border: '1px solid #f3722c',
               mr: 1 
             }} 
           />

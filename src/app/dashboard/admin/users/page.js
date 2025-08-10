@@ -30,7 +30,8 @@ import {
   TableHead,
   TableRow,
   Select,
-  FormControl
+  FormControl,
+  InputAdornment
 } from '@mui/material';
 // Import Material-UI icons
 import {
@@ -40,7 +41,8 @@ import {
   MoreVert as MoreVertIcon,
   Email as EmailIcon,
   Assignment as AssignmentIcon,
-  GroupAdd as GroupAddIcon
+  GroupAdd as GroupAddIcon,
+  Search as SearchIcon
 } from '@mui/icons-material';
 
 /**
@@ -150,7 +152,8 @@ export default function TeamsAndUsers() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' // Pure black background
+      minWidth: '90vw',
+      backgroundColor: '#fefae0'
     }}>
       {/* ===== SIDEBAR NAVIGATION ===== */}
       <Drawer
@@ -162,16 +165,16 @@ export default function TeamsAndUsers() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#283618',
+            borderRight: '1px solid #222',
+            color: '#fefae0'
           }
         }}
       >
         {/* Sidebar Header */}
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6"> 
-            👑 Admin Panel
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5"> 
+            Admin Panel
           </Typography>
         </Box>
         
@@ -183,10 +186,10 @@ export default function TeamsAndUsers() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Teams & Users' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Teams & Users' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a'
+                    backgroundColor: '#6b705c'
                   }
                 }}
               >
@@ -201,23 +204,23 @@ export default function TeamsAndUsers() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' // Pure black background
+        backgroundColor: '#fefae0'
       }}>
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <TeamsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f' // Gold accent
+              color: '#f3722c'
             }} />
             Teams & Users
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: 'rgba(255, 255, 255, 0.8)' // Slightly muted white
+            color: '#525252'
           }}>
             Manage your team members and assign tasks
           </Typography>
@@ -225,14 +228,14 @@ export default function TeamsAndUsers() {
 
         {/* Invite User Card */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={12}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a', // Dark gray card
-              border: '1px solid #222' // Subtle border
+              backgroundColor: '#fefae0',
+              border: '2px solid #525252'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -246,14 +249,11 @@ export default function TeamsAndUsers() {
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     InputProps={{
-                      style: { color: '#fff' },
-                      startAdornment: <EmailIcon sx={{ 
-                        color: 'rgba(255, 255, 255, 0.7)', 
-                        mr: 1 
-                      }} />,
+                      style: { color: '#525252' },
+                      startAdornment: <InputAdornment position="start"><EmailIcon sx={{ color: '#525252' }} /></InputAdornment>,
                       sx: {
                         '& fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.23)'
+                          borderColor: '#525252'
                         }
                       }
                     }}
@@ -263,10 +263,10 @@ export default function TeamsAndUsers() {
                     startIcon={<GroupAddIcon />}
                     onClick={handleInviteUser}
                     sx={{
-                      backgroundColor: '#f4c10f', // Gold button
-                      color: '#000',
+                      backgroundColor: '#283618',
+                      color: '#fefae0',
                       '&:hover': {
-                        backgroundColor: '#d1a20b' // Darker gold on hover
+                        backgroundColor: '#606c38'
                       }
                     }}
                   >
@@ -280,12 +280,12 @@ export default function TeamsAndUsers() {
 
         {/* Users Table */}
         <Card sx={{ 
-          backgroundColor: '#0a0a0a',
-          border: '1px solid #222'
+          backgroundColor: '#fefae0',
+          border: '1px solid #525252'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
-              color: '#fff',
+              color: '#525252',
               mb: 2,
               fontWeight: 500
             }}>
@@ -293,17 +293,17 @@ export default function TeamsAndUsers() {
             </Typography>
             <TableContainer component={Paper} sx={{ 
               backgroundColor: 'transparent',
-              border: '1px solid #222'
+              border: '2px solid #525252'
             }}>
               <Table>
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Name</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Email</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Role</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Team</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Tasks</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow sx={{ backgroundColor: '#283618' }}>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Name</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Email</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Role</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Team</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Tasks</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -312,13 +312,13 @@ export default function TeamsAndUsers() {
                       key={user.id}
                       sx={{ 
                         '&:hover': {
-                          backgroundColor: '#1a1a1a' // Hover effect
+                          backgroundColor: '#e0e0d1'
                         }
                       }}
                     >
-                      <TableCell sx={{ color: '#fff' }}>{user.name}</TableCell>
-                      <TableCell sx={{ color: '#fff' }}>{user.email}</TableCell>
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#283618' }}>{user.name}</TableCell>
+                      <TableCell sx={{ color: '#283618' }}>{user.email}</TableCell>
+                      <TableCell sx={{ color: '#283618' }}>
                         {/* Role Select Dropdown */}
                         <FormControl fullWidth size="small">
                           <Select
@@ -327,23 +327,23 @@ export default function TeamsAndUsers() {
                               u.id === user.id ? { ...u, role: e.target.value } : u
                             ))}
                             sx={{ 
-                              color: '#fff',
-                              backgroundColor: '#1a1a1a',
-                              border: '1px solid #333',
+                              color: '#283618',
+                              backgroundColor: '#fefae0',
+                              border: '1px solid #525252',
                               '& .MuiSvgIcon-root': {
-                                color: '#fff'
+                                color: '#283618'
                               }
                             }}
                           >
-                            <MenuItem value="Admin" sx={{ color: '#fff' }}>Admin</MenuItem>
-                            <MenuItem value="Project Manager" sx={{ color: '#fff' }}>Project Manager</MenuItem>
-                            <MenuItem value="Developer" sx={{ color: '#fff' }}>Developer</MenuItem>
-                            <MenuItem value="Designer" sx={{ color: '#fff' }}>Designer</MenuItem>
-                            <MenuItem value="Member" sx={{ color: '#fff' }}>Member</MenuItem>
+                            <MenuItem value="Admin" sx={{ color: '#283618' }}>Admin</MenuItem>
+                            <MenuItem value="Project Manager" sx={{ color: '#283618' }}>Project Manager</MenuItem>
+                            <MenuItem value="Developer" sx={{ color: '#283618' }}>Developer</MenuItem>
+                            <MenuItem value="Designer" sx={{ color: '#283618' }}>Designer</MenuItem>
+                            <MenuItem value="Member" sx={{ color: '#283618' }}>Member</MenuItem>
                           </Select>
                         </FormControl>
                       </TableCell>
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#283618' }}>
                         {/* Team Select Dropdown */}
                         <FormControl fullWidth size="small">
                           <Select
@@ -352,23 +352,23 @@ export default function TeamsAndUsers() {
                               u.id === user.id ? { ...u, team: e.target.value } : u
                             ))}
                             sx={{ 
-                              color: '#fff',
-                              backgroundColor: '#1a1a1a',
-                              border: '1px solid #333',
+                              color: '#283618',
+                              backgroundColor: '#fefae0',
+                              border: '1px solid #525252',
                               '& .MuiSvgIcon-root': {
-                                color: '#fff'
+                                color: '#283618'
                               }
                             }}
                           >
                             {teams.map((team) => (
-                              <MenuItem key={team} value={team} sx={{ color: '#fff' }}>
+                              <MenuItem key={team} value={team} sx={{ color: '#283618' }}>
                                 {team}
                               </MenuItem>
                             ))}
                           </Select>
                         </FormControl>
                       </TableCell>
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#283618' }}>
                         {/* Display tasks as chips */}
                         <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap' }}>
                           {user.tasks.map((task, index) => (
@@ -377,8 +377,8 @@ export default function TeamsAndUsers() {
                               label={task} 
                               size="small"
                               sx={{ 
-                                color: '#fff', 
-                                backgroundColor: '#333',
+                                color: '#fefae0', 
+                                backgroundColor: '#6b705c',
                                 mb: 0.5,
                                 mr: 0.5
                               }}
@@ -394,11 +394,11 @@ export default function TeamsAndUsers() {
                               value={newTask}
                               onChange={(e) => setNewTask(e.target.value)}
                               sx={{ 
-                                '& .MuiInputBase-input': { color: '#fff' },
-                                backgroundColor: '#1a1a1a',
+                                '& .MuiInputBase-input': { color: '#283618' },
+                                backgroundColor: '#fefae0',
                                 '& .MuiOutlinedInput-root': {
                                   '& fieldset': {
-                                    borderColor: 'rgba(255, 255, 255, 0.23)',
+                                    borderColor: '#525252',
                                   },
                                 },
                               }}
@@ -409,10 +409,10 @@ export default function TeamsAndUsers() {
                               onClick={() => handleAddTask(user.id)}
                               sx={{ 
                                 textTransform: 'none',
-                                backgroundColor: '#f4c10f',
-                                color: '#000',
+                                backgroundColor: '#283618',
+                                color: '#fefae0',
                                 '&:hover': {
-                                  backgroundColor: '#d1a20b'
+                                  backgroundColor: '#606c38'
                                 }
                               }}
                             >
@@ -425,7 +425,7 @@ export default function TeamsAndUsers() {
                         {/* Action menu button */}
                         <IconButton 
                           onClick={(e) => handleMenuOpen(e, user.id)}
-                          sx={{ color: '#fff' }}
+                          sx={{ color: '#283618' }}
                         >
                           <MoreVertIcon />
                         </IconButton>
@@ -454,17 +454,17 @@ export default function TeamsAndUsers() {
         }}
         PaperProps={{
           sx: {
-            backgroundColor: '#0a0a0a',
-            color: '#fff',
-            border: '1px solid #333',
+            backgroundColor: '#fefae0',
+            color: '#283618',
+            border: '2px solid #283618',
             minWidth: '200px'
           }
         }}
       >
-        <MenuItem onClick={handleAssignTask} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
-          <AssignmentIcon sx={{ mr: 1, color: '#f4c10f' }} /> Assign Task
+        <MenuItem onClick={handleAssignTask} sx={{ '&:hover': { backgroundColor: '#606c38' } }}>
+          <AssignmentIcon sx={{ mr: 1, color: '#f3722c' }} /> Assign Task
         </MenuItem>
-        <MenuItem onClick={handleRemoveUser} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
+        <MenuItem onClick={handleRemoveUser} sx={{ '&:hover': { backgroundColor: '#606c38' } }}>
           <PeopleIcon sx={{ mr: 1, color: '#f44336' }} /> Remove User
         </MenuItem>
       </Menu>

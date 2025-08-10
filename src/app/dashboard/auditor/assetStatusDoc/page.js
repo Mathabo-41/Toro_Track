@@ -11,7 +11,8 @@ import {
   Drawer,
   ListItemButton,
   Paper,
-  TextField
+  TextField,
+  colors
 } from '@mui/material';
 import {
   AccountCircle as AccountCircleIcon
@@ -91,7 +92,7 @@ export default function AssetStatusDocumentation() {
         sx={drawerStyles}
       >
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             Auditor Portal
           </Typography>
         </Box>
@@ -138,7 +139,7 @@ export default function AssetStatusDocumentation() {
         </Box>
 
         {/* Content Section */}
-        <Box sx={assetStatusContainer}>
+        <Box sx={{assetStatusContainer, backgroundColor: '#fefae0', p: 2}}>
           <Typography variant="h4" sx={assetStatusTitle}>
             Asset Status & Documentation
           </Typography>

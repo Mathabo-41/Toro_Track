@@ -169,23 +169,30 @@ export default function Projects() {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#000000' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      minWidth:'90vw',
+      backgroundColor: '#fefae0' 
+    }}>
       {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
         anchor="left"
         sx={{
           width: 240,
+          flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: 240,
-            backgroundColor: '#000000',
-            borderRight: '1px solid #222',
-            color: '#fff'
+            boxSizing: 'border-box',
+            backgroundColor: '#283618',
+            borderRight: '2px solid #6b705c',
+            color: '#fefae0'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6">👑 Admin Panel</Typography>
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5">Admin Portal</Typography>
         </Box>
         <List>
           {adminMenu.map((item, index) => (
@@ -194,9 +201,9 @@ export default function Projects() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Projects' ? '#1a1a1a' : 'transparent',
-                  '&:hover': { backgroundColor: '#1a1a1a' }
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Projects' ? '#6b705c' : 'transparent',
+                  '&:hover': { backgroundColor: '#6b705c' }
                 }}
               >
                 <ListItemText primary={item.name} />
@@ -207,7 +214,7 @@ export default function Projects() {
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#000000' }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: '#fefae0' }}>
         {/* Header with Search and Add Button */}
         <Box sx={{ 
           display: 'flex', 
@@ -217,8 +224,8 @@ export default function Projects() {
           flexWrap: 'wrap',
           gap: 2
         }}>
-          <Typography variant="h4" sx={{ color: '#fff', fontWeight: 500 }}>
-            <ProjectIcon sx={{ mr: 1, verticalAlign: 'middle', color: '#f4c10f' }} />
+          <Typography variant="h4" sx={{ color: '#525252', fontWeight: 500 }}>
+            <ProjectIcon sx={{ mr: 1, verticalAlign: 'middle', color: '#f3722c' }} />
             Projects
           </Typography>
           <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
@@ -230,28 +237,31 @@ export default function Projects() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                    <SearchIcon sx={{ color: '#525252' }} />
                   </InputAdornment>
                 ),
                 sx: { 
-                  color: '#fff',
-                  backgroundColor: '#0a0a0a',
+                  color: '#525252',
+                  backgroundColor: '#fefae0',
                   '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
+                    '& fieldset': { borderColor: '#525252' },
                   },
                 }
               }}
               sx={{ flexGrow: { xs: 1, sm: 0 } }}
             />
             <Button 
-              variant="contained" 
+              variant="outlined" 
               startIcon={<AddIcon />}
               onClick={() => setOpenCreateDialog(true)}
               sx={{
-                backgroundColor: '#f4c10f',
-                color: '#000',
+                backgroundColor: '#283618', 
+                color: '#fefae0', 
                 fontWeight: 500,
-                '&:hover': { backgroundColor: '#d1a20b' },
+                '&:hover': { 
+                  backgroundColor: '#606c38',
+                  borderColor: '#fefae0'
+                },
                 whiteSpace: 'nowrap'
               }}
             >
@@ -261,34 +271,34 @@ export default function Projects() {
         </Box>
 
         {/* Projects Table */}
-        <Card sx={{ backgroundColor: '#0a0a0a', mb: 3, border: '1px solid #222' }}>
+        <Card sx={{ backgroundColor: '#fefae0', mb: 3, border: '1px solid #525252' }}>
           <CardContent>
-            <Typography variant="h6" sx={{ color: '#fff', mb: 2, fontWeight: 500 }}>
+            <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 500 }}>
               All Projects ({filteredProjects.length})
             </Typography>
-            <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', border: '1px solid #222' }}>
+            <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', border: '2px solid #525252' }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Project</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Due Date</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Progress</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Team</TableCell>
-                    <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Actions</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Project</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Client</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Status</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Due Date</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Progress</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Team</TableCell>
+                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredProjects.map((project) => (
-                    <TableRow key={project.id} hover sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
-                      <TableCell sx={{ color: '#fff' }}>
+                    <TableRow key={project.id} hover sx={{ '&:hover': { backgroundColor: '#d6d6d6' } }}>
+                      <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <ProjectIcon sx={{ color: '#f4c10f' }} />
+                          <ProjectIcon sx={{ color: '#f3722c' }} />
                           <Typography>{project.name}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell sx={{ color: '#fff' }}>{project.client}</TableCell>
+                      <TableCell sx={{ color: '#525252' }}>{project.client}</TableCell>
                       <TableCell>
                         <Chip
                           label={project.status.charAt(0).toUpperCase() + project.status.slice(1)}
@@ -307,13 +317,13 @@ export default function Projects() {
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <TimelineIcon fontSize="small" sx={{ color: '#f4c10f' }} />
+                          <TimelineIcon fontSize="small" sx={{ color: '#f3722c' }} />
                           <Typography>{project.dueDate}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell sx={{ color: '#fff' }}>
+                      <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           {project.progress === 100 ? (
                             <CompleteIcon color="success" />
@@ -332,8 +342,8 @@ export default function Projects() {
                                 width: 32, 
                                 height: 32, 
                                 fontSize: '0.8rem',
-                                bgcolor: '#333',
-                                color: '#fff',
+                                bgcolor: '#6b705c',
+                                color: '#fefae0',
                                 border: '1px solid #444'
                               }}
                             >
@@ -343,7 +353,7 @@ export default function Projects() {
                         </Stack>
                       </TableCell>
                       <TableCell>
-                        <IconButton sx={{ color: '#fff' }} onClick={(e) => handleMenuOpen(e, project.id)}>
+                        <IconButton sx={{ color: '#525252' }} onClick={(e) => handleMenuOpen(e, project.id)}>
                           <MoreVertIcon />
                         </IconButton>
                       </TableCell>
@@ -358,11 +368,11 @@ export default function Projects() {
         {/* Statistics Cards */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ backgroundColor: '#0a0a0a', border: '1px solid #222', height: '100%' }}>
+            <Card sx={{ backgroundColor: '#fefae0', border: '1px solid #525252', height: '100%' }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
                       Active Projects
                     </Typography>
                     <Typography variant="h4" sx={{ color: '#4fc3f7', fontWeight: 500 }}>
@@ -382,11 +392,11 @@ export default function Projects() {
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ backgroundColor: '#0a0a0a', border: '1px solid #222', height: '100%' }}>
+            <Card sx={{ backgroundColor: '#fefae0', border: '1px solid #525252', height: '100%' }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
                       Completed Projects
                     </Typography>
                     <Typography variant="h4" sx={{ color: '#81c784', fontWeight: 500 }}>
@@ -406,14 +416,14 @@ export default function Projects() {
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ backgroundColor: '#0a0a0a', border: '1px solid #222', height: '100%' }}>
+            <Card sx={{ backgroundColor: '#fefae0', border: '1px solid #525252', height: '100%' }}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
                       Total Projects
                     </Typography>
-                    <Typography variant="h4" sx={{ color: '#f4c10f', fontWeight: 500 }}>
+                    <Typography variant="h4" sx={{ color: '#f3722c', fontWeight: 500 }}>
                       {projects.length}
                     </Typography>
                   </Box>
@@ -421,7 +431,7 @@ export default function Projects() {
                     bgcolor: 'rgba(244, 193, 15, 0.1)',
                     width: 56, 
                     height: 56,
-                    border: '1px solid #f4c10f'
+                    border: '1px solid #f3722c'
                   }}>
                     <ProjectIcon color="primary" />
                   </Avatar>
@@ -432,27 +442,34 @@ export default function Projects() {
         </Grid>
       </Box>
 
-      {/* Create Project Dialog - WHITE THEME */}
+      {/* Create Project Dialog - LIGHT THEME */}
       <Dialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
         fullWidth
         maxWidth="sm"
+        PaperProps={{
+          sx: {
+            backgroundColor: '#fefae0',
+            color: '#283618',
+            border: '2px solid #283618'
+          }
+        }}
       >
         <DialogTitle sx={{ 
-  display: 'flex', 
-  justifyContent: 'space-between', 
-  alignItems: 'center',
-  borderBottom: '1px solid #eee',
-  backgroundColor: '#fff',
-  color: '#333'
-}}>
-  Create New Project {/* Direct text node instead of Typography */}
-  <IconButton onClick={() => setOpenCreateDialog(false)}>
-    <CloseIcon />
-  </IconButton>
-</DialogTitle>
-        <DialogContent sx={{ py: 3, backgroundColor: '#fff' }}>
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          borderBottom: '1px solid #6b705c',
+          backgroundColor: '#fefae0',
+          color: '#283618'
+        }}>
+          <Typography variant="h6">Create New Project</Typography>
+          <IconButton onClick={() => setOpenCreateDialog(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ py: 3, backgroundColor: '#fefae0' }}>
           <Stack spacing={3}>
             <TextField
               fullWidth
@@ -461,10 +478,12 @@ export default function Projects() {
               value={newProject.name}
               onChange={handleInputChange}
               sx={{ 
-                '& .MuiInputBase-input': { color: '#333' },
-                '& .MuiInputLabel-root': { color: '#666' },
+                '& .MuiInputBase-input': { color: '#283618' },
+                '& .MuiInputLabel-root': { color: '#6b705c' },
                 '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: '#ddd' }
+                  '& fieldset': { borderColor: '#6b705c' },
+                  '&:hover fieldset': { borderColor: '#283618' },
+                  '&.Mui-focused fieldset': { borderColor: '#283618' },
                 }
               }}
             />
@@ -475,10 +494,12 @@ export default function Projects() {
               value={newProject.client}
               onChange={handleInputChange}
               sx={{ 
-                '& .MuiInputBase-input': { color: '#333' },
-                '& .MuiInputLabel-root': { color: '#666' },
+                '& .MuiInputBase-input': { color: '#283618' },
+                '& .MuiInputLabel-root': { color: '#6b705c' },
                 '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: '#ddd' }
+                  '& fieldset': { borderColor: '#6b705c' },
+                  '&:hover fieldset': { borderColor: '#283618' },
+                  '&.Mui-focused fieldset': { borderColor: '#283618' },
                 }
               }}
             />
@@ -491,21 +512,23 @@ export default function Projects() {
               value={newProject.dueDate}
               onChange={handleInputChange}
               sx={{ 
-                '& .MuiInputBase-input': { color: '#333' },
-                '& .MuiInputLabel-root': { color: '#666' },
+                '& .MuiInputBase-input': { color: '#283618' },
+                '& .MuiInputLabel-root': { color: '#6b705c' },
                 '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: '#ddd' }
+                  '& fieldset': { borderColor: '#6b705c' },
+                  '&:hover fieldset': { borderColor: '#283618' },
+                  '&.Mui-focused fieldset': { borderColor: '#283618' },
                 }
               }}
             />
             <FormControl fullWidth>
-              <InputLabel sx={{ color: '#666' }}>Status</InputLabel>
+              <InputLabel sx={{ color: '#6b705c' }}>Status</InputLabel>
               <Select
                 name="status"
                 value={newProject.status}
                 onChange={handleInputChange}
                 label="Status"
-                sx={{ color: '#333' }}
+                sx={{ color: '#283618' }}
               >
                 <MenuItem value="active">Active</MenuItem>
                 <MenuItem value="pending">Pending</MenuItem>
@@ -513,7 +536,7 @@ export default function Projects() {
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel sx={{ color: '#666' }}>Team Members</InputLabel>
+              <InputLabel sx={{ color: '#6b705c' }}>Team Members</InputLabel>
               <Select
                 multiple
                 value={newProject.team}
@@ -528,8 +551,8 @@ export default function Projects() {
                           width: 32, 
                           height: 32, 
                           fontSize: '0.8rem',
-                          bgcolor: '#f0f0f0',
-                          color: '#333'
+                          bgcolor: '#6b705c',
+                          color: '#fefae0'
                         }}
                       >
                         {memberId}
@@ -537,12 +560,12 @@ export default function Projects() {
                     ))}
                   </Stack>
                 )}
-                sx={{ color: '#333' }}
+                sx={{ color: '#283618' }}
               >
                 {teamMembers.map(member => (
                   <MenuItem key={member.id} value={member.initials}>
                     <Checkbox checked={newProject.team.indexOf(member.initials) > -1} />
-                    <ListItemText primary={member.name} sx={{ color: '#333' }} />
+                    <ListItemText primary={member.name} sx={{ color: '#283618' }} />
                   </MenuItem>
                 ))}
               </Select>
@@ -550,14 +573,14 @@ export default function Projects() {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ 
-          borderTop: '1px solid #eee', 
+          borderTop: '1px solid #6b705c', 
           px: 3, 
           py: 2,
-          backgroundColor: '#fff'
+          backgroundColor: '#fefae0'
         }}>
           <Button 
             onClick={() => setOpenCreateDialog(false)}
-            sx={{ color: '#666', '&:hover': { backgroundColor: '#f5f5f5' } }}
+            sx={{ color: '#6b705c', '&:hover': { backgroundColor: '#6b705c', color: '#fefae0' } }}
           >
             Cancel
           </Button>
@@ -566,10 +589,10 @@ export default function Projects() {
             disabled={!newProject.name || !newProject.client}
             variant="contained"
             sx={{
-              backgroundColor: '#f4c10f',
-              color: '#000',
-              '&:hover': { backgroundColor: '#d1a20b' },
-              '&:disabled': { backgroundColor: '#e0e0e0' }
+              backgroundColor: '#283618',
+              color: '#fefae0',
+              '&:hover': { backgroundColor: '#606c38' },
+              '&:disabled': { backgroundColor: '#e0e0e0', color: '#a0a0a0' }
             }}
           >
             Create Project
@@ -584,25 +607,25 @@ export default function Projects() {
         onClose={handleMenuClose}
         PaperProps={{
           sx: {
-            backgroundColor: '#0a0a0a',
-            color: '#fff',
-            border: '1px solid #333',
+            backgroundColor: '#fefae0',
+            color: '#283618',
+            border: '2px solid #283618',
             minWidth: '200px'
           }
         }}
       >
-        <MenuItem onClick={handleMenuClose} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
+        <MenuItem onClick={handleMenuClose} sx={{ '&:hover': { backgroundColor: '#606c38', color: '#fefae0' } }}>
           <EditIcon sx={{ mr: 1, color: '#2196f3' }} />
           Edit Project
         </MenuItem>
-        <MenuItem onClick={handleDeleteProject} sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}>
+        <MenuItem onClick={handleDeleteProject} sx={{ '&:hover': { backgroundColor: '#606c38', color: '#fefae0' } }}>
           <DeleteIcon sx={{ mr: 1, color: '#f44336' }} />
           Delete Project
         </MenuItem>
         <Divider sx={{ backgroundColor: '#333' }} />
         <MenuItem 
           onClick={() => handleStatusChange(selectedProject, 'active')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c', color: '#fefae0' } }}
         >
           <Chip label="Active" size="small" sx={{ 
             backgroundColor: 'rgba(2, 136, 209, 0.2)', 
@@ -613,7 +636,7 @@ export default function Projects() {
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedProject, 'completed')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c', color: '#fefae0' } }}
         >
           <Chip label="Completed" size="small" sx={{ 
             backgroundColor: 'rgba(46, 125, 50, 0.2)', 
@@ -624,12 +647,12 @@ export default function Projects() {
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedProject, 'pending')}
-          sx={{ '&:hover': { backgroundColor: '#1a1a1a' } }}
+          sx={{ '&:hover': { backgroundColor: '#6b705c', color: '#fefae0' } }}
         >
           <Chip label="Pending" size="small" sx={{ 
-            backgroundColor: 'rgba(97, 97, 97, 0.2)', 
-            color: '#bdbdbd',
-            border: '1px solid #616161',
+            backgroundColor: 'rgba(244, 193, 15, 0.1)', 
+            color: '#f3722c',
+            border: '1px solid #f3722c',
             mr: 1 
           }} />
         </MenuItem>

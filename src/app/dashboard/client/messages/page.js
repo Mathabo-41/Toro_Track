@@ -130,7 +130,7 @@ export default function ClientMessages() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000'
+      backgroundColor: '#fefae0' // Light, earthy background
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -142,15 +142,15 @@ export default function ClientMessages() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000',
-            borderRight: '1px solid #222',
-            color: '#fff'
+            backgroundColor: '#283618', // Dark green sidebar
+            borderRight: '1px solid #6b705c', // Subtle border
+            color: '#fefae0' // Light text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6">
-            👔 Client Portal
+        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
+          <Typography variant="h5">
+            Client Portal
           </Typography>
         </Box>
         <List>
@@ -160,10 +160,10 @@ export default function ClientMessages() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Messages & Notifications' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Messages & Notifications' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a'
+                    backgroundColor: '#6b705c' // Darker background on hover
                   }
                 }}
               >
@@ -178,22 +178,22 @@ export default function ClientMessages() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000'
+        backgroundColor: '#fefae0' // Light, earthy background
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <ChatIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-             color: '#f4c10f'
+             color: '#f3722c' // Orange accent
             }} />
             Messages & Notifications
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             Communicate with your project team and stay updated
           </Typography>
         </Box>
@@ -204,21 +204,21 @@ export default function ClientMessages() {
           onChange={(e, newValue) => setActiveTab(newValue)}
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#f4c10f'
+              backgroundColor: '#f3722c' // Orange indicator
             },
             mb: 3
           }}
         >
-          <Tab label="Messages" icon={<ChatIcon />} iconPosition="start" sx={{ color: '#fff' }} />
-          <Tab label="Meetings" icon={<MeetingsIcon />} iconPosition="start" sx={{ color: '#fff' }} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={{ color: '#fff' }} />
+          <Tab label="Messages" icon={<ChatIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Meetings" icon={<MeetingsIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={{ color: '#283618' }} />
         </Tabs>
 
         {/* Tab Content */}
         {activeTab === 0 && (
           <Card sx={{ 
-            backgroundColor: '#0a0a0a',
-            border: '1px solid #222'
+            backgroundColor: '#fefae0',
+            border: '1px solid #283618'
           }}>
             <CardContent>
               {!activeConversation ? (
@@ -230,14 +230,14 @@ export default function ClientMessages() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     InputProps={{
-                      startAdornment: <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)', mr: 1 }} />
+                      startAdornment: <SearchIcon sx={{ color: '#525252', mr: 1 }} />
                     }}
                     sx={{
                       mb: 2,
-                      '& .MuiInputBase-input': { color: '#fff' },
+                      '& .MuiInputBase-input': { color: '#283618' },
                       '& .MuiOutlinedInput-root': {
                         '& fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.23)',
+                          borderColor: '#6b705c',
                         },
                       },
                     }}
@@ -253,10 +253,10 @@ export default function ClientMessages() {
                         <ListItemButton
                           onClick={() => setActiveConversation(conversation)}
                           sx={{
-                            backgroundColor: '#1a1a1a',
+                            backgroundColor: '#6b705c',
                             borderRadius: 1,
                             '&:hover': {
-                              backgroundColor: '#252525'
+                              backgroundColor: '#a3a699'
                             }
                           }}
                         >
@@ -274,11 +274,11 @@ export default function ClientMessages() {
                               />
                             </Badge>
                             <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="subtitle1" sx={{ color: '#fff' }}>
+                              <Typography variant="subtitle1" sx={{ color: '#fefae0' }}>
                                 {conversation.with}
                               </Typography>
                               <Typography variant="body2" sx={{ 
-                                color: 'rgba(255, 255, 255, 0.7)',
+                                color: 'rgba(254, 250, 224, 0.7)',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -289,7 +289,7 @@ export default function ClientMessages() {
                             </Box>
                             <Box sx={{ textAlign: 'right' }}>
                               <Typography variant="caption" sx={{ 
-                                color: 'rgba(255, 255, 255, 0.5)',
+                                color: 'rgba(254, 250, 224, 0.5)',
                                 display: 'block'
                               }}>
                                 {conversation.time}
@@ -300,8 +300,8 @@ export default function ClientMessages() {
                                   size="small"
                                   sx={{ 
                                     mt: 0.5,
-                                    backgroundColor: '#f4c10f',
-                                    color: '#000',
+                                    backgroundColor: '#f3722c',
+                                    color: '#fefae0',
                                     fontWeight: 'bold'
                                   }}
                                 />
@@ -325,16 +325,16 @@ export default function ClientMessages() {
                       startIcon={<BackIcon />}
                       onClick={() => setActiveConversation(null)}
                       sx={{ 
-                        color: '#f4c10f',
+                        color: '#f3722c',
                         mr: 2
                       }}
                     >
                       Back
                     </Button>
-                    <Typography variant="h6" sx={{ color: '#fff', flexGrow: 1 }}>
+                    <Typography variant="h6" sx={{ color: '#283618', flexGrow: 1 }}>
                       {activeConversation.with}
                     </Typography>
-                    <IconButton sx={{ color: '#fff' }}>
+                    <IconButton sx={{ color: '#283618' }}>
                       <MoreIcon />
                     </IconButton>
                   </Stack>
@@ -344,7 +344,7 @@ export default function ClientMessages() {
                     overflow: 'auto',
                     mb: 2,
                     p: 2,
-                    backgroundColor: '#1a1a1a',
+                    backgroundColor: '#e0e0e0', // Lighter background for message box
                     borderRadius: 1
                   }}>
                     {activeConversation.messages.map((message, index) => (
@@ -368,8 +368,8 @@ export default function ClientMessages() {
                         />
                         <Box sx={{ 
                           maxWidth: '70%',
-                          backgroundColor: message.sender === 'You' ? '#f4c10f' : '#333',
-                          color: message.sender === 'You' ? '#000' : '#fff',
+                          backgroundColor: message.sender === 'You' ? '#f3722c' : '#a3a699',
+                          color: message.sender === 'You' ? '#fefae0' : '#283618',
                           p: 2,
                           borderRadius: 2,
                           position: 'relative'
@@ -383,7 +383,7 @@ export default function ClientMessages() {
                             sx={{ mt: 1 }}
                           >
                             <Typography component="span" variant="caption" sx={{ 
-                              color: message.sender === 'You' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.5)'
+                              color: message.sender === 'You' ? 'rgba(254, 250, 224, 0.7)' : 'rgba(40, 54, 24, 0.5)'
                             }}>
                               {message.time}
                             </Typography>
@@ -391,7 +391,7 @@ export default function ClientMessages() {
                               message.read ? (
                                 <ReadIcon sx={{ fontSize: 16, color: '#2e7d32' }} />
                               ) : (
-                                <UnreadIcon sx={{ fontSize: 16, color: 'rgba(0,0,0,0.5)' }} />
+                                <UnreadIcon sx={{ fontSize: 16, color: 'rgba(254, 250, 224, 0.5)' }} />
                               )
                             )}
                           </Stack>
@@ -409,10 +409,10 @@ export default function ClientMessages() {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         sx={{
-                          '& .MuiInputBase-input': { color: '#fff' },
+                          '& .MuiInputBase-input': { color: '#283618' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#6b705c',
                             },
                           },
                         }}
@@ -421,11 +421,11 @@ export default function ClientMessages() {
                         type="submit"
                         variant="contained"
                         sx={{
-                          backgroundColor: '#f4c10f',
-                          color: '#000',
+                          backgroundColor: '#f3722c',
+                          color: '#fefae0',
                           minWidth: 'auto',
                           '&:hover': {
-                            backgroundColor: '#d1a20b'
+                            backgroundColor: '#e65c19'
                           }
                         }}
                       >
@@ -441,22 +441,22 @@ export default function ClientMessages() {
 
         {activeTab === 1 && (
           <Card sx={{ 
-            backgroundColor: '#0a0a0a',
-            border: '1px solid #222'
+            backgroundColor: '#fefae0',
+            border: '1px solid #283618'
           }}>
             <CardContent>
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ color: '#fff' }}>
+                <Typography variant="h6" sx={{ color: '#283618' }}>
                   Upcoming Meetings
                 </Typography>
                 <Button 
                   variant="contained"
                   startIcon={<NewMeetingIcon />}
                   sx={{
-                    backgroundColor: '#f4c10f',
-                    color: '#000',
+                    backgroundColor: '#f3722c',
+                    color: '#fefae0',
                     '&:hover': {
-                      backgroundColor: '#d1a20b'
+                      backgroundColor: '#e65c19'
                     }
                   }}
                 >
@@ -466,58 +466,59 @@ export default function ClientMessages() {
 
               {meetings.length > 0 ? (
                 <List sx={{ 
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#ccd5ae', 
+                  border: '2px solid #606c38', 
                   borderRadius: 1,
-                  border: '1px solid #333'
+                
                 }}>
                   {meetings.map((meeting) => (
                     <div key={meeting.id}>
                       <ListItem 
-  secondaryAction={
-    <Chip 
-      label={meeting.status}
-      size="small"
-      sx={{
-        backgroundColor: meeting.status === 'confirmed' ? 'rgba(46, 125, 50, 0.2)' : 
-                        meeting.status === 'completed' ? 'rgba(97, 97, 97, 0.2)' : 
-                        'rgba(255, 152, 0, 0.2)',
-        color: meeting.status === 'confirmed' ? '#81c784' : 
-              meeting.status === 'completed' ? '#bdbdbd' : '#ffb74d',
-        border: meeting.status === 'confirmed' ? '1px solid #2e7d32' : 
-               meeting.status === 'completed' ? '1px solid #616161' : 
-               '1px solid #ff9800'
-      }}
-    />
-  }
->
-  <ListItemText
-    primary={
-      <Typography variant="subtitle1" sx={{ color: '#fff' }}>
-        {meeting.title}
-      </Typography>
-    }
-    secondary={
-      <>
-        <Typography 
-          component="span" 
-          variant="body2" 
-          display="block" 
-          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-        >
-          {meeting.date}
-        </Typography>
-        <Typography 
-          component="span" 
-          variant="caption" 
-          sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-        >
-          With: {meeting.participants.join(', ')}
-        </Typography>
-      </>
-    }
-  />
-</ListItem>
-                      <Divider sx={{ backgroundColor: '#333' }} />
+                        secondaryAction={
+                          <Chip 
+                            label={meeting.status}
+                            size="small"
+                            sx={{
+                              backgroundColor: meeting.status === 'confirmed' ? 'rgba(46, 125, 50, 0.2)' : 
+                                              meeting.status === 'completed' ? 'rgba(97, 97, 97, 0.2)' : 
+                                              'rgba(255, 152, 0, 0.2)',
+                              color: meeting.status === 'confirmed' ? '#043807ff' : 
+                                    meeting.status === 'completed' ? '#3b3939ff' : '#ffb74d',
+                              border: meeting.status === 'confirmed' ? '1px solid #2e7d32' : 
+                                     meeting.status === 'completed' ? '1px solid #616161' : 
+                                     '1px solid #ff9800'
+                            }}
+                          />
+                        }
+                      >
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1" sx={{ color: '#283618' }}>
+                              {meeting.title}
+                            </Typography>
+                          }
+                          secondary={
+                            <>
+                              <Typography 
+                                component="span" 
+                                variant="body2" 
+                                display="block" 
+                                sx={{ color: '#525252' }}
+                              >
+                                {meeting.date}
+                              </Typography>
+                              <Typography 
+                                component="span" 
+                                variant="caption" 
+                                sx={{ color: 'rgba(40, 54, 24, 0.5)' }}
+                              >
+                                With: {meeting.participants.join(', ')}
+                              </Typography>
+                            </>
+                          }
+                        />
+                      </ListItem>
+                      <Divider sx={{ backgroundColor: '#a3a699' }} />
                     </div>
                   ))}
                 </List>
@@ -525,10 +526,10 @@ export default function ClientMessages() {
                 <Box sx={{ 
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#e0e0e0',
                   borderRadius: 1
                 }}>
-                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  <Typography variant="body1" sx={{ color: '#525252' }}>
                     No upcoming meetings scheduled
                   </Typography>
                 </Box>
@@ -539,12 +540,12 @@ export default function ClientMessages() {
 
         {activeTab === 2 && (
           <Card sx={{ 
-            backgroundColor: '#0a0a0a',
-            border: '1px solid #222'
+            backgroundColor: '#fefae0',
+            border: '1px solid #283618'
           }}>
             <CardContent>
               <Typography variant="h6" sx={{ 
-                color: '#fff',
+                color: '#283618',
                 mb: 2
               }}>
                 Recent Notifications
@@ -552,9 +553,9 @@ export default function ClientMessages() {
 
               {notifications.length > 0 ? (
                 <List sx={{ 
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#ccd5ae', 
+                  border: '2px solid #606c38',
                   borderRadius: 1,
-                  border: '1px solid #333'
                 }}>
                   {notifications.map((notification) => (
                     <div key={notification.id}>
@@ -565,9 +566,9 @@ export default function ClientMessages() {
                               label="New"
                               size="small"
                               sx={{
-                                backgroundColor: 'rgba(244, 193, 15, 0.2)',
-                                color: '#f4c10f',
-                                border: '1px solid #f4c10f'
+                                backgroundColor: 'rgba(243, 114, 44, 0.2)', // orange background
+                                color: '#f3722c',
+                                border: '1px solid #f3722c'
                               }}
                             />
                           )
@@ -579,7 +580,7 @@ export default function ClientMessages() {
                               component="div"
                               variant="subtitle1" 
                               sx={{ 
-                                color: notification.read ? 'rgba(255, 255, 255, 0.7)' : '#fff',
+                                color: notification.read ? '#525252' : '#283618',
                                 fontWeight: notification.read ? 'normal' : 'bold'
                               }}
                             >
@@ -587,13 +588,13 @@ export default function ClientMessages() {
                             </Typography>
                           }
                           secondary={
-                            <Typography component="span" variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                            <Typography component="span" variant="caption" sx={{ color: 'rgba(40, 54, 24, 0.5)' }}>
                               {notification.time}
                             </Typography>
                           }
                         />
                       </ListItem>
-                      <Divider sx={{ backgroundColor: '#333' }} />
+                      <Divider sx={{ backgroundColor: '#a3a699' }} />
                     </div>
                   ))}
                 </List>
@@ -601,10 +602,10 @@ export default function ClientMessages() {
                 <Box sx={{ 
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#e0e0e0',
                   borderRadius: 1
                 }}>
-                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  <Typography variant="body1" sx={{ color: '#525252' }}>
                     No new notifications
                   </Typography>
                 </Box>

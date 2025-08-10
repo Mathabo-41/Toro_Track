@@ -44,7 +44,6 @@ import {
 
 /**
  * Client Query Screen
-
  */
 
 const clientMenu = [
@@ -131,7 +130,7 @@ export default function ClientQuery() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' 
+      backgroundColor: '#fefae0' // Light, earthy background
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -143,15 +142,15 @@ export default function ClientQuery() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', 
-            borderRight: '1px solid #222', // Subtle border
-            color: '#fff' // White text
+            backgroundColor: '#283618', // Dark green sidebar
+            borderRight: '1px solid #6b705c', // Subtle border
+            color: '#fefae0' // Light text
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6">
-            👔 Client Portal
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+          <Typography variant="h5">
+            Client Portal
           </Typography>
         </Box>
         <List>
@@ -161,10 +160,10 @@ export default function ClientQuery() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Raise Query' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
+                  backgroundColor: item.name === 'Raise Query' ? '#6b705c' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#6b705c' // Darker background on hover
                   }
                 }}
               >
@@ -179,22 +178,22 @@ export default function ClientQuery() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' // black background
+        backgroundColor: '#fefae0' // Light, earthy background
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             <QueryIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f4c10f' // Gold accent
+              color: '#f3722c' // Orange accent
             }} />
             {activeQuery ? 'Query Details' : 'Raise a Query'}
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             {activeQuery ? 'View and manage your query' : 'Submit questions or issues about your project'}
           </Typography>
         </Box>
@@ -202,15 +201,15 @@ export default function ClientQuery() {
         {activeQuery ? (
           /* Query Detail View */
           <Card sx={{ 
-            backgroundColor: '#0a0a0a',
-            border: '1px solid #222'
+            backgroundColor: '#e0e0e0', // Lighter background
+            border: '1px solid #a3a699'
           }}>
             <CardContent>
               <Button 
                 startIcon={<BackIcon />}
                 onClick={() => setActiveQuery(null)}
                 sx={{ 
-                  color: '#f4c10f',
+                  color: '#f3722c',
                   mb: 2
                 }}
               >
@@ -218,7 +217,7 @@ export default function ClientQuery() {
               </Button>
 
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Typography variant="h5" sx={{ color: '#fff' }}>
+                <Typography variant="h5" sx={{ color: '#283618' }}>
                   {activeQuery.title}
                 </Typography>
                 <Chip
@@ -239,24 +238,24 @@ export default function ClientQuery() {
               </Stack>
 
               <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography variant="body2" sx={{ color: '#525252' }}>
                   Category
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#fff', mb: 2 }}>
+                <Typography variant="body1" sx={{ color: '#283618', mb: 2 }}>
                   {activeQuery.category}
                 </Typography>
 
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography variant="body2" sx={{ color: '#525252' }}>
                   Submitted on
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#fff', mb: 2 }}>
+                <Typography variant="body1" sx={{ color: '#283618', mb: 2 }}>
                   {activeQuery.date}
                 </Typography>
 
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography variant="body2" sx={{ color: '#525252' }}>
                   Description
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#fff' }}>
+                <Typography variant="body1" sx={{ color: '#283618' }}>
                   {activeQuery.description}
                 </Typography>
               </Box>
@@ -264,35 +263,35 @@ export default function ClientQuery() {
               {activeQuery.attachments.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: '#525252',
                     mb: 1
                   }}>
                     Attachments
                   </Typography>
                   <TableContainer component={Paper} sx={{ 
                     backgroundColor: 'transparent',
-                    border: '1px solid #333'
+                    border: '1px solid #a3a699'
                   }}>
                     <Table>
                       <TableBody>
                         {activeQuery.attachments.map((file, index) => (
                           <TableRow key={index}>
-                            <TableCell sx={{ color: '#fff' }}>
+                            <TableCell sx={{ color: '#283618' }}>
                               <Stack direction="row" alignItems="center" spacing={1}>
-                                <AttachIcon fontSize="small" />
+                                <AttachIcon fontSize="small" sx={{ color: '#f3722c' }} />
                                 <Typography>{file.name}</Typography>
                               </Stack>
                             </TableCell>
-                            <TableCell sx={{ color: '#fff' }}>{file.size}</TableCell>
+                            <TableCell sx={{ color: '#283618' }}>{file.size}</TableCell>
                             <TableCell>
                               <Button 
                                 variant="outlined" 
                                 size="small"
                                 sx={{
-                                  color: '#f4c10f',
-                                  borderColor: '#f4c10f',
+                                  color: '#f3722c',
+                                  borderColor: '#f3722c',
                                   '&:hover': {
-                                    borderColor: '#d1a20b'
+                                    borderColor: '#e65c19'
                                   }
                                 }}
                               >
@@ -309,18 +308,18 @@ export default function ClientQuery() {
 
               {activeQuery.response && (
                 <Box sx={{ 
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#a3a699', // Darker earthy color
                   p: 3,
                   borderRadius: 1,
-                  border: '1px solid #333'
+                  border: '1px solid #6b705c'
                 }}>
                   <Typography variant="body2" sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: '#283618',
                     mb: 1
                   }}>
                     Response from Team
                   </Typography>
-                  <Typography variant="body1" sx={{ color: '#fff' }}>
+                  <Typography variant="body1" sx={{ color: '#283618' }}>
                     {activeQuery.response}
                   </Typography>
                 </Box>
@@ -333,13 +332,13 @@ export default function ClientQuery() {
             {/* New Query Form */}
             <Grid item xs={12} md={5}>
               <Card sx={{ 
-                backgroundColor: '#0a0a0a',
-                border: '1px solid #222',
+                backgroundColor: '#ccd5ae', 
+                border: '2px solid #606c38',
                 height: '100%'
               }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ 
-                    color: '#fff',
+                    color: '#283618',
                     mb: 2,
                     fontWeight: 500
                   }}>
@@ -356,34 +355,37 @@ export default function ClientQuery() {
                         onChange={(e) => setNewQuery({...newQuery, title: e.target.value})}
                         required
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                          '& .MuiInputLabel-root': { color: '#525252' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#6b705c',
                             },
                             '&:hover fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              borderColor: '#283618',
                             },
                           },
-                          '& .MuiInputBase-input': { color: '#fff' }
+                          '& .MuiInputBase-input': { color: '#283618' }
                         }}
                       />
 
                       <FormControl fullWidth>
-                        <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Category</InputLabel>
+                        <InputLabel sx={{ color: '#525252' }}>Category</InputLabel>
                         <Select
                           value={newQuery.category}
                           onChange={(e) => setNewQuery({...newQuery, category: e.target.value})}
                           label="Category"
                           required
                           sx={{
-                            color: '#fff',
+                            color: '#283618',
                             '& .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#6b705c',
                             },
                             '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              borderColor: '#283618',
                             },
+                            '& .MuiSvgIcon-root': {
+                              color: '#6b705c'
+                            }
                           }}
                         >
                           <MenuItem value="Technical">Technical</MenuItem>
@@ -404,16 +406,16 @@ export default function ClientQuery() {
                         onChange={(e) => setNewQuery({...newQuery, description: e.target.value})}
                         required
                         sx={{
-                          '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                          '& .MuiInputLabel-root': { color: '#525252' },
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.23)',
+                              borderColor: '#6b705c',
                             },
                             '&:hover fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              borderColor: '#283618',
                             },
                           },
-                          '& .MuiInputBase-input': { color: '#fff' }
+                          '& .MuiInputBase-input': { color: '#283618' }
                         }}
                       />
 
@@ -423,10 +425,11 @@ export default function ClientQuery() {
                           variant="outlined"
                           startIcon={<AttachIcon />}
                           sx={{
-                            color: '#f4c10f',
-                            borderColor: '#f4c10f',
+                            color: '#606c38',
+                            borderColor: '#606c38',
                             '&:hover': {
-                              borderColor: '#d1a20b'
+                              border: '#283618',
+                              backgroundColor: '#283618',
                             }
                           }}
                         >
@@ -442,12 +445,12 @@ export default function ClientQuery() {
                             mt: 1,
                             display: 'flex',
                             alignItems: 'center',
-                            backgroundColor: '#1a1a1a',
+                            backgroundColor: '#a3a699',
                             p: 1,
                             borderRadius: 1
                           }}>
                             <Typography variant="body2" sx={{ 
-                              color: '#fff',
+                              color: '#283618',
                               flexGrow: 1
                             }}>
                               {fileToUpload.name} ({fileToUpload.size})
@@ -455,7 +458,7 @@ export default function ClientQuery() {
                             <IconButton 
                               size="small"
                               onClick={handleRemoveFile}
-                              sx={{ color: '#f44336' }}
+                              sx={{ color: '#d32f2f' }}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -469,10 +472,10 @@ export default function ClientQuery() {
                         startIcon={<SendIcon />}
                         fullWidth
                         sx={{
-                          backgroundColor: '#f4c10f',
-                          color: '#000',
+                          backgroundColor: '#f3722c',
+                          color: '#fefae0',
                           '&:hover': {
-                            backgroundColor: '#d1a20b'
+                            backgroundColor: '#e65c19'
                           }
                         }}
                       >
@@ -487,13 +490,13 @@ export default function ClientQuery() {
             {/* Previous Queries */}
             <Grid item xs={12} md={7}>
               <Card sx={{ 
-                backgroundColor: '#0a0a0a',
-                border: '1px solid #222',
+                backgroundColor: '#ccd5ae', 
+                border: '2px solid #606c38',
                 height: '100%'
               }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ 
-                    color: '#fff',
+                    color: '#283618',
                     mb: 2,
                     fontWeight: 500
                   }}>
@@ -503,15 +506,15 @@ export default function ClientQuery() {
                   {queryData.length > 0 ? (
                     <TableContainer component={Paper} sx={{ 
                       backgroundColor: 'transparent',
-                      border: '1px solid #333'
+                      border: '1px solid #a3a699'
                     }}>
                       <Table>
                         <TableHead>
                           <TableRow>
-                            <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Query</TableCell>
-                            <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Category</TableCell>
-                            <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Status</TableCell>
-                            <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Date</TableCell>
+                            <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Query</TableCell>
+                            <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Category</TableCell>
+                            <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Status</TableCell>
+                            <TableCell sx={{ color: '#283618', fontWeight: 'bold' }}>Date</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -523,12 +526,12 @@ export default function ClientQuery() {
                               sx={{ 
                                 cursor: 'pointer',
                                 '&:hover': {
-                                  backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                                  backgroundColor: 'rgba(40, 54, 24, 0.05)'
                                 }
                               }}
                             >
-                              <TableCell sx={{ color: '#fff' }}>{query.title}</TableCell>
-                              <TableCell sx={{ color: '#fff' }}>{query.category}</TableCell>
+                              <TableCell sx={{ color: '#283618' }}>{query.title}</TableCell>
+                              <TableCell sx={{ color: '#283618' }}>{query.category}</TableCell>
                               <TableCell>
                                 <Chip
                                   label={query.status === 'resolved' ? 'Resolved' : 
@@ -538,15 +541,15 @@ export default function ClientQuery() {
                                     backgroundColor: query.status === 'resolved' ? 'rgba(46, 125, 50, 0.2)' : 
                                  query.status === 'in-progress' ? 'rgba(255, 152, 0, 0.2)' : 
                                  'rgba(97, 97, 97, 0.2)',
-                                    color: query.status === 'resolved' ? '#81c784' : 
-                                          query.status === 'in-progress' ? '#ffb74d' : '#bdbdbd',
+                                    color: query.status === 'resolved' ? '#042c06ff' : 
+                                          query.status === 'in-progress' ? '#f59403ff' : '#871089ff',
                                     border: query.status === 'resolved' ? '1px solid #2e7d32' : 
                                            query.status === 'in-progress' ? '1px solid #ff9800' : 
-                                           '1px solid #616161'
+                                           '1px solid #5a0657ff'
                                   }}
                                 />
                               </TableCell>
-                              <TableCell sx={{ color: '#fff' }}>{query.date}</TableCell>
+                              <TableCell sx={{ color: '#283618' }}>{query.date}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -556,10 +559,10 @@ export default function ClientQuery() {
                     <Box sx={{ 
                       p: 3,
                       textAlign: 'center',
-                      backgroundColor: '#1a1a1a',
+                      backgroundColor: '#a3a699',
                       borderRadius: 1
                     }}>
-                      <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <Typography variant="body1" sx={{ color: '#283618' }}>
                         You haven't submitted any queries yet.
                       </Typography>
                     </Box>

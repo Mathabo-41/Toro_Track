@@ -85,7 +85,7 @@ export default function CompliancePage() {
         sx={drawerStyles}
       >
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h6">
+          <Typography variant="h5">
             Auditor Portal
           </Typography>
         </Box>

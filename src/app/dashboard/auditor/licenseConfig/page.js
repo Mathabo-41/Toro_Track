@@ -29,6 +29,18 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  MoreVert as MoreVertIcon,
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Work as WorkIcon,
+  People as PeopleIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Star as PremiumIcon
+} from '@mui/icons-material';
 
 import {
   fullScreenContainerStyles,
@@ -149,7 +161,7 @@ function RenewalCard() {
   ];
 
   return (
-    <Card sx={{ p: 2, height: '100%' }}>
+    <Card sx={{ p: 2, height: '100%', backgroundColor: '#fefae0' , color: '#525252', border: '1px solid #6b705c'}}>
       <Typography variant="h6" sx={{ mb: 2 }}>
         Upcoming Renewals
       </Typography>
@@ -233,7 +245,7 @@ function PerClientLicenseRegister({ clientName = 'Client ABC' }) {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fefae0', color: '#525252' }}>
       <Box
         sx={{
           mb: 2,
@@ -262,11 +274,12 @@ function PerClientLicenseRegister({ clientName = 'Client ABC' }) {
           pagination
           sortingOrder={['asc', 'desc']}
           onRowClick={handleRowClick}
+          sx={{ backgroundColor: '#fefae0',border: '1px solid #6b705c' }}
         />
       </Box>
 
       <Dialog open={!!selectedLicense} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>
+        <DialogTitle sx={{ backgroundColor: '#fefae0',border: '1px solid #6b705c' }}>
           License Details
           <IconButton
             aria-label="close"
@@ -278,11 +291,11 @@ function PerClientLicenseRegister({ clientName = 'Client ABC' }) {
               color: (theme) => theme.palette.grey[500],
             }}
           >
-            <CloseIcon />
+            <CloseIcon/>
           </IconButton>
         </DialogTitle>
 
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ backgroundColor: '#fefae0' }}>
           {selectedLicense && (
             <>
               <Typography>
@@ -298,8 +311,8 @@ function PerClientLicenseRegister({ clientName = 'Client ABC' }) {
           )}
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
+        <DialogActions sx={{ backgroundColor: '#fefae0' }}>
+          <Button onClick={handleClose} color="primary" >
             Close
           </Button>
         </DialogActions>
@@ -327,19 +340,7 @@ export default function Home() {
       {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
         <Box sx={drawerHeaderStyles}>
-          <Box
-            component="img"
-            src="/appImages/logo.png"
-            alt="Logo"
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '2px',
-              objectFit: 'cover',
-              mr: 2,
-            }}
-          />
-          <Typography variant="h6">Auditor Portal</Typography>
+          <Typography variant="h5">Auditor Portal</Typography>
         </Box>
         <List>
           {sidebarMenu.map((item, index) => (
@@ -368,15 +369,34 @@ export default function Home() {
               value={client}
               onChange={handleClientChange}
               size="small"
-              sx={{ minWidth: 140 }}
+              sx={{ minWidth: 140 , backgroundColor: '#283618',
+              borderColor: '#fefae0',
+              color: '#fefae0',
+             '&:hover': {
+              backgroundColor: '#6b705c',
+              borderColor: '#fefae0'
+              }}}
             >
               <MenuItem value="all">All Clients</MenuItem>
               <MenuItem value="clientA">Client A</MenuItem>
               <MenuItem value="clientB">Client B</MenuItem>
             </Select>
-            <Button variant="contained" color="primary">
+            <Button 
+              variant="outlined" 
+              fullWidth 
+              startIcon={<AddIcon />}
+              sx={{
+              backgroundColor: '#283618',
+              borderColor: '#fefae0',
+              color: '#fefae0',
+             '&:hover': {
+              backgroundColor: '#6b705c',
+              borderColor: '#fefae0'
+              }
+            }}
+            >
               Add License
-            </Button>
+            </Button>                  
             <Box sx={userProfileStyles}>
               <Box sx={userInfoStyles}>
                 <Typography variant="body2">Sipho Ellen</Typography>
@@ -393,8 +413,8 @@ export default function Home() {
         <Grid container spacing={6} sx={{ mt: 4, px: 2, alignItems: 'stretch' }}>
           {/* Top sections */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ ml:6, p: 2, height: '100%', width: '500px', overflow: 'auto' }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper elevation={1} sx={{ ml:6, p: 2, height: '100%', width: '500px', overflow: 'auto', color: '#525252', backgroundColor: '#fefae0', border: '2px solid #6b705c' }}>
+              <Typography variant="h4" gutterBottom>
                 Per-Client License Register:
               </Typography>
               {isClient && <PerClientLicenseRegister clientName="Client ABC" />}
@@ -402,8 +422,8 @@ export default function Home() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ ml:2, p: 2, height: '100%', width: '500px', overflow: 'auto' }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper elevation={1} sx={{ ml:2, p: 2, height: '100%', width: '500px', overflow: 'auto', color: '#525252', backgroundColor: '#fefae0',border: '2px solid #6b705c' }}>
+              <Typography variant="h4" gutterBottom>
                 License Expiry & Renewal:
               </Typography>
               <RenewalCard />
@@ -411,12 +431,15 @@ export default function Home() {
           </Grid>
 
           {/* Bottom section (full width) */}
-          <Grid item xs={12} sx={{ mt: 4 }}>
-            <Paper elevation={1} sx={{ ml:6, p: 2, height: '100%', width: '1100px' }}>
-              <Typography variant="h6" gutterBottom textAlign={'center'}>
+          <Grid item xs={12} sx={{ mt: 4,  color: '#525252' }}>
+            <Paper elevation={1} sx={{ ml:6, p: 2, height: '100%', width: '1100px', backgroundColor: '#fefae0',border: '2px solid #6b705c' }}>
+              <Typography variant="h4" gutterBottom textAlign={'center'} sx={{ 
+                  color: '#525252',
+                  fontWeight: 300
+                }}>
                 License Usage:
               </Typography>
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" height={400} >
                 <BarChart
                   data={licenseData}
                   margin={{ top: 16, right: 16, left: 0, bottom: 40 }}

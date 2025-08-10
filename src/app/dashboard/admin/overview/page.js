@@ -90,7 +90,8 @@ export default function AdminOverview() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#000000' //  black background
+      minWidth:'90vw',
+      backgroundColor: '#fefae0' //  background
     }}>
       {/* === SIDEBAR NAVIGATION === */}
       <Drawer
@@ -102,16 +103,16 @@ export default function AdminOverview() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#000000', // Pure black
-            borderRight: '1px solid #222', // Subtle border
-           color: '#fff' // white text
+            backgroundColor: '#283618',
+            borderRight: '1px solid #222',
+           color: '#fefae0' 
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
-          <Typography variant="h6" >
+        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' , fontWeight: 'bold', color: '#fefae0'}}>
+          <Typography variant="h5" >
             
-            👑 Admin Panel
+            Admin Portal
           </Typography>
         </Box>
         <List>
@@ -121,10 +122,9 @@ export default function AdminOverview() {
                 component={Link} 
                 href={item.path}
                 sx={{ 
-                  color: '#fff',
-                  backgroundColor: item.name === 'Dashboard Overview' ? '#1a1a1a' : 'transparent',
+                  color: '#fefae0',
                   '&:hover': {
-                    backgroundColor: '#1a1a1a' // Darker background on hover
+                    backgroundColor: '#6b705c' 
                   }
                 }}
               >
@@ -139,17 +139,18 @@ export default function AdminOverview() {
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#000000' // Pure black background
+        width: '100%',
+        backgroundColor: '#fefae0'
       }}>
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ 
-            color: '#fff',
+            color: '#525252',
             fontWeight: 500
           }}>
             Dashboard Overview
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             Welcome back! Here's what's happening with your business today.
           </Typography>
         </Box>
@@ -159,9 +160,9 @@ export default function AdminOverview() {
           {metrics.map((metric, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Card sx={{ 
-                backgroundColor: '#0a0a0a', // Dark card background
+                backgroundColor: '#fefae0', // card background
                 height: '100%',
-                border: '1px solid #222',
+                border: '1px solid #302222ff',
                 '&:hover': {
                   boxShadow: '0px 4px 20px rgba(244, 193, 15, 0.1)'
                 }
@@ -173,17 +174,17 @@ export default function AdminOverview() {
                       bgcolor: 'rgba(244, 193, 15, 0.1)', 
                       width: 56, 
                       height: 56,
-                      border: '1px solid rgba(244, 193, 15, 0.3)'
+                      border: '1px solid #6b705c'
                     }}>
                       {metric.icon}
                     </Avatar>
                     {/* Metric Info */}
                     <Box>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <Typography variant="body2" sx={{ color: '#525252' }}>
                         {metric.title}
                       </Typography>
                       <Stack direction="row" alignItems="baseline" spacing={1}>
-                        <Typography variant="h4" component="div" sx={{ color: '#fff' }}>
+                        <Typography variant="h4" component="div" sx={{ color: '#b71c1c' }}>
                           {metric.value}
                         </Typography>
                         <Typography
@@ -213,29 +214,29 @@ export default function AdminOverview() {
           {/* Recent Activity Feed */}
           <Grid item xs={12} md={8}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
-              border: '1px solid #222'
+              backgroundColor: '#fefae0',
+              border: '2px solid #6b705c'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#525252',
                   mb: 2,
-                  fontWeight: 500
+                  fontWeight: 700
                 }}>
                   Recent Activity
                 </Typography>
                 <List sx={{ maxHeight: 360, overflow: 'auto' }}>
                   {activities.map((activity, index) => (
                     <div key={index}>
-                      <ListItem alignItems="flex-start" sx={{ color: '#fff' }}>
+                      <ListItem alignItems="flex-start" sx={{ color: '#525252' }}>
                         <ListItemText
                           primary={
-                            <Typography sx={{ color: '#fff' }}>
+                            <Typography sx={{ color: '#525252' }}>
                               {activity.action}
                             </Typography>
                           }
                           secondary={
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            <Typography sx={{ color: '#283618' }}>
                               {activity.time}
                             </Typography>
                           }
@@ -253,12 +254,12 @@ export default function AdminOverview() {
           {/* Quick Action Buttons */}
           <Grid item xs={12} md={4}>
             <Card sx={{ 
-              backgroundColor: '#0a0a0a',
-              border: '1px solid #222'
+              backgroundColor: '#283618',
+              border: '1px solid #525252'
             }}>
               <CardContent>
                 <Typography variant="h6" sx={{ 
-                  color: '#fff',
+                  color: '#fefae0',
                   mb: 2,
                   fontWeight: 500
                 }}>
@@ -266,14 +267,16 @@ export default function AdminOverview() {
                 </Typography>
                 <Stack spacing={2}>
                   <Button 
-                    variant="contained" 
+                    variant="outlined" 
                     fullWidth 
                     startIcon={<PeopleIcon />}
                     sx={{
-                      backgroundColor: '#f4c10f',
-                      color: '#000',
+                      backgroundColor: '#283618',
+                      borderColor: '#fefae0',
+                      color: '#fefae0',
                       '&:hover': {
-                        backgroundColor: '#d1a20b'
+                        backgroundColor: 'rgba(244, 193, 15, 0.1)',
+                        borderColor: '#fefae0'
                       }
                     }}
                   >
@@ -284,10 +287,11 @@ export default function AdminOverview() {
                     fullWidth 
                     startIcon={<ProjectsIcon />}
                     sx={{
-                      color: '#f4c10f',
-                      borderColor: '#f4c10f',
+                      color: '#fefae0',
+                      borderColor: '#fefae0',
                       '&:hover': {
-                        borderColor: '#d1a20b'
+                        backgroundColor: 'rgba(244, 193, 15, 0.1)',
+                        borderColor: '#fefae0'
                       }
                     }}
                   >
@@ -298,10 +302,11 @@ export default function AdminOverview() {
                     fullWidth 
                     startIcon={<GroupsIcon />}
                     sx={{
-                      color: '#f4c10f',
-                      borderColor: '#f4c10f',
+                      color: '#fefae0',
+                      borderColor: '#fefae0',
                       '&:hover': {
-                        borderColor: '#d1a20b'
+                       backgroundColor: 'rgba(244, 193, 15, 0.1)',
+                       borderColor: '#fefae0'
                       }
                     }}
                   >
