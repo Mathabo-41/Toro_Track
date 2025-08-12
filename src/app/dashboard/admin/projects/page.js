@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Typography, Button,Table,  TableBody, TableCell, TableContainer,  TableHead, TableRow,  Paper,Card,
@@ -44,6 +46,8 @@ const teamMembers = [
 ];
 
 export default function Projects() {
+  const router = useRouter();
+  
   // State for project data management
   const [projects, setProjects] = useState([
     {
@@ -100,6 +104,10 @@ export default function Projects() {
   // State for action menu control
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
 
   // Filter projects based on search term
   const filteredProjects = projects.filter(project => {
@@ -187,30 +195,112 @@ export default function Projects() {
             boxSizing: 'border-box',
             backgroundColor: '#283618',
             borderRight: '2px solid #6b705c',
-            color: '#fefae0'
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
-          <Typography variant="h5">Admin Portal</Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
+            <Typography variant="h5">Admin Portal</Typography>
+          </Box>
+          <List>
+            {adminMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Projects' ? '#6b705c' : 'transparent',
+                    '&:hover': { backgroundColor: '#6b705c' }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {adminMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Projects' ? '#6b705c' : 'transparent',
-                  '&:hover': { backgroundColor: '#6b705c' }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section - Exact same as AdminOverview */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                admin@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content */}
@@ -279,19 +369,19 @@ export default function Projects() {
             <TableContainer component={Paper} sx={{ backgroundColor: 'transparent', border: '2px solid #525252' }}>
               <Table>
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Project</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Due Date</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Progress</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Team</TableCell>
-                    <TableCell sx={{ color: '#525252', fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow sx={{ backgroundColor: '#283618' }}>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Project</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Status</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Due Date</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Progress</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Team</TableCell>
+                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredProjects.map((project) => (
-                    <TableRow key={project.id} hover sx={{ '&:hover': { backgroundColor: '#d6d6d6' } }}>
+                    <TableRow key={project.id} hover sx={{ '&:hover': { backgroundColor: '#e0e0d1' } }}>
                       <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <ProjectIcon sx={{ color: '#f3722c' }} />
@@ -442,7 +532,7 @@ export default function Projects() {
         </Grid>
       </Box>
 
-      {/* Create Project Dialog - LIGHT THEME */}
+      {/* Create Project Dialog */}
       <Dialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}

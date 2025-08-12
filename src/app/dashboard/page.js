@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+
+
 export default function DashboardLayout({ children }) {
   // Router and pathname hooks for navigation and active link detection
   const router = useRouter();
@@ -28,17 +30,7 @@ export default function DashboardLayout({ children }) {
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
   { name: 'Settings', path: '/dashboard/admin/settings' } // Profile, app-wide settings
   ]
-}
-,
-   /* projectManager: {
-      icon: '',
-      items: [
-        { name: 'Projects ,Project Documentation & Progresss', path: '/dashboard/projectManager/projects' },
-        { name: 'Project Teams', path: '/dashboard/projectManager/teams' },
-        { name: 'Clients', path: '/dashboard/projectManager/clients' },
-        { name: 'Settings', path: '/dashboard/projectManager/settings' }
-      ]
-    },*/
+},
     auditor: {
       icon: '',
       items: [

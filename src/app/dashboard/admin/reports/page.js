@@ -1,44 +1,25 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  Stack,
-  Avatar,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Drawer,
-  Grid,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip
+  Typography, Button,
+  Card, CardContent,  Stack, Avatar,
+  List,  ListItem,
+  ListItemButton, ListItemText,
+  Drawer,  Grid,
+  Divider, Paper, Table,
+  TableBody, TableCell, TableContainer,
+  TableHead,  TableRow, Chip
 } from '@mui/material';
 import {
-  Assessment as ReportsIcon,
-  Download as DownloadIcon,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  Timeline as TimelineIcon,
-  People as PeopleIcon,
-  Work as WorkIcon,
-  Star as StarIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon
+  Assessment as ReportsIcon,Download as DownloadIcon,
+  BarChart as BarChartIcon, PieChart as PieChartIcon,
+  Timeline as TimelineIcon, People as PeopleIcon,
+  Work as WorkIcon, Star as StarIcon,
+  TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon
 } from '@mui/icons-material';
 import Link from 'next/link';
 
@@ -98,15 +79,21 @@ const reportData = {
 };
 
 export default function PerformanceReports() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
       minWidth: '90vw',
-      backgroundColor: '#fefae0', // Light cream background
-      color: '#525252' // Dark gray text color
+      backgroundColor: '#fefae0',
+      color: '#525252'
     }}>
-      {/* Sidebar Navigation - Dark olive green with light cream text */}
+      {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -116,39 +103,121 @@ export default function PerformanceReports() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#283618', // Dark olive green
+            backgroundColor: '#283618',
             borderRight: '1px solid #6b705c',
-            color: '#fefae0' // Light cream text
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Admin Panel
-          </Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
+            <Typography variant="h5">
+              Admin Portal
+            </Typography>
+          </Box>
+          <List>
+            {adminMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Performance Reports' ? '#6b705c' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {adminMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Performance Reports' ? '#6b705c' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#6b705c' // Grayish green hover
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section - Exact same as AdminOverview */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                admin@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
-      {/* Main Content - Light cream background */}
+      {/* Main Content */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
@@ -163,27 +232,27 @@ export default function PerformanceReports() {
             <ReportsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f3722c' // Orange accent
+              color: '#f3722c'
             }} />
             Performance Reports
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: '#525252' // Dark gray text
+            color: '#525252'
           }}>
             Analytics and insights for your CRM system
           </Typography>
         </Box>
 
-        {/* Key Metrics Cards - Light cream cards with dark gray borders */}
+        {/* Key Metrics Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reportData).map(([key, metric], index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Card sx={{ 
-                backgroundColor: '#fefae0', // Light cream card
+                backgroundColor: '#fefae0',
                 height: '100%',
-                border: '1px solid #525252', // Dark gray border
+                border: '1px solid #525252',
                 '&:hover': {
-                  borderColor: '#f3722c' // Orange border on hover
+                  borderColor: '#f3722c'
                 }
               }}>
                 <CardContent>
@@ -195,7 +264,7 @@ export default function PerformanceReports() {
                         {metric.title}
                       </Typography>
                       <Typography variant="h4" sx={{ 
-                        color: '#283618', // Dark olive green text
+                        color: '#283618',
                         my: 1,
                         fontWeight: 500
                       }}>
@@ -215,10 +284,10 @@ export default function PerformanceReports() {
                       </Stack>
                     </Box>
                     <Avatar sx={{ 
-                      bgcolor: '#e0e0d1', // Grayish green tint
+                      bgcolor: '#e0e0d1',
                       width: 56,
                       height: 56,
-                      border: '1px solid #6b705c' // Grayish green border
+                      border: '1px solid #6b705c'
                     }}>
                       {key.includes('Client') && <PeopleIcon sx={{ color: '#525252' }} />}
                       {key.includes('Project') && <WorkIcon sx={{ color: '#525252' }} />}
@@ -264,7 +333,7 @@ export default function PerformanceReports() {
                   color: '#6b705c',
                   border: '1px dashed #6b705c',
                   borderRadius: '4px',
-                  backgroundColor: '#e0e0d1' // Slightly darker than card
+                  backgroundColor: '#e0e0d1'
                 }}>
                   <BarChartIcon sx={{ fontSize: 60, mb: 1 }} />
                   <Typography>Client Acquisition Chart</Typography>

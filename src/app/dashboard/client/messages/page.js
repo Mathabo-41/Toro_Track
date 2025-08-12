@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -95,6 +97,7 @@ const meetings = [
 ];
 
 export default function ClientMessages() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
   const [activeConversation, setActiveConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
@@ -103,7 +106,7 @@ export default function ClientMessages() {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (newMessage.trim() && activeConversation) {
-      // backend here
+      // In a real application, this would send the data to your backend
       const updatedConversations = conversations.map(conv => {
         if (conv.id === activeConversation.id) {
           return {
@@ -122,6 +125,10 @@ export default function ClientMessages() {
     }
   };
 
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   const filteredConversations = conversations.filter(conv => 
     conv.with.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -130,7 +137,7 @@ export default function ClientMessages() {
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#fefae0' // Light, earthy background
+      backgroundColor: '#fefae0'
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -142,43 +149,125 @@ export default function ClientMessages() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#283618', // Dark green sidebar
-            borderRight: '1px solid #6b705c', // Subtle border
-            color: '#fefae0' // Light text
+            backgroundColor: '#283618',
+            borderRight: '1px solid #6b705c',
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
-          <Typography variant="h5">
-            Client Portal
-          </Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
+            <Typography variant="h5">
+              Client Portal
+            </Typography>
+          </Box>
+          <List>
+            {clientMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Messages & Notifications' ? '#6b705c' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {clientMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Messages & Notifications' ? '#6b705c' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#6b705c' // Darker background on hover
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                client@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#fefae0' // Light, earthy background
+        backgroundColor: '#fefae0'
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
@@ -189,7 +278,7 @@ export default function ClientMessages() {
             <ChatIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-             color: '#f3722c' // Orange accent
+              color: '#f3722c'
             }} />
             Messages & Notifications
           </Typography>
@@ -204,7 +293,7 @@ export default function ClientMessages() {
           onChange={(e, newValue) => setActiveTab(newValue)}
           sx={{
             '& .MuiTabs-indicator': {
-              backgroundColor: '#f3722c' // Orange indicator
+              backgroundColor: '#f3722c'
             },
             mb: 3
           }}
@@ -344,7 +433,7 @@ export default function ClientMessages() {
                     overflow: 'auto',
                     mb: 2,
                     p: 2,
-                    backgroundColor: '#e0e0e0', // Lighter background for message box
+                    backgroundColor: '#e0e0e0',
                     borderRadius: 1
                   }}>
                     {activeConversation.messages.map((message, index) => (
@@ -469,7 +558,6 @@ export default function ClientMessages() {
                   backgroundColor: '#ccd5ae', 
                   border: '2px solid #606c38', 
                   borderRadius: 1,
-                
                 }}>
                   {meetings.map((meeting) => (
                     <div key={meeting.id}>
@@ -566,7 +654,7 @@ export default function ClientMessages() {
                               label="New"
                               size="small"
                               sx={{
-                                backgroundColor: 'rgba(243, 114, 44, 0.2)', // orange background
+                                backgroundColor: 'rgba(243, 114, 44, 0.2)',
                                 color: '#f3722c',
                                 border: '1px solid #f3722c'
                               }}

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -90,6 +92,7 @@ const queryData = [
 ];
 
 export default function ClientQuery() {
+  const router = useRouter();
   const [activeQuery, setActiveQuery] = useState(null);
   const [newQuery, setNewQuery] = useState({
     title: '',
@@ -115,7 +118,7 @@ export default function ClientQuery() {
 
   const handleSubmitQuery = (e) => {
     e.preventDefault();
-    // this is where we are going to send the data/user input to our backend
+    // In a real application, this would send the data to your backend
     alert('Query submitted successfully!');
     setNewQuery({
       title: '',
@@ -126,11 +129,15 @@ export default function ClientQuery() {
     setFileToUpload(null);
   };
 
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      backgroundColor: '#fefae0' // Light, earthy background
+      backgroundColor: '#fefae0'
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -142,43 +149,125 @@ export default function ClientQuery() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#283618', // Dark green sidebar
-            borderRight: '1px solid #6b705c', // Subtle border
-            color: '#fefae0' // Light text
+            backgroundColor: '#283618',
+            borderRight: '1px solid #6b705c',
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
-          <Typography variant="h5">
-            Client Portal
-          </Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
+            <Typography variant="h5">
+              Client Portal
+            </Typography>
+          </Box>
+          <List>
+            {clientMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Raise Query' ? '#6b705c' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {clientMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Raise Query' ? '#6b705c' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#6b705c' // Darker background on hover
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                client@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#fefae0' // Light, earthy background
+        backgroundColor: '#fefae0'
       }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
@@ -189,7 +278,7 @@ export default function ClientQuery() {
             <QueryIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f3722c' // Orange accent
+              color: '#f3722c'
             }} />
             {activeQuery ? 'Query Details' : 'Raise a Query'}
           </Typography>
@@ -201,7 +290,7 @@ export default function ClientQuery() {
         {activeQuery ? (
           /* Query Detail View */
           <Card sx={{ 
-            backgroundColor: '#e0e0e0', // Lighter background
+            backgroundColor: '#e0e0e0',
             border: '1px solid #a3a699'
           }}>
             <CardContent>
@@ -308,7 +397,7 @@ export default function ClientQuery() {
 
               {activeQuery.response && (
                 <Box sx={{ 
-                  backgroundColor: '#a3a699', // Darker earthy color
+                  backgroundColor: '#a3a699',
                   p: 3,
                   borderRadius: 1,
                   border: '1px solid #6b705c'

@@ -30,6 +30,8 @@ import {
   DeleteForever as DeleteForeverIcon
 } from '@mui/icons-material';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
@@ -81,15 +83,21 @@ const settingsCategories = [
 ];
 
 export default function SystemSettings() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
       minWidth: '89vw',
-      backgroundColor: '#fefae0', // Light cream background
-      color: '#525252' // Dark gray text color
+      backgroundColor: '#fefae0',
+      color: '#525252'
     }}>
-      {/* Sidebar Navigation - Dark olive green with light cream text */}
+      {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -99,39 +107,121 @@ export default function SystemSettings() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#283618', // Dark olive green
+            backgroundColor: '#283618',
             borderRight: '1px solid #6b705c',
-            color: '#fefae0' // Light cream text
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Admin Panel
-          </Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '1px solid #6b705c' }}>
+            <Typography variant="h5" sx={{ color: '#fefae0' }}>
+              Admin Panel
+            </Typography>
+          </Box>
+          <List>
+            {adminMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Settings' ? '#6b705c' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {adminMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Settings' ? '#6b705c' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#6b705c' // Grayish green hover
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                admin@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
-      {/* Main Content - Light cream background */}
+      {/* Main Content */}
       <Box 
         component="main" 
         sx={{ 
@@ -149,7 +239,7 @@ export default function SystemSettings() {
             <SettingsIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle', 
-              color: '#f3722c' // Orange accent
+              color: '#f3722c'
             }} />
             System Settings
           </Typography>
@@ -174,7 +264,7 @@ export default function SystemSettings() {
                 <CardContent>
                   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
                     <Avatar sx={{ 
-                      bgcolor: '#e0e0d1', // Grayish green tint
+                      bgcolor: '#e0e0d1',
                       width: 48,
                       height: 48,
                       border: '1px solid #6b705c'

@@ -4,7 +4,7 @@ import { alpha } from '@mui/material/styles';
 
 const sidebarWidth = 280;
 
-                                          /* -- Audit Trail Screen -- */
+                                        /* -- Audit Trail Screen -- */
 export const fullScreenContainerStyles = {
   display: 'flex',
   minHeight: '100vh',

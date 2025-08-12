@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -48,7 +50,6 @@ import Link from 'next/link';
  * Client Profiles Management Screen
  * 
  * Features:
- * - Pure black background (#000000) with high contrast UI
  * - Client listing with status tracking
  * - Client statistics overview
  * - Search and filtering capabilities
@@ -68,6 +69,8 @@ const adminMenu = [
 ];
 
 export default function ClientProfiles() {
+  const router = useRouter();
+  
   // State for client data management
   const [clients, setClients] = useState([
     { 
@@ -138,31 +141,25 @@ export default function ClientProfiles() {
     }
   };
 
-  /**
-   * Opens the action menu for a specific client
-   */
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   const handleMenuOpen = (event, clientId) => {
     setAnchorEl(event.currentTarget);
     setSelectedClient(clientId);
   };
 
-  // Closes the action menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedClient(null);
   };
 
-  /**
-   * Deletes the selected client
-   */
   const handleDeleteClient = () => {
     setClients(clients.filter(client => client.id !== selectedClient));
     handleMenuClose();
   };
 
-  /**
-   * Changes the status of a client
-   */
   const handleStatusChange = (clientId, newStatus) => {
     setClients(clients.map(client => 
       client.id === clientId ? { ...client, status: newStatus } : client
@@ -189,36 +186,118 @@ export default function ClientProfiles() {
             boxSizing: 'border-box',
             backgroundColor: '#283618',
             borderRight: '2px solid #222',
-           color: '#fefae0'
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        {/* Sidebar Header */}
-        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
+        <Box>
+          {/* Sidebar Header */}
+          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
+            <Typography variant="h5">
+              Admin Portal
+            </Typography>
+          </Box>
+          
+          {/* Navigation Menu */}
+          <List>
+            {adminMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        
-        {/* Navigation Menu */}
-        <List>
-          {adminMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  '&:hover': {
-                    backgroundColor: '#6b705c'
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section - Exact same as AdminOverview */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                admin@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
       {/* ===== MAIN CONTENT AREA ===== */}
@@ -294,7 +373,7 @@ export default function ClientProfiles() {
         <Card sx={{ 
           backgroundColor: '#fefae0', 
           mb: 3,
-          border: '1px solid #222' // Subtle border
+          border: '1px solid #222'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
@@ -310,7 +389,7 @@ export default function ClientProfiles() {
             }}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ backgroundColor: '#283618' }}>
                     <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
                     <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Contact</TableCell>
                     <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
@@ -325,7 +404,7 @@ export default function ClientProfiles() {
                       hover 
                       sx={{ 
                         '&:hover': { 
-                          backgroundColor: '#1a1a1a' 
+                          backgroundColor: '#e0e0d1' 
                         } 
                       }}
                     >
@@ -356,7 +435,7 @@ export default function ClientProfiles() {
                       </TableCell>
                       
                       {/* Project Count */}
-                      <TableCell sx={{ color: '#14213d'}}>
+                      <TableCell sx={{ color: '#525252' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <WorkIcon fontSize="small" sx={{ color: '#f3722c' }} />
                           <Typography>{client.projects}</Typography>
@@ -373,7 +452,7 @@ export default function ClientProfiles() {
                             color: statusColors[client.status].color,
                             border: statusColors[client.status].border,
                             fontWeight: 'bold',
-                            pl: 1 // Padding for icon
+                            pl: 1
                           }}
                         />
                       </TableCell>
@@ -445,7 +524,7 @@ export default function ClientProfiles() {
                     </Typography>
                   </Box>
                   <Avatar sx={{ 
-                    bgcolor: 'rgba(2, 136, 209, 0.1)', // Light blue background
+                    bgcolor: 'rgba(2, 136, 209, 0.1)',
                     width: 56, 
                     height: 56,
                     border: '1px solid #0288d1'
@@ -475,7 +554,7 @@ export default function ClientProfiles() {
                     </Typography>
                   </Box>
                   <Avatar sx={{ 
-                    bgcolor: 'rgba(46, 125, 50, 0.1)', // Light green background
+                    bgcolor: 'rgba(46, 125, 50, 0.1)',
                     width: 56, 
                     height: 56,
                     border: '1px solid #2e7d32'

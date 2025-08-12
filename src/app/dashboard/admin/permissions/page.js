@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -118,6 +120,7 @@ const defaultRoles = [
 ];
 
 export default function PermissionSettings() {
+  const router = useRouter();
   const [roles, setRoles] = useState(defaultRoles);
   const [selectedRole, setSelectedRole] = useState('Admin');
 
@@ -140,13 +143,17 @@ export default function PermissionSettings() {
     alert('Permissions saved successfully!');
   };
 
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
       minHeight: '100vh', 
       minWidth: '90vw',
-      backgroundColor: '#fefae0', // Light cream background
-      color: '#525252' // Dark gray text color
+      backgroundColor: '#fefae0',
+      color: '#525252'
     }}>
       {/* Sidebar Navigation */}
       <Drawer
@@ -158,43 +165,125 @@ export default function PermissionSettings() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            backgroundColor: '#283618', // Dark olive green
+            backgroundColor: '#283618',
             borderRight: '1px solid #222',
-            color: '#fefae0' // Light cream text
+            color: '#fefae0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
+        <Box>
+          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
+            <Typography variant="h5">
+              Admin Portal
+            </Typography>
+          </Box>
+          <List>
+            {adminMenu.map((item, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton 
+                  component={Link} 
+                  href={item.path}
+                  sx={{ 
+                    color: '#fefae0',
+                    backgroundColor: item.name === 'Permissions' ? '#6b705c' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#6b705c'
+                    }
+                  }}
+                >
+                  <ListItemText primary={item.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
-        <List>
-          {adminMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path}
-                sx={{ 
-                  color: '#fefae0',
-                  backgroundColor: item.name === 'Permissions' ? '#6b705c' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#6b705c' // Grayish green hover
-                  }
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+
+        {/* User Profile Section - Exact copy from AdminOverview */}
+        <Box sx={{ 
+          borderTop: '2px solid #6b705c',
+          padding: '1rem',
+          marginTop: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* User profile picture and details */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ 
+                fontWeight: '600', 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: '#fefae0'
+              }}>
+                John Doe
+              </Typography>
+              <Typography sx={{ 
+                fontSize: '0.8rem', 
+                opacity: 0.8, 
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'rgba(254, 250, 224, 0.7)'
+              }}>
+                admin@toro.com
+              </Typography>
+            </Box>
+          </Box>
+          {/* Logout button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content */}
       <Box component="main" sx={{ 
         flexGrow: 1, 
         p: 3,
-        backgroundColor: '#fefae0' // Light cream background
+        backgroundColor: '#fefae0'
       }}>
         {/* Page Header */}
         <Box sx={{ mb: 4 }}>
@@ -205,12 +294,12 @@ export default function PermissionSettings() {
             <LockIcon sx={{ 
               mr: 1, 
               verticalAlign: 'middle',
-              color: '#f3722c' // Orange accent
+              color: '#f3722c'
             }} />
             Permissions
           </Typography>
           <Typography variant="body1" sx={{ 
-            color: '#525252' // Dark gray text
+            color: '#525252'
           }}>
             Manage role-based access control for your organization
           </Typography>
@@ -220,7 +309,7 @@ export default function PermissionSettings() {
         <Card sx={{ 
           backgroundColor: '#fefae0',
           mb: 3,
-          border: '1px solid #525252' // Dark gray border
+          border: '1px solid #525252'
         }}>
           <CardContent>
             <Typography variant="h6" sx={{ 
@@ -232,10 +321,10 @@ export default function PermissionSettings() {
             </Typography>
             <TableContainer component={Paper} sx={{ 
               backgroundColor: 'transparent',
-              border: '2px solid #525252' // Dark gray border
+              border: '2px solid #525252'
             }}>
               <Table>
-                <TableHead sx={{ backgroundColor: '#283618' }}> {/* Dark olive green header */}
+                <TableHead sx={{ backgroundColor: '#283618' }}>
                   <TableRow>
                     <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Role</TableCell>
                     <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
@@ -257,7 +346,7 @@ export default function PermissionSettings() {
                         backgroundColor: selectedRole === role.name ? '#e0e0d1' : 'transparent'
                       }}
                     >
-                      <TableCell sx={{ color: '#283618' }}> {/* Dark olive green text */}
+                      <TableCell sx={{ color: '#283618' }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           {role.icon}
                           <Typography>{role.name}</Typography>
@@ -330,7 +419,7 @@ export default function PermissionSettings() {
           <Card sx={{ 
             backgroundColor: '#fefae0',
             mb: 3,
-            border: '1px solid #525252' // Dark gray border
+            border: '1px solid #525252'
           }}>
             <CardContent>
               <Typography variant="h6" sx={{ 
@@ -347,7 +436,7 @@ export default function PermissionSettings() {
                     <Grid item xs={12} sm={6} md={3} key={category}>
                       <Card sx={{ 
                         backgroundColor: '#fefae0',
-                        border: '1px solid #525252', // Dark gray border
+                        border: '1px solid #525252',
                         height: '100%'
                       }}>
                         <CardContent>
