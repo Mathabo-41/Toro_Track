@@ -118,7 +118,7 @@ export default function ClientQuery() {
 
   const handleSubmitQuery = (e) => {
     e.preventDefault();
-    // In a real application, this would send the data to your backend
+    //  send the data to  backend
     alert('Query submitted successfully!');
     setNewQuery({
       title: '',

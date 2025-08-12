@@ -106,7 +106,7 @@ export default function ClientMessages() {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (newMessage.trim() && activeConversation) {
-      // In a real application, this would send the data to your backend
+      //  send the data to  backend
       const updatedConversations = conversations.map(conv => {
         if (conv.id === activeConversation.id) {
           return {

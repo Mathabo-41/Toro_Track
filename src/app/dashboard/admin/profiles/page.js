@@ -48,13 +48,6 @@ import Link from 'next/link';
 
 /**
  * Client Profiles Management Screen
- * 
- * Features:
- * - Client listing with status tracking
- * - Client statistics overview
- * - Search and filtering capabilities
- * - Dark theme with gold accents
- * - Responsive layout
  */
 
 // Sidebar navigation items for admin panel
@@ -222,7 +215,7 @@ export default function ClientProfiles() {
           </List>
         </Box>
 
-        {/* User Profile Section - Exact same as AdminOverview */}
+        {/* User Profile Section */}
         <Box sx={{ 
           borderTop: '2px solid #6b705c',
           padding: '1rem',

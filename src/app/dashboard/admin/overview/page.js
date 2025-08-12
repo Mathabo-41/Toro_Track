@@ -84,7 +84,7 @@ export default function AdminOverview() {
 
   // Function to handle the logout action
   const handleLogout = () => {
-    // Add your logout logic here
+    // Add  logout logic here
     console.log('User logged out');
   };
 
@@ -140,7 +140,7 @@ export default function AdminOverview() {
           </List>
         </Box>
 
-        {/* User Profile Section - Integrated from the second code */}
+        {/* User Profile Section  */}
         <Box sx={{ 
           borderTop: '2px solid #6b705c',
           padding: '1rem',

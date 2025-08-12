@@ -139,7 +139,7 @@ export default function PerformanceReports() {
           </List>
         </Box>
 
-        {/* User Profile Section - Exact same as AdminOverview */}
+        {/* User Profile Section*/}
         <Box sx={{ 
           borderTop: '2px solid #6b705c',
           padding: '1rem',

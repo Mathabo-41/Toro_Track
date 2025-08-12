@@ -80,7 +80,7 @@ export default function ClientSettings() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real application, this would send the data to your backend
+    //  send the data to  backend
     setEditMode(false);
     alert('Settings saved successfully!');
   };

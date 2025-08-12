@@ -201,7 +201,7 @@ export default function PermissionSettings() {
           </List>
         </Box>
 
-        {/* User Profile Section - Exact copy from AdminOverview */}
+        {/* User Profile Section */}
         <Box sx={{ 
           borderTop: '2px solid #6b705c',
           padding: '1rem',
