@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -46,8 +44,45 @@ import {
 } from '@mui/icons-material';
 import Link from 'next/link';
 
+import {
+  rootBox,
+  drawerPaper,
+  drawerHeader,
+  listItemButton,
+  mainContentBox,
+  pageHeader,
+  pageHeaderText,
+  pageHeaderIcon,
+  searchField,
+  addClientButton,
+  clientCard,
+  tableContainer,
+  tableHeader,
+  tableHeaderCell,
+  tableRow,
+  clientTableCell,
+  clientLogoAvatar,
+  contactIcon,
+  projectsIcon,
+  statusChip,
+  actionButton,
+  statsCard,
+  statsCardContent,
+  statsAvatar,
+  menuPaper,
+  menuItem,
+  menuDivider
+} from '../styles';
+
 /**
  * Client Profiles Management Screen
+ * * Features:
+ * - Pure black background (#000000) with high contrast UI
+ * - Client listing with status tracking
+ * - Client statistics overview
+ * - Search and filtering capabilities
+ * - Dark theme with gold accents
+ * - Responsive layout
  */
 
 // Sidebar navigation items for admin panel
@@ -62,8 +97,6 @@ const adminMenu = [
 ];
 
 export default function ClientProfiles() {
-  const router = useRouter();
-  
   // State for client data management
   const [clients, setClients] = useState([
     { 
@@ -112,47 +145,31 @@ export default function ClientProfiles() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
 
-  // Status color configuration
-  const statusColors = {
-    premium: { 
-      bg: 'rgba(46, 125, 50, 0.2)', 
-      color: '#81c784', 
-      icon: <PremiumIcon color="success" />,
-      border: '1px solid #2e7d32'
-    },
-    active: { 
-      bg: 'rgba(2, 136, 209, 0.2)', 
-      color: '#4fc3f7', 
-      icon: <PersonIcon color="info" />,
-      border: '1px solid #0288d1'
-    },
-    inactive: { 
-      bg: 'rgba(97, 97, 97, 0.2)', 
-      color: '#bdbdbd', 
-      icon: <PersonIcon color="disabled" />,
-      border: '1px solid #616161'
-    }
-  };
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
-
+  /**
+   * Opens the action menu for a specific client
+   */
   const handleMenuOpen = (event, clientId) => {
     setAnchorEl(event.currentTarget);
     setSelectedClient(clientId);
   };
 
+  // Closes the action menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedClient(null);
   };
 
+  /**
+   * Deletes the selected client
+   */
   const handleDeleteClient = () => {
     setClients(clients.filter(client => client.id !== selectedClient));
     handleMenuClose();
   };
 
+  /**
+   * Changes the status of a client
+   */
   const handleStatusChange = (clientId, newStatus) => {
     setClients(clients.map(client => 
       client.id === clientId ? { ...client, status: newStatus } : client
@@ -161,12 +178,7 @@ export default function ClientProfiles() {
   };
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      minWidth:'90vw',
-      backgroundColor: '#fefae0' 
-    }}>
+    <Box sx={rootBox}>
       {/* ===== SIDEBAR NAVIGATION ===== */}
       <Drawer
         variant="permanent"
@@ -174,149 +186,38 @@ export default function ClientProfiles() {
         sx={{
           width: 240,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 240,
-            boxSizing: 'border-box',
-            backgroundColor: '#283618',
-            borderRight: '2px solid #222',
-            color: '#fefae0',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }
+          '& .MuiDrawer-paper': drawerPaper
         }}
       >
-        <Box>
-          {/* Sidebar Header */}
-          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
-            <Typography variant="h5">
-              Admin Portal
-            </Typography>
-          </Box>
-          
-          {/* Navigation Menu */}
-          <List>
-            {adminMenu.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton 
-                  component={Link} 
-                  href={item.path}
-                  sx={{ 
-                    color: '#fefae0',
-                    '&:hover': {
-                      backgroundColor: '#6b705c'
-                    }
-                  }}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        {/* Sidebar Header */}
+        <Box sx={drawerHeader}>
+          <Typography variant="h5">
+            Admin Portal
+          </Typography>
         </Box>
-
-        {/* User Profile Section */}
-        <Box sx={{ 
-          borderTop: '2px solid #6b705c',
-          padding: '1rem',
-          marginTop: 'auto',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)'
-        }}>
-          {/* User profile picture and details */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ 
-                fontWeight: '600', 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: '#fefae0'
-              }}>
-                John Doe
-              </Typography>
-              <Typography sx={{ 
-                fontSize: '0.8rem', 
-                opacity: 0.8, 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'rgba(254, 250, 224, 0.7)'
-              }}>
-                admin@toro.com
-              </Typography>
-            </Box>
-          </Box>
-          {/* Logout button */}
-          <Button 
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        
+        {/* Navigation Menu */}
+        <List>
+          {adminMenu.map(({ name, path }, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton 
+                component={Link} 
+                href={path}
+                sx={listItemButton}
+              >
+                <ListItemText primary={name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
 
       {/* ===== MAIN CONTENT AREA ===== */}
-      <Box component="main" sx={{ 
-        flexGrow: 1, 
-        p: 3,
-        backgroundColor: '#fefae0' 
-      }}>
+      <Box component="main" sx={mainContentBox}>
         {/* Page Header with Search and Add Client Button */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 4,
-          flexWrap: 'wrap',
-          gap: 2
-        }}>
-          <Typography variant="h4" sx={{ 
-            color: '#525252',
-            fontWeight: 500
-          }}>
-            <PeopleIcon sx={{ 
-              mr: 1, 
-              verticalAlign: 'middle',
-              color: '#525252' 
-            }} />
+        <Box sx={pageHeader}>
+          <Typography variant="h4" sx={pageHeaderText}>
+            <PeopleIcon sx={pageHeaderIcon} />
             Client Profiles
           </Typography>
           <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
@@ -327,18 +228,10 @@ export default function ClientProfiles() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#525252' }} />
+                    <SearchIcon color="text.secondary" />
                   </InputAdornment>
                 ),
-                sx: { 
-                  color: '#525252',
-                  backgroundColor: '#fefae0',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#525252', 
-                    },
-                  },
-                }
+                sx: searchField
               }}
               sx={{ flexGrow: { xs: 1, sm: 0 } }}
             />
@@ -346,16 +239,7 @@ export default function ClientProfiles() {
             <Button 
               variant="outlined" 
               startIcon={<AddIcon />}
-              sx={{
-                backgroundColor: '#283618', 
-                color: '#fefae0', 
-                fontWeight: 500,
-                '&:hover': { 
-                  backgroundColor: '#606c38',
-                  borderColor: '#fefae0'
-                },
-                whiteSpace: 'nowrap'
-              }}
+              sx={addClientButton}
             >
               Add Client
             </Button>
@@ -363,31 +247,20 @@ export default function ClientProfiles() {
         </Box>
 
         {/* Clients Table */}
-        <Card sx={{ 
-          backgroundColor: '#fefae0', 
-          mb: 3,
-          border: '1px solid #222'
-        }}>
+        <Card sx={clientCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ 
-              color: '#525252',
-              mb: 2,
-              fontWeight: 500
-            }}>
+            <Typography variant="h6" sx={pageHeaderText}>
               All Clients
             </Typography>
-            <TableContainer component={Paper} sx={{ 
-              backgroundColor: 'transparent',
-              border: '2px solid #525252'
-            }}>
+            <TableContainer component={Paper} sx={tableContainer}>
               <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#283618' }}>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Contact</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableHead sx={tableHeader}>
+                  <TableRow>
+                    <TableCell sx={tableHeaderCell}>Client</TableCell>
+                    <TableCell sx={tableHeaderCell}>Contact</TableCell>
+                    <TableCell sx={tableHeaderCell}>Projects</TableCell>
+                    <TableCell sx={tableHeaderCell}>Status</TableCell>
+                    <TableCell sx={tableHeaderCell}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -395,23 +268,14 @@ export default function ClientProfiles() {
                     <TableRow 
                       key={client.id} 
                       hover 
-                      sx={{ 
-                        '&:hover': { 
-                          backgroundColor: '#e0e0d1' 
-                        } 
-                      }}
+                      sx={tableRow}
                     >
                       {/* Client Name with Logo */}
-                      <TableCell sx={{ color: '#283618' }}>
+                      <TableCell sx={clientTableCell}>
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Avatar 
                             src={client.logo} 
-                            sx={{ 
-                              width: 40, 
-                              height: 40, 
-                              bgcolor: '#333',
-                              border: '1px solid #444'
-                            }}
+                            sx={clientLogoAvatar}
                           >
                             <PersonIcon />
                           </Avatar>
@@ -420,17 +284,17 @@ export default function ClientProfiles() {
                       </TableCell>
                       
                       {/* Contact Email */}
-                      <TableCell sx={{ color: '#525252' }}>
+                      <TableCell sx={clientTableCell}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <EmailIcon fontSize="small" sx={{ color: '#f3722c' }} />
+                          <EmailIcon fontSize="small" sx={contactIcon} />
                           <Typography>{client.contact}</Typography>
                         </Stack>
                       </TableCell>
                       
                       {/* Project Count */}
-                      <TableCell sx={{ color: '#525252' }}>
+                      <TableCell sx={clientTableCell}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <WorkIcon fontSize="small" sx={{ color: '#f3722c' }} />
+                          <WorkIcon fontSize="small" sx={projectsIcon} />
                           <Typography>{client.projects}</Typography>
                         </Stack>
                       </TableCell>
@@ -438,23 +302,22 @@ export default function ClientProfiles() {
                       {/* Status Chip */}
                       <TableCell>
                         <Chip
-                          icon={statusColors[client.status].icon}
+                          icon={
+                            client.status === 'premium' ? <PremiumIcon color="success" /> :
+                            client.status === 'active' ? <PersonIcon color="info" /> :
+                            <PersonIcon color="disabled" />
+                          }
                           label={client.status.charAt(0).toUpperCase() + client.status.slice(1)}
-                          sx={{ 
-                            backgroundColor: statusColors[client.status].bg,
-                            color: statusColors[client.status].color,
-                            border: statusColors[client.status].border,
-                            fontWeight: 'bold',
-                            pl: 1
-                          }}
+                          sx={statusChip(client.status)}
                         />
                       </TableCell>
                       
                       {/* Action Menu */}
                       <TableCell>
                         <IconButton 
-                          sx={{ color: '#525252' }}
+                          color="text.secondary"
                           onClick={(e) => handleMenuOpen(e, client.id)}
+                          sx={actionButton}
                         >
                           <MoreVertIcon />
                         </IconButton>
@@ -471,27 +334,18 @@ export default function ClientProfiles() {
         <Grid container spacing={3}>
           {/* Total Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ 
-              backgroundColor: '#fefae0',
-              border: '1px solid #222',
-              height: '100%'
-            }}>
+            <Card sx={statsCard}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: '#525252'}}>
+                    <Typography variant="body2" sx={pageHeaderText}>
                       Total Clients
                     </Typography>
-                    <Typography variant="h4" sx={{ color: '#f3722c', fontWeight: 500 }}>
+                    <Typography variant="h4" sx={statsCardValue('coral')}>
                       {clients.length}
                     </Typography>
                   </Box>
-                  <Avatar sx={{ 
-                    bgcolor: 'rgba(244, 193, 15, 0.1)',
-                    width: 56, 
-                    height: 56,
-                    border: '1px solid #f3722c'
-                  }}>
+                  <Avatar sx={statsAvatar('highlight', 'coral')}>
                     <PeopleIcon color="primary" />
                   </Avatar>
                 </Stack>
@@ -501,27 +355,18 @@ export default function ClientProfiles() {
           
           {/* Active Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ 
-              backgroundColor: '#fefae0',
-              border: '1px solid #222',
-              height: '100%'
-            }}>
+            <Card sx={statsCard}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: '#525252' }}>
+                    <Typography variant="body2" sx={pageHeaderText}>
                       Active Clients
                     </Typography>
-                    <Typography variant="h4" sx={{ color: '#4fc3f7', fontWeight: 500 }}>
+                    <Typography variant="h4" sx={statsCardValue('info')}>
                       {clients.filter(c => c.status === 'active').length}
                     </Typography>
                   </Box>
-                  <Avatar sx={{ 
-                    bgcolor: 'rgba(2, 136, 209, 0.1)',
-                    width: 56, 
-                    height: 56,
-                    border: '1px solid #0288d1'
-                  }}>
+                  <Avatar sx={statsAvatar('highlight', 'info')}>
                     <PeopleIcon color="info" />
                   </Avatar>
                 </Stack>
@@ -531,27 +376,18 @@ export default function ClientProfiles() {
           
           {/* Premium Clients Card */}
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ 
-              backgroundColor: '#fefae0',
-              border: '1px solid #222',
-              height: '100%'
-            }}>
+            <Card sx={statsCard}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={{ color: '#525252' }}>
+                    <Typography variant="body2" sx={pageHeaderText}>
                       Premium Clients
                     </Typography>
-                    <Typography variant="h4" sx={{ color: '#81c784', fontWeight: 500 }}>
+                    <Typography variant="h4" sx={statsCardValue('success')}>
                       {clients.filter(c => c.status === 'premium').length}
                     </Typography>
                   </Box>
-                  <Avatar sx={{ 
-                    bgcolor: 'rgba(46, 125, 50, 0.1)',
-                    width: 56, 
-                    height: 56,
-                    border: '1px solid #2e7d32'
-                  }}>
+                  <Avatar sx={statsAvatar('highlight', 'success')}>
                     <PremiumIcon color="success" />
                   </Avatar>
                 </Stack>
@@ -575,67 +411,47 @@ export default function ClientProfiles() {
           horizontal: 'right',
         }}
         PaperProps={{
-          sx: {
-            backgroundColor: '#f1faee',
-            color: '#283618',
-            border: '2px solid #283618',
-            minWidth: '200px'
-          }
+          sx: menuPaper
         }}
       >
-        <MenuItem onClick={handleMenuClose} sx={{ '&:hover': { backgroundColor: '#606c38' } }}>
-          <EditIcon sx={{ mr: 1, color: '#2196f3' }} />
+        <MenuItem onClick={handleMenuClose} sx={menuItem}>
+          <EditIcon sx={{ mr: 1, color: 'info.main' }} />
           Edit Client
         </MenuItem>
-        <MenuItem onClick={handleDeleteClient} sx={{ '&:hover': { backgroundColor: '#606c38'} }}>
-          <DeleteIcon sx={{ mr: 1, color: '#f44336' }} />
+        <MenuItem onClick={handleDeleteClient} sx={menuItem}>
+          <DeleteIcon sx={{ mr: 1, color: 'error.light' }} />
           Delete Client
         </MenuItem>
-        <Divider sx={{ backgroundColor: '#333' }} />
+        <Divider sx={menuDivider} />
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'premium')}
-          sx={{ '&:hover': { backgroundColor: '#6b705c' } }}
+          sx={menuItem}
         >
           <Chip 
             icon={<PremiumIcon color="success" />}
             label="Premium" 
             size="small" 
-            sx={{ 
-              backgroundColor: 'rgba(46, 125, 50, 0.2)',
-              color: '#81c784',
-              border: '1px solid #2e7d32',
-              mr: 1 
-            }} 
+            sx={statusChip('premium')}
           />
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'active')}
-          sx={{ '&:hover': { backgroundColor: '#6b705c'} }}
+          sx={menuItem}
         >
           <Chip 
             label="Active" 
             size="small" 
-            sx={{ 
-              backgroundColor: 'rgba(2, 136, 209, 0.2)',
-              color: '#4fc3f7',
-              border: '1px solid #0288d1',
-              mr: 1 
-            }} 
+            sx={statusChip('active')}
           />
         </MenuItem>
         <MenuItem 
           onClick={() => handleStatusChange(selectedClient, 'inactive')}
-          sx={{ '&:hover': { backgroundColor: '#6b705c' } }}
+          sx={menuItem}
         >
           <Chip 
             label="Inactive" 
             size="small" 
-            sx={{ 
-              bgcolor: 'rgba(244, 193, 15, 0.1)',
-              color: '#f3722c',
-              border: '1px solid #f3722c',
-              mr: 1 
-            }} 
+            sx={statusChip('inactive')}
           />
         </MenuItem>
       </Menu>

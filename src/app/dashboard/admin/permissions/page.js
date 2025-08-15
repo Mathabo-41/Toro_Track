@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -18,7 +16,6 @@ import {
   Button,
   Drawer,
   ListItemButton,
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -42,6 +39,33 @@ import {
   Block as NoneIcon
 } from '@mui/icons-material';
 
+import {
+  rootBox,
+  drawerPaper,
+  drawerHeader,
+  listItemButton,
+  activeListItemButton,
+  mainContentBox,
+  pageHeader,
+  pageHeaderText,
+  pageHeaderIcon,
+  permissionsCard,
+  tableContainer,
+  tableHead,
+  tableHeaderCell,
+  tableRow,
+  tableCell,
+  roleIconStack,
+  roleSelect,
+  permissionMenuItem,
+  permissionChip,
+  summaryCard,
+  summaryCardContent,
+  summaryIconAvatar,
+  saveButtonBox,
+  saveButton,
+} from '.admin_styles/styles';
+
 /**
  * Admin Permission Settings Screen
  * Manages role-based access control (RBAC) for the CRM system
@@ -59,17 +83,17 @@ const adminMenu = [
 
 // Permission level configurations
 const permissionLevels = [
-  { value: 'Full', label: 'Full Access', icon: <FullIcon />, color: '#4caf50' },
-  { value: 'Edit', label: 'Edit Access', icon: <EditIcon />, color: '#2196f3' },
-  { value: 'View', label: 'View Access', icon: <ViewIcon />, color: '#9e9e9e' },
-  { value: 'None', label: 'No Access', icon: <NoneIcon />, color: '#f44336' }
+  { value: 'Full', label: 'Full Access', icon: <FullIcon />, color: 'success' },
+  { value: 'Edit', label: 'Edit Access', icon: <EditIcon />, color: 'info' },
+  { value: 'View', label: 'View Access', icon: <ViewIcon />, color: 'default' },
+  { value: 'None', label: 'No Access', icon: <NoneIcon />, color: 'error' }
 ];
 
 // Default role configurations
 const defaultRoles = [
   { 
     name: 'Admin', 
-    icon: <AdminIcon sx={{ color: '#f4c10f' }} />,
+    icon: <AdminIcon color="warning" />,
     permissions: {
       Projects: 'Full',
       Clients: 'Full',
@@ -79,7 +103,7 @@ const defaultRoles = [
   },
   { 
     name: 'Project Manager', 
-    icon: <PersonIcon sx={{ color: '#2196f3' }} />,
+    icon: <PersonIcon color="info" />,
     permissions: {
       Projects: 'Full',
       Clients: 'Edit',
@@ -89,7 +113,7 @@ const defaultRoles = [
   },
   { 
     name: 'Team Lead', 
-    icon: <TeamIcon sx={{ color: '#4caf50' }} />,
+    icon: <TeamIcon color="success" />,
     permissions: {
       Projects: 'Edit',
       Clients: 'View',
@@ -99,7 +123,7 @@ const defaultRoles = [
   },
   { 
     name: 'Member', 
-    icon: <PersonIcon sx={{ color: '#9e9e9e' }} />,
+    icon: <PersonIcon color="text.secondary" />,
     permissions: {
       Projects: 'View',
       Clients: 'View',
@@ -109,7 +133,7 @@ const defaultRoles = [
   },
   { 
     name: 'Client', 
-    icon: <PersonIcon sx={{ color: '#ff9800' }} />,
+    icon: <PersonIcon color="warning" />,
     permissions: {
       Projects: 'View',
       Clients: 'None',
@@ -120,7 +144,6 @@ const defaultRoles = [
 ];
 
 export default function PermissionSettings() {
-  const router = useRouter();
   const [roles, setRoles] = useState(defaultRoles);
   const [selectedRole, setSelectedRole] = useState('Admin');
 
@@ -143,18 +166,8 @@ export default function PermissionSettings() {
     alert('Permissions saved successfully!');
   };
 
-  const handleLogout = () => {
-    router.push('/login');
-  };
-
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      minWidth: '90vw',
-      backgroundColor: '#fefae0',
-      color: '#525252'
-    }}>
+    <Box sx={rootBox}>
       {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
@@ -162,175 +175,57 @@ export default function PermissionSettings() {
         sx={{
           width: 240,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 240,
-            boxSizing: 'border-box',
-            backgroundColor: '#283618',
-            borderRight: '1px solid #222',
-            color: '#fefae0',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }
+          '& .MuiDrawer-paper': drawerPaper
         }}
       >
-        <Box>
-          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
-            <Typography variant="h5">
-              Admin Portal
-            </Typography>
-          </Box>
-          <List>
-            {adminMenu.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton 
-                  component={Link} 
-                  href={item.path}
-                  sx={{ 
-                    color: '#fefae0',
-                    backgroundColor: item.name === 'Permissions' ? '#6b705c' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: '#6b705c'
-                    }
-                  }}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        <Box sx={drawerHeader}>
+          <Typography variant="h5">
+            Admin Portal
+          </Typography>
         </Box>
-
-        {/* User Profile Section */}
-        <Box sx={{ 
-          borderTop: '2px solid #6b705c',
-          padding: '1rem',
-          marginTop: 'auto',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)'
-        }}>
-          {/* User profile picture and details */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ 
-                fontWeight: '600', 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: '#fefae0'
-              }}>
-                John Doe
-              </Typography>
-              <Typography sx={{ 
-                fontSize: '0.8rem', 
-                opacity: 0.8, 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'rgba(254, 250, 224, 0.7)'
-              }}>
-                admin@toro.com
-              </Typography>
-            </Box>
-          </Box>
-          {/* Logout button */}
-          <Button 
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        <List>
+          {adminMenu.map(({ name, path }, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton 
+                component={Link} 
+                href={path}
+                sx={name === 'Permissions' ? activeListItemButton : listItemButton}
+              >
+                <ListItemText primary={name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ 
-        flexGrow: 1, 
-        p: 3,
-        backgroundColor: '#fefae0'
-      }}>
+      <Box component="main" sx={mainContentBox}>
         {/* Page Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ 
-            color: '#525252',
-            fontWeight: 500
-          }}>
-            <LockIcon sx={{ 
-              mr: 1, 
-              verticalAlign: 'middle',
-              color: '#f3722c'
-            }} />
+        <Box sx={pageHeader}>
+          <Typography variant="h4" sx={pageHeaderText}>
+            <LockIcon sx={pageHeaderIcon} />
             Permissions
           </Typography>
-          <Typography variant="body1" sx={{ 
-            color: '#525252'
-          }}>
+          <Typography variant="body1" sx={pageHeaderText}>
             Manage role-based access control for your organization
           </Typography>
         </Box>
 
         {/* Permissions Table */}
-        <Card sx={{ 
-          backgroundColor: '#fefae0',
-          mb: 3,
-          border: '1px solid #525252'
-        }}>
+        <Card sx={permissionsCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ 
-              color: '#525252',
-              mb: 2,
-              fontWeight: 500
-            }}>
+            <Typography variant="h6" sx={pageHeaderText}>
               Role Permissions
             </Typography>
-            <TableContainer component={Paper} sx={{ 
-              backgroundColor: 'transparent',
-              border: '2px solid #525252'
-            }}>
+            <TableContainer component={Paper} sx={tableContainer}>
               <Table>
-                <TableHead sx={{ backgroundColor: '#283618' }}>
+                <TableHead sx={tableHead}>
                   <TableRow>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Role</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Projects</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Clients</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Team</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Settings</TableCell>
+                    <TableCell sx={tableHeaderCell}>Role</TableCell>
+                    <TableCell sx={tableHeaderCell}>Projects</TableCell>
+                    <TableCell sx={tableHeaderCell}>Clients</TableCell>
+                    <TableCell sx={tableHeaderCell}>Team</TableCell>
+                    <TableCell sx={tableHeaderCell}>Settings</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -340,14 +235,10 @@ export default function PermissionSettings() {
                       hover 
                       selected={selectedRole === role.name}
                       onClick={() => setSelectedRole(role.name)}
-                      sx={{ 
-                        '&:hover': { backgroundColor: '#e0e0d1' },
-                        cursor: 'pointer',
-                        backgroundColor: selectedRole === role.name ? '#e0e0d1' : 'transparent'
-                      }}
+                      sx={tableRow}
                     >
-                      <TableCell sx={{ color: '#283618' }}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
+                      <TableCell sx={tableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={roleIconStack}>
                           {role.icon}
                           <Typography>{role.name}</Typography>
                         </Stack>
@@ -356,25 +247,18 @@ export default function PermissionSettings() {
                         const level = role.permissions[category];
                         const permission = permissionLevels.find(p => p.value === level);
                         return (
-                          <TableCell key={category} sx={{ color: '#283618' }}>
+                          <TableCell key={category} sx={tableCell}>
                             <FormControl fullWidth size="small">
                               <Select
                                 value={level}
                                 onChange={(e) => handlePermissionChange(role.name, category, e.target.value)}
-                                sx={{ 
-                                  color: permission.color,
-                                  backgroundColor: '#fefae0',
-                                  border: '1px solid #525252',
-                                  '& .MuiSvgIcon-root': {
-                                    color: '#283618'
-                                  }
-                                }}
+                                sx={roleSelect(permission.color)}
                                 renderValue={(selected) => (
                                   <Stack direction="row" alignItems="center" spacing={1}>
-                                    <Box sx={{ color: permission.color }}>
+                                    <Box sx={permissionChip(permission.color)}>
                                       {permission.icon}
                                     </Box>
-                                    <Typography sx={{ color: permission.color }}>
+                                    <Typography color={permission.color}>
                                       {selected}
                                     </Typography>
                                   </Stack>
@@ -384,20 +268,13 @@ export default function PermissionSettings() {
                                   <MenuItem 
                                     key={level.value} 
                                     value={level.value}
-                                    sx={{ 
-                                      color: level.color,
-                                      backgroundColor: '#fefae0',
-                                      '&:hover': {
-                                        backgroundColor: '#6b705c',
-                                        color: '#fefae0'
-                                      }
-                                    }}
+                                    sx={permissionMenuItem(level.color)}
                                   >
                                     <Stack direction="row" alignItems="center" spacing={1}>
-                                      <Box sx={{ color: level.color }}>
+                                      <Box sx={permissionChip(level.color)}>
                                         {level.icon}
                                       </Box>
-                                      <Typography sx={{ color: '#283618' }}>{level.label}</Typography>
+                                      <Typography sx={tableCell}>{level.label}</Typography>
                                     </Stack>
                                   </MenuItem>
                                 ))}
@@ -416,17 +293,9 @@ export default function PermissionSettings() {
 
         {/* Selected Role Details */}
         {selectedRole && (
-          <Card sx={{ 
-            backgroundColor: '#fefae0',
-            mb: 3,
-            border: '1px solid #525252'
-          }}>
+          <Card sx={summaryCard}>
             <CardContent>
-              <Typography variant="h6" sx={{ 
-                color: '#525252',
-                mb: 2,
-                fontWeight: 500
-              }}>
+              <Typography variant="h6" sx={pageHeaderText}>
                 {selectedRole} Permissions Summary
               </Typography>
               <Grid container spacing={2}>
@@ -434,38 +303,20 @@ export default function PermissionSettings() {
                   const permission = permissionLevels.find(p => p.value === level);
                   return (
                     <Grid item xs={12} sm={6} md={3} key={category}>
-                      <Card sx={{ 
-                        backgroundColor: '#fefae0',
-                        border: '1px solid #525252',
-                        height: '100%'
-                      }}>
+                      <Card sx={summaryCardContent}>
                         <CardContent>
-                          <Typography variant="subtitle1" sx={{ 
-                            color: '#525252', 
-                            mb: 1,
-                            fontWeight: 500
-                          }}>
+                          <Typography variant="subtitle1" sx={pageHeaderText}>
                             {category}
                           </Typography>
                           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                            <Avatar sx={{ 
-                              backgroundColor: `${permission.color}20`,
-                              color: permission.color,
-                              width: 32,
-                              height: 32
-                            }}>
+                            <Avatar sx={summaryIconAvatar(permission.color)}>
                               {permission.icon}
                             </Avatar>
-                            <Typography sx={{ 
-                              color: permission.color, 
-                              fontWeight: 'bold'
-                            }}>
+                            <Typography color={permission.color} sx={{ fontWeight: 'bold' }}>
                               {permission.label}
                             </Typography>
                           </Stack>
-                          <Typography variant="body2" sx={{ 
-                            color: '#525252'
-                          }}>
+                          <Typography variant="body2" sx={tableCell}>
                             {level === 'Full' && 'Can create, edit, delete, and view all content'}
                             {level === 'Edit' && 'Can edit and view existing content'}
                             {level === 'View' && 'Can view content only'}
@@ -482,19 +333,12 @@ export default function PermissionSettings() {
         )}
 
         {/* Save Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={saveButtonBox}>
           <Button
             variant="contained"
             startIcon={<SaveIcon />}
             onClick={handleSave}
-            sx={{
-              backgroundColor: '#283618',
-              color: '#fefae0',
-              fontWeight: 500,
-              '&:hover': {
-                backgroundColor: '#606c38'
-              }
-            }}
+            sx={saveButton}
           >
             Save Permissions
           </Button>

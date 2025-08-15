@@ -1,27 +1,78 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Box,
-  Typography, Button,
-  Card, CardContent,  Stack, Avatar,
-  List,  ListItem,
-  ListItemButton, ListItemText,
-  Drawer,  Grid,
-  Divider, Paper, Table,
-  TableBody, TableCell, TableContainer,
-  TableHead,  TableRow, Chip
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Stack,
+  Avatar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Drawer,
+  Grid,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip
 } from '@mui/material';
 import {
-  Assessment as ReportsIcon,Download as DownloadIcon,
-  BarChart as BarChartIcon, PieChart as PieChartIcon,
-  Timeline as TimelineIcon, People as PeopleIcon,
-  Work as WorkIcon, Star as StarIcon,
-  TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon
+  Assessment as ReportsIcon,
+  Download as DownloadIcon,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  Timeline as TimelineIcon,
+  People as PeopleIcon,
+  Work as WorkIcon,
+  Star as StarIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon
 } from '@mui/icons-material';
 import Link from 'next/link';
+
+import {
+  rootBox,
+  drawerPaper,
+  drawerHeader,
+  listItemButton,
+  mainContentBox,
+  reportsPageHeaderIcon,
+  reportsMainContentBox,
+  reportsPageHeaderText,
+  reportsMetricCard,
+  reportsMetricTitle,
+  reportsMetricValue,
+  reportsTrend,
+  reportsTrendIconUp,
+  reportsTrendIconDown,
+  reportsTrendText,
+  reportsMetricAvatar,
+  reportsChartCard,
+  reportsChartTitle,
+  reportsChartBox,
+  reportsRecentActivitiesCard,
+  reportsTableContainer,
+  reportsTableHeader,
+  reportsTableHeaderCell,
+  reportsTableRow,
+  reportsTableCell,
+  reportsStatusChip,
+  reportsExportCard,
+  reportsExportButton,
+  pageHeader
+} from '../styles';
 
 /**
  * Admin Performance Reports Screen
@@ -79,221 +130,84 @@ const reportData = {
 };
 
 export default function PerformanceReports() {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    router.push('/login');
-  };
-
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      minWidth: '90vw',
-      backgroundColor: '#fefae0',
-      color: '#525252'
-    }}>
-      {/* Sidebar Navigation */}
+    <Box sx={rootBox}>
+      {/* Sidebar Navigation - Dark olive green with light cream text */}
       <Drawer
         variant="permanent"
         anchor="left"
         sx={{
           width: 240,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 240,
-            boxSizing: 'border-box',
-            backgroundColor: '#283618',
-            borderRight: '1px solid #6b705c',
-            color: '#fefae0',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }
+          '& .MuiDrawer-paper': drawerPaper
         }}
       >
-        <Box>
-          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c', fontWeight: 'bold', color: '#fefae0'}}>
-            <Typography variant="h5">
-              Admin Portal
-            </Typography>
-          </Box>
-          <List>
-            {adminMenu.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton 
-                  component={Link} 
-                  href={item.path}
-                  sx={{ 
-                    color: '#fefae0',
-                    backgroundColor: item.name === 'Performance Reports' ? '#6b705c' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: '#6b705c'
-                    }
-                  }}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        <Box sx={drawerHeader}>
+          <Typography variant="h5">
+            Admin Panel
+          </Typography>
         </Box>
-
-        {/* User Profile Section*/}
-        <Box sx={{ 
-          borderTop: '2px solid #6b705c',
-          padding: '1rem',
-          marginTop: 'auto',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)'
-        }}>
-          {/* User profile picture and details */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ 
-                fontWeight: '600', 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: '#fefae0'
-              }}>
-                John Doe
-              </Typography>
-              <Typography sx={{ 
-                fontSize: '0.8rem', 
-                opacity: 0.8, 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'rgba(254, 250, 224, 0.7)'
-              }}>
-                admin@toro.com
-              </Typography>
-            </Box>
-          </Box>
-          {/* Logout button */}
-          <Button 
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        <List>
+          {adminMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton 
+                component={Link} 
+                href={item.path}
+                sx={
+                  item.name === 'Performance Reports' ? { ...listItemButton, backgroundColor: '#6b705c' } : listItemButton
+                }
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
 
-      {/* Main Content */}
-      <Box component="main" sx={{ 
-        flexGrow: 1, 
-        p: 3,
-        backgroundColor: '#fefae0'
-      }}>
+      {/* Main Content - Light cream background */}
+      <Box component="main" sx={reportsMainContentBox}>
         {/* Page Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ 
-            color: '#525252',
-            fontWeight: 500
-          }}>
-            <ReportsIcon sx={{ 
-              mr: 1, 
-              verticalAlign: 'middle',
-              color: '#f3722c'
-            }} />
+        <Box sx={pageHeader}>
+          <Typography variant="h4" sx={reportsPageHeaderText}>
+            <ReportsIcon sx={reportsPageHeaderIcon} />
             Performance Reports
           </Typography>
-          <Typography variant="body1" sx={{ 
-            color: '#525252'
-          }}>
+          <Typography variant="body1" sx={reportsPageHeaderText}>
             Analytics and insights for your CRM system
           </Typography>
         </Box>
 
-        {/* Key Metrics Cards */}
+        {/* Key Metrics Cards - Light cream cards with dark gray borders */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reportData).map(([key, metric], index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card sx={{ 
-                backgroundColor: '#fefae0',
-                height: '100%',
-                border: '1px solid #525252',
-                '&:hover': {
-                  borderColor: '#f3722c'
-                }
-              }}>
+              <Card sx={reportsMetricCard}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between">
                     <Box>
-                      <Typography variant="body2" sx={{ 
-                        color: '#525252' 
-                      }}>
+                      <Typography variant="body2" sx={reportsMetricTitle}>
                         {metric.title}
                       </Typography>
-                      <Typography variant="h4" sx={{ 
-                        color: '#283618',
-                        my: 1,
-                        fontWeight: 500
-                      }}>
+                      <Typography variant="h4" sx={reportsMetricValue}>
                         {metric.value}
                       </Typography>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <Stack direction="row" alignItems="center" spacing={0.5} sx={reportsTrend}>
                         {metric.trend === 'up' ? (
-                          <TrendingUpIcon sx={{ color: '#4caf50' }} fontSize="small" />
+                          <TrendingUpIcon sx={reportsTrendIconUp} fontSize="small" />
                         ) : (
-                          <TrendingDownIcon sx={{ color: '#f44336' }} fontSize="small" />
+                          <TrendingDownIcon sx={reportsTrendIconDown} fontSize="small" />
                         )}
-                        <Typography variant="body2" sx={{ 
-                          color: metric.trend === 'up' ? '#4caf50' : '#f44336'
-                        }}>
+                        <Typography variant="body2" sx={reportsTrendText(metric.trend)}>
                           {metric.change}
                         </Typography>
                       </Stack>
                     </Box>
-                    <Avatar sx={{ 
-                      bgcolor: '#e0e0d1',
-                      width: 56,
-                      height: 56,
-                      border: '1px solid #6b705c'
-                    }}>
-                      {key.includes('Client') && <PeopleIcon sx={{ color: '#525252' }} />}
-                      {key.includes('Project') && <WorkIcon sx={{ color: '#525252' }} />}
-                      {key.includes('Revenue') && <StarIcon sx={{ color: '#525252' }} />}
-                      {key.includes('Satisfaction') && <StarIcon sx={{ color: '#525252' }} />}
-                      {key.includes('Performance') && <BarChartIcon sx={{ color: '#525252' }} />}
+                    <Avatar sx={reportsMetricAvatar}>
+                      {key.includes('Client') && <PeopleIcon />}
+                      {key.includes('Project') && <WorkIcon />}
+                      {key.includes('Revenue') && <StarIcon />}
+                      {key.includes('Satisfaction') && <StarIcon />}
+                      {key.includes('Performance') && <BarChartIcon />}
                     </Avatar>
                   </Stack>
                 </CardContent>
@@ -306,35 +220,13 @@ export default function PerformanceReports() {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Client Acquisition Chart */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              backgroundColor: '#fefae0',
-              height: '100%',
-              border: '1px solid #525252'
-            }}>
+            <Card sx={reportsChartCard}>
               <CardContent>
-                <Typography variant="h6" sx={{ 
-                  color: '#525252', 
-                  mb: 2,
-                  fontWeight: 500
-                }}>
-                  <PeopleIcon sx={{ 
-                    mr: 1, 
-                    verticalAlign: 'middle',
-                    color: '#f3722c'
-                  }} />
+                <Typography variant="h6" sx={reportsChartTitle}>
+                  <PeopleIcon sx={reportsPageHeaderIcon} />
                   Client Acquisition Trend
                 </Typography>
-                <Box sx={{ 
-                  height: '300px', 
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  color: '#6b705c',
-                  border: '1px dashed #6b705c',
-                  borderRadius: '4px',
-                  backgroundColor: '#e0e0d1'
-                }}>
+                <Box sx={reportsChartBox}>
                   <BarChartIcon sx={{ fontSize: 60, mb: 1 }} />
                   <Typography>Client Acquisition Chart</Typography>
                 </Box>
@@ -344,35 +236,13 @@ export default function PerformanceReports() {
 
           {/* Revenue Breakdown Chart */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              backgroundColor: '#fefae0',
-              height: '100%',
-              border: '1px solid #525252'
-            }}>
+            <Card sx={reportsChartCard}>
               <CardContent>
-                <Typography variant="h6" sx={{ 
-                  color: '#525252', 
-                  mb: 2,
-                  fontWeight: 500
-                }}>
-                  <StarIcon sx={{ 
-                    mr: 1, 
-                    verticalAlign: 'middle',
-                    color: '#f3722c'
-                  }} />
+                <Typography variant="h6" sx={reportsChartTitle}>
+                  <StarIcon sx={reportsPageHeaderIcon} />
                   Revenue Breakdown
                 </Typography>
-                <Box sx={{ 
-                  height: '300px', 
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  color: '#6b705c',
-                  border: '1px dashed #6b705c',
-                  borderRadius: '4px',
-                  backgroundColor: '#e0e0d1'
-                }}>
+                <Box sx={reportsChartBox}>
                   <PieChartIcon sx={{ fontSize: 60, mb: 1 }} />
                   <Typography>Revenue Breakdown Chart</Typography>
                 </Box>
@@ -382,35 +252,20 @@ export default function PerformanceReports() {
         </Grid>
 
         {/* Recent Activities */}
-        <Card sx={{ 
-          backgroundColor: '#fefae0',
-          mb: 3,
-          border: '1px solid #525252'
-        }}>
+        <Card sx={reportsRecentActivitiesCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ 
-              color: '#525252', 
-              mb: 2,
-              fontWeight: 500
-            }}>
-              <TimelineIcon sx={{ 
-                mr: 1, 
-                verticalAlign: 'middle',
-                color: '#f3722c'
-              }} />
+            <Typography variant="h6" sx={reportsChartTitle}>
+              <TimelineIcon sx={reportsPageHeaderIcon} />
               Recent Client Activities
             </Typography>
-            <TableContainer component={Paper} sx={{ 
-              backgroundColor: 'transparent',
-              border: '1px solid #525252'
-            }}>
+            <TableContainer component={Paper} sx={reportsTableContainer}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#283618' }}>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Client</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Activity</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Date</TableCell>
-                    <TableCell sx={{ color: '#fefae0', fontWeight: 'bold' }}>Status</TableCell>
+                  <TableRow sx={reportsTableHeader}>
+                    <TableCell sx={reportsTableHeaderCell}>Client</TableCell>
+                    <TableCell sx={reportsTableHeaderCell}>Activity</TableCell>
+                    <TableCell sx={reportsTableHeaderCell}>Date</TableCell>
+                    <TableCell sx={reportsTableHeaderCell}>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -424,30 +279,15 @@ export default function PerformanceReports() {
                     <TableRow 
                       key={index} 
                       hover 
-                      sx={{ 
-                        '&:hover': { 
-                          backgroundColor: '#e0e0d1' 
-                        }
-                      }}
+                      sx={reportsTableRow}
                     >
-                      <TableCell sx={{ color: '#283618' }}>{row.client}</TableCell>
-                      <TableCell sx={{ color: '#283618' }}>{row.activity}</TableCell>
-                      <TableCell sx={{ color: '#283618' }}>{row.date}</TableCell>
+                      <TableCell sx={reportsTableCell}>{row.client}</TableCell>
+                      <TableCell sx={reportsTableCell}>{row.activity}</TableCell>
+                      <TableCell sx={reportsTableCell}>{row.date}</TableCell>
                       <TableCell>
                         <Chip
                           label={row.status.replace('-', ' ')}
-                          sx={{
-                            backgroundColor: 
-                              row.status === 'completed' ? 'rgba(46, 125, 50, 0.2)' :
-                              row.status === 'pending' ? 'rgba(97, 97, 97, 0.2)' : 'rgba(2, 136, 209, 0.2)',
-                            color: 
-                              row.status === 'completed' ? '#2e7d32' :
-                              row.status === 'pending' ? '#616161' : '#0288d1',
-                            border: 
-                              row.status === 'completed' ? '1px solid #2e7d32' :
-                              row.status === 'pending' ? '1px solid #616161' : '1px solid #0288d1',
-                            textTransform: 'capitalize'
-                          }}
+                          sx={reportsStatusChip(row.status)}
                         />
                       </TableCell>
                     </TableRow>
@@ -459,21 +299,10 @@ export default function PerformanceReports() {
         </Card>
 
         {/* Data Export Section */}
-        <Card sx={{ 
-          backgroundColor: '#fefae0',
-          border: '1px solid #525252'
-        }}>
+        <Card sx={reportsExportCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ 
-              color: '#525252', 
-              mb: 2,
-              fontWeight: 500
-            }}>
-              <DownloadIcon sx={{ 
-                mr: 1, 
-                verticalAlign: 'middle',
-                color: '#f3722c'
-              }} />
+            <Typography variant="h6" sx={reportsChartTitle}>
+              <DownloadIcon sx={reportsPageHeaderIcon} />
               Export Reports
             </Typography>
             <Stack direction="row" spacing={2}>
@@ -482,14 +311,7 @@ export default function PerformanceReports() {
                   key={format}
                   variant="outlined"
                   startIcon={<DownloadIcon />}
-                  sx={{
-                    color: '#283618',
-                    borderColor: '#283618',
-                    '&:hover': {
-                      backgroundColor: '#e0e0d1',
-                      borderColor: '#283618'
-                    }
-                  }}
+                  sx={reportsExportButton}
                 >
                   Download {format}
                 </Button>

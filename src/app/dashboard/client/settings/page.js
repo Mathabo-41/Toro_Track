@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -39,9 +37,63 @@ import {
   Check as CheckIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
+import {
+  mainBox,
+  drawerPaper,
+  drawerHeader,
+  listItemButton,
+  activeListItemButton,
+  mainContentBox,
+  headerBox,
+  headerTitle,
+  headerIcon,
+  headerSubtitle,
+  tabs,
+  tab,
+  settingsCard,
+  profileHeaderTitle,
+  profileButtonsStack,
+  saveButton,
+  cancelButton,
+  editProfileButton,
+  profileAvatar,
+  changePhotoButton,
+  profileTextField,
+  securityTitle,
+  securitySubtitle,
+  passwordTextField,
+  updatePasswordButton,
+  securityPaper,
+  securityBodyText,
+  sessionPaper,
+  sessionDeviceText,
+  sessionTimeText,
+  logoutDevicesButton,
+  notificationsTitle,
+  notificationsPaper,
+  notificationsSubtitle,
+  notificationSwitch,
+  notificationLabel,
+  savePreferencesButton,
+  preferencesTitle,
+  preferencesPaper,
+  preferencesSubtitle,
+  darkModeSwitch,
+  darkModeLabel,
+  languageSelect,
+  logoutBox,
+  logoutButton,
+} from '../styles';
 
 /**
  * Client Settings Screen
+ * * Features:
+ * - Account management (profile, security, notifications)
+ * - Dark mode toggle
+ * - Language selection
+ * - Profile editing
+ * - Password change
+ * - Consistent dark theme with gold accents
  */
 
 const clientMenu = [
@@ -52,7 +104,6 @@ const clientMenu = [
 ];
 
 export default function ClientSettings() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -80,7 +131,7 @@ export default function ClientSettings() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    //  send the data to  backend
+    // backend
     setEditMode(false);
     alert('Settings saved successfully!');
   };
@@ -90,16 +141,8 @@ export default function ClientSettings() {
     // Reset form data if needed
   };
 
-  const handleLogout = () => {
-    router.push('/login');
-  };
-
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      backgroundColor: '#fefae0'
-    }}>
+    <Box sx={mainBox}>
       {/* Sidebar Navigation */}
       <Drawer
         variant="permanent"
@@ -107,221 +150,91 @@ export default function ClientSettings() {
         sx={{
           width: 240,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 240,
-            boxSizing: 'border-box',
-            backgroundColor: '#283618',
-            borderRight: '1px solid #6b705c',
-            color: '#fefae0',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }
+          '& .MuiDrawer-paper': drawerPaper,
         }}
       >
-        <Box>
-          <Box sx={{ p: 2, borderBottom: '2px solid #6b705c' }}>
-            <Typography variant="h5"> 
-              Client Portal
-            </Typography>
-          </Box>
-          <List>
-            {clientMenu.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton 
-                  component={Link} 
-                  href={item.path}
-                  sx={{ 
-                    color: '#fefae0',
-                    backgroundColor: item.name === 'Settings' ? '#6b705c' : 'transparent',
-                    '&:hover': {
-                      backgroundColor: '#6b705c'
-                    }
-                  }}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        <Box sx={drawerHeader}>
+          <Typography variant="h5">
+            Client Portal
+          </Typography>
         </Box>
-
-        {/* User Profile Section */}
-        <Box sx={{ 
-          borderTop: '2px solid #6b705c',
-          padding: '1rem',
-          marginTop: 'auto',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)'
-        }}>
-          {/* User profile picture and details */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ 
-                fontWeight: '600', 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: '#fefae0'
-              }}>
-                John Doe
-              </Typography>
-              <Typography sx={{ 
-                fontSize: '0.8rem', 
-                opacity: 0.8, 
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'rgba(254, 250, 224, 0.7)'
-              }}>
-                client@toro.com
-              </Typography>
-            </Box>
-          </Box>
-          {/* Logout button */}
-          <Button 
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        <List>
+          {clientMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                sx={{
+                  ...listItemButton,
+                  ...(item.name === 'Settings' && activeListItemButton),
+                }}
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ 
-        flexGrow: 1, 
-        p: 3,
-        backgroundColor: '#fefae0'
-      }}>
+      <Box component="main" sx={mainContentBox}>
         {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ 
-            color: '#525252',
-            fontWeight: 500
-          }}>
-            <SettingsIcon sx={{ 
-              mr: 1, 
-              verticalAlign: 'middle',
-              color: '#f3722c'
-            }} />
+        <Box sx={headerBox}>
+          <Typography variant="h4" sx={headerTitle}>
+            <SettingsIcon sx={headerIcon} />
             Settings
           </Typography>
-          <Typography variant="body1" sx={{ color: '#525252' }}>
+          <Typography variant="body1" sx={headerSubtitle}>
             Manage your account preferences and security settings
           </Typography>
         </Box>
 
         {/* Tabs */}
-        <Tabs 
-          value={activeTab} 
+        <Tabs
+          value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
-          sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#f3722c'
-            },
-            mb: 3
-          }}
+          sx={tabs}
         >
-          <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={{ color: '#283618' }} />
-          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={{ color: '#283618' }} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={{ color: '#283618' }} />
-          <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={{ color: '#283618' }} />
+          <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={tab} />
+          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={tab} />
+          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={tab} />
+          <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={tab} />
         </Tabs>
 
         {/* Tab Content */}
-        <Card sx={{ 
-          backgroundColor: '#ccd5ae', 
-          border: '2px solid #606c38',
-        }}>
+        <Card sx={settingsCard}>
           <CardContent>
             {activeTab === 0 && ( /* Profile Tab */
               <Box component="form" onSubmit={handleSubmit}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={{ color: '#283618' }}>
+                  <Typography variant="h6" sx={profileHeaderTitle}>
                     Personal Information
                   </Typography>
                   {editMode ? (
-                    <Stack direction="row" spacing={1}>
-                      <Button 
+                    <Stack direction="row" spacing={1} sx={profileButtonsStack}>
+                      <Button
                         type="submit"
                         variant="contained"
                         startIcon={<CheckIcon />}
-                        sx={{
-                          backgroundColor: '#283618',
-                          color: '#606c38',
-                          '&:hover': {
-                            backgroundColor: '#344e41',
-                          }
-                        }}
+                        sx={saveButton}
                       >
                         Save
                       </Button>
-                      <Button 
+                      <Button
                         variant="outlined"
                         startIcon={<CloseIcon />}
                         onClick={handleCancelEdit}
-                        sx={{
-                          color: '#606c38',
-                          borderColor: '#606c38',
-                          '&:hover': {
-                            border: '#283618',
-                            backgroundColor: '#283618',
-                          }
-                        }}
+                        sx={cancelButton}
                       >
                         Cancel
                       </Button>
                     </Stack>
                   ) : (
-                    <Button 
+                    <Button
                       variant="outlined"
                       startIcon={<EditIcon />}
                       onClick={() => setEditMode(true)}
-                      sx={{
-                        color: '#606c38',
-                        borderColor: '#606c38',
-                        '&:hover': {
-                          border: '#283618',
-                          backgroundColor: '#283618',
-                        }
-                      }}
+                      sx={editProfileButton}
                     >
                       Edit Profile
                     </Button>
@@ -330,30 +243,19 @@ export default function ClientSettings() {
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       mb: 3
                     }}>
                       <Avatar
-                        sx={{ 
-                          width: 120, 
-                          height: 120,
-                          mb: 2,
-                          border: '2px solid #f3722c'
-                        }}
+                        sx={profileAvatar}
                       />
                       {editMode && (
-                        <Button 
+                        <Button
                           variant="outlined"
-                          sx={{
-                            color: '#f3722c',
-                            borderColor: '#f3722c',
-                            '&:hover': {
-                              borderColor: '#e65c19'
-                            }
-                          }}
+                          sx={changePhotoButton}
                         >
                           Change Photo
                         </Button>
@@ -370,18 +272,7 @@ export default function ClientSettings() {
                           value={formData.name}
                           onChange={handleChange}
                           disabled={!editMode}
-                          sx={{
-                            '& .MuiInputLabel-root': { color: '#525252' },
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': {
-                                borderColor: '#a3a699',
-                              },
-                            },
-                            '& .MuiInputBase-input': { 
-                              color: '#283618',
-                              opacity: editMode ? 1 : 0.7
-                            }
-                          }}
+                          sx={profileTextField(editMode)}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
@@ -393,18 +284,7 @@ export default function ClientSettings() {
                           value={formData.email}
                           onChange={handleChange}
                           disabled={!editMode}
-                          sx={{
-                            '& .MuiInputLabel-root': { color: '#525252' },
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': {
-                                borderColor: '#a3a699',
-                              },
-                            },
-                            '& .MuiInputBase-input': { 
-                              color: '#283618',
-                              opacity: editMode ? 1 : 0.7
-                            }
-                          }}
+                          sx={profileTextField(editMode)}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
@@ -415,18 +295,7 @@ export default function ClientSettings() {
                           value={formData.company}
                           onChange={handleChange}
                           disabled={!editMode}
-                          sx={{
-                            '& .MuiInputLabel-root': { color: '#525252' },
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': {
-                                borderColor: '#a3a699',
-                              },
-                            },
-                            '& .MuiInputBase-input': { 
-                              color: '#283618',
-                              opacity: editMode ? 1 : 0.7
-                            }
-                          }}
+                          sx={profileTextField(editMode)}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
@@ -437,18 +306,7 @@ export default function ClientSettings() {
                           value={formData.position}
                           onChange={handleChange}
                           disabled={!editMode}
-                          sx={{
-                            '& .MuiInputLabel-root': { color: '#525252' },
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': {
-                                borderColor: '#a3a699',
-                              },
-                            },
-                            '& .MuiInputBase-input': { 
-                              color: '#283618',
-                              opacity: editMode ? 1 : 0.7
-                            }
-                          }}
+                          sx={profileTextField(editMode)}
                         />
                       </Grid>
                       <Grid item xs={12}>
@@ -459,18 +317,7 @@ export default function ClientSettings() {
                           value={formData.phone}
                           onChange={handleChange}
                           disabled={!editMode}
-                          sx={{
-                            '& .MuiInputLabel-root': { color: '#525252' },
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': {
-                                borderColor: '#a3a699',
-                              },
-                            },
-                            '& .MuiInputBase-input': { 
-                              color: '#283618',
-                              opacity: editMode ? 1 : 0.7
-                            }
-                          }}
+                          sx={profileTextField(editMode)}
                         />
                       </Grid>
                     </Grid>
@@ -481,19 +328,13 @@ export default function ClientSettings() {
 
             {activeTab === 1 && ( /* Security Tab */
               <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={{ 
-                  color: '#283618',
-                  mb: 3
-                }}>
+                <Typography variant="h6" sx={securityTitle}>
                   Security Settings
                 </Typography>
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={{ 
-                      color: '#283618',
-                      mb: 2
-                    }}>
+                    <Typography variant="subtitle1" sx={securitySubtitle}>
                       Change Password
                     </Typography>
 
@@ -505,15 +346,7 @@ export default function ClientSettings() {
                         type="password"
                         value={formData.currentPassword}
                         onChange={handleChange}
-                        sx={{
-                          '& .MuiInputLabel-root': { color: '#525252' },
-                          '& .MuiOutlinedInput-root': {
-                            '& fieldset': {
-                              borderColor: '#a3a699',
-                            },
-                          },
-                          '& .MuiInputBase-input': { color: '#283618' }
-                        }}
+                        sx={passwordTextField}
                       />
                       <TextField
                         fullWidth
@@ -522,15 +355,7 @@ export default function ClientSettings() {
                         type="password"
                         value={formData.newPassword}
                         onChange={handleChange}
-                        sx={{
-                          '& .MuiInputLabel-root': { color: '#525252' },
-                          '& .MuiOutlinedInput-root': {
-                            '& fieldset': {
-                              borderColor: '#a3a699',
-                            },
-                          },
-                          '& .MuiInputBase-input': { color: '#283618' }
-                        }}
+                        sx={passwordTextField}
                       />
                       <TextField
                         fullWidth
@@ -539,15 +364,7 @@ export default function ClientSettings() {
                         type="password"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        sx={{
-                          '& .MuiInputLabel-root': { color: '#525252' },
-                          '& .MuiOutlinedInput-root': {
-                            '& fieldset': {
-                              borderColor: '#a3a699',
-                            },
-                          },
-                          '& .MuiInputBase-input': { color: '#283618' }
-                        }}
+                        sx={passwordTextField}
                       />
                     </Stack>
 
@@ -555,85 +372,52 @@ export default function ClientSettings() {
                       type="submit"
                       variant="contained"
                       startIcon={<SaveIcon />}
-                      sx={{
-                        mt: 3,
-                        backgroundColor: '#f3722c',
-                        color: '#fefae0',
-                        '&:hover': {
-                          backgroundColor: '#e65c19'
-                        }
-                      }}
+                      sx={updatePasswordButton}
                     >
                       Update Password
                     </Button>
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={{ 
-                      color: '#283618',
-                      mb: 2
-                    }}>
+                    <Typography variant="subtitle1" sx={securitySubtitle}>
                       Two-Factor Authentication
                     </Typography>
 
-                    <Paper sx={{ 
-                      p: 2,
-                      mb: 3,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
+                    <Paper sx={securityPaper}>
                       <FormControlLabel
                         control={
-                          <Switch 
+                          <Switch
                             checked={true}
                             onChange={() => {}}
-                            color="primary"
+                            sx={notificationSwitch}
                           />
                         }
                         label={
-                          <Typography sx={{ color: '#283618' }}>
+                          <Typography sx={notificationLabel}>
                             Enable Two-Factor Authentication
                           </Typography>
                         }
-                        sx={{ ml: 0 }}
                       />
-                      <Typography variant="body2" sx={{ 
-                        color: 'rgba(40, 54, 24, 0.7)',
-                        mt: 1
-                      }}>
+                      <Typography variant="body2" sx={securityBodyText}>
                         Adds an extra layer of security to your account
                       </Typography>
                     </Paper>
 
-                    <Typography variant="subtitle1" sx={{ 
-                      color: '#283618',
-                      mb: 2
-                    }}>
+                    <Typography variant="subtitle1" sx={securitySubtitle}>
                       Active Sessions
                     </Typography>
 
-                    <Paper sx={{ 
-                      p: 2,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
-                      <Typography variant="body2" sx={{ color: '#283618' }}>
+                    <Paper sx={sessionPaper}>
+                      <Typography variant="body2" sx={sessionDeviceText}>
                         Current Device (Chrome, Windows)
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'rgba(40, 54, 24, 0.5)' }}>
+                      <Typography variant="caption" sx={sessionTimeText}>
                         Last active: Just now
                       </Typography>
-                      <Button 
+                      <Button
                         variant="outlined"
                         size="small"
-                        sx={{
-                          mt: 1,
-                          color: '#d32f2f',
-                          borderColor: '#d32f2f',
-                          '&:hover': {
-                            borderColor: '#b71c1c'
-                          }
-                        }}
+                        sx={logoutDevicesButton}
                       >
                         Logout from all devices
                       </Button>
@@ -645,69 +429,44 @@ export default function ClientSettings() {
 
             {activeTab === 2 && ( /* Notifications Tab */
               <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={{ 
-                  color: '#283618',
-                  mb: 3
-                }}>
+                <Typography variant="h6" sx={notificationsTitle}>
                   Notification Preferences
                 </Typography>
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Paper sx={{ 
-                      p: 2,
-                      mb: 2,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
-                      <Typography variant="subtitle1" sx={{ 
-                        color: '#283618',
-                        mb: 1
-                      }}>
+                    <Paper sx={notificationsPaper}>
+                      <Typography variant="subtitle1" sx={notificationsSubtitle}>
                         Email Notifications
                       </Typography>
 
                       <Stack spacing={1}>
                         <FormControlLabel
                           control={
-                            <Switch 
+                            <Switch
                               name="notifications"
                               checked={formData.notifications}
                               onChange={handleChange}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: '#f3722c'
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#f3722c'
-                                }
-                              }}
+                              sx={notificationSwitch}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#283618' }}>
+                            <Typography sx={notificationLabel}>
                               Project Updates
                             </Typography>
                           }
                         />
                         <FormControlLabel
                           control={
-                            <Switch 
+                            <Switch
                               name="newsletter"
                               checked={formData.newsletter}
                               onChange={handleChange}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: '#f3722c'
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#f3722c'
-                                }
-                              }}
+                              sx={notificationSwitch}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#283618' }}>
+                            <Typography sx={notificationLabel}>
                               Newsletter
                             </Typography>
                           }
@@ -717,58 +476,36 @@ export default function ClientSettings() {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <Paper sx={{ 
-                      p: 2,
-                      mb: 2,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
-                      <Typography variant="subtitle1" sx={{ 
-                        color: '#283618',
-                        mb: 1
-                      }}>
+                    <Paper sx={notificationsPaper}>
+                      <Typography variant="subtitle1" sx={notificationsSubtitle}>
                         In-App Notifications
                       </Typography>
 
                       <Stack spacing={1}>
                         <FormControlLabel
                           control={
-                            <Switch 
+                            <Switch
                               checked={true}
                               onChange={() => {}}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: '#f3722c'
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#f3722c'
-                                }
-                              }}
+                              sx={notificationSwitch}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#283618' }}>
+                            <Typography sx={notificationLabel}>
                               Messages
                             </Typography>
                           }
                         />
                         <FormControlLabel
                           control={
-                            <Switch 
+                            <Switch
                               checked={true}
                               onChange={() => {}}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: '#f3722c'
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: '#f3722c'
-                                }
-                              }}
+                              sx={notificationSwitch}
                             />
                           }
                           label={
-                            <Typography sx={{ color: '#283618' }}>
+                            <Typography sx={notificationLabel}>
                               Meeting Reminders
                             </Typography>
                           }
@@ -782,58 +519,36 @@ export default function ClientSettings() {
                   type="submit"
                   variant="contained"
                   startIcon={<SaveIcon />}
-                  sx={{
-                    mt: 3,
-                    backgroundColor: '#f3722c',
-                    color: '#fefae0',
-                    '&:hover': {
-                      backgroundColor: '#e65c19'
-                    }
-                  }}
+                  sx={savePreferencesButton}
                 >
                   Save Preferences
                 </Button>
               </Box>
             )}
 
-            {/* Preferences Tab */} 
+            {/* Preferences Tab */}
             {activeTab === 3 && (
               <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={{ color: '#283618', mb: 3 }}>
+                <Typography variant="h6" sx={preferencesTitle}>
                   App Preferences
                 </Typography>
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Paper sx={{ 
-                      p: 2,
-                      mb: 2,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
-                      <Typography variant="subtitle1" sx={{ 
-                        color: '#283618',
-                        mb: 1
-                      }}>
+                    <Paper sx={preferencesPaper}>
+                      <Typography variant="subtitle1" sx={preferencesSubtitle}>
                         Display Settings
                       </Typography>
                       <FormControlLabel
                         control={
-                          <Switch 
+                          <Switch
                             checked={darkMode}
                             onChange={(e) => setDarkMode(e.target.checked)}
-                            sx={{
-                              '& .MuiSwitch-switchBase.Mui-checked': {
-                                color: '#f3722c'
-                              },
-                              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                backgroundColor: '#f3722c'
-                              }
-                            }}
+                            sx={darkModeSwitch}
                           />
                         }
                         label={
-                          <Typography sx={{ color: '#283618' }}>
+                          <Typography sx={darkModeLabel}>
                             Dark Mode
                           </Typography>
                         }
@@ -842,14 +557,10 @@ export default function ClientSettings() {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={{ color: '#283618', mb: 2 }}>
+                    <Typography variant="subtitle1" sx={preferencesSubtitle}>
                       Language & Region
                     </Typography>
-                    <Paper sx={{ 
-                      p: 2,
-                      backgroundColor: '#a3a699',
-                      border: '1px solid #6b705c'
-                    }}>
+                    <Paper sx={preferencesPaper}>
                       <TextField
                         select
                         fullWidth
@@ -857,16 +568,7 @@ export default function ClientSettings() {
                         name="language"
                         value={formData.language}
                         onChange={handleChange}
-                        sx={{
-                          '& .MuiInputLabel-root': { color: '#525252' },
-                          '& .MuiOutlinedInput-root': {
-                            '& fieldset': {
-                              borderColor: '#6b705c',
-                            },
-                          },
-                          '& .MuiInputBase-input': { color: '#283618' },
-                          '& .MuiSvgIcon-root': { color: '#6b705c' }
-                        }}
+                        sx={languageSelect}
                       >
                         <MenuItem value="en">English</MenuItem>
                         <MenuItem value="es">Spanish</MenuItem>
@@ -880,14 +582,7 @@ export default function ClientSettings() {
                   type="submit"
                   variant="contained"
                   startIcon={<SaveIcon />}
-                  sx={{
-                    mt: 3,
-                    backgroundColor: '#f3722c',
-                    color: '#fefae0',
-                    '&:hover': {
-                      backgroundColor: '#e65c19'
-                    }
-                  }}
+                  sx={savePreferencesButton}
                 >
                   Save Preferences
                 </Button>
@@ -895,6 +590,17 @@ export default function ClientSettings() {
             )}
           </CardContent>
         </Card>
+
+        {/* Logout Button */}
+        <Box sx={logoutBox}>
+          <Button
+            variant="outlined"
+            startIcon={<LogoutIcon />}
+            sx={logoutButton}
+          >
+            Logout
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
