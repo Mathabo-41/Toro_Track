@@ -1,172 +1,138 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Stack,
-  Button,
-  Drawer,
-  ListItemButton,
-  List,
-  MenuItem,
-  ListItem,
-  ListItemText,
-  Divider,
-  TextField,
-  Avatar,
-  Switch,
-  FormControlLabel,
-  Tabs,
-  Tab,
-  Paper,
-  Grid
-} from '@mui/material';
+  Box, Typography, Card, CardContent, Stack, Button,
+  Drawer, List, ListItem, ListItemButton, ListItemText,
+  Divider, TextField, Avatar, Switch, FormControlLabel,
+  Tabs, Tab, Grid, MenuItem, Paper
+} from '@mui/material'
 import {
   Settings as SettingsIcon,
   Person as ProfileIcon,
-  Notifications as NotificationsIcon,
   Security as SecurityIcon,
+  Notifications as NotificationsIcon,
   Language as LanguageIcon,
-  Logout as LogoutIcon,
-  Save as SaveIcon,
   Edit as EditIcon,
   Check as CheckIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
+  Close as CloseIcon,
+  Save as SaveIcon,
+  Logout as LogoutIcon
+} from '@mui/icons-material'
+
+import { useClientStore } from '../common/clientStore'
+import * as g from '../common/styles'
+import * as s from './styles'
 import {
-  mainBox,
-  drawerPaper,
-  drawerHeader,
-  listItemButton,
-  activeListItemButton,
-  mainContentBox,
-  headerBox,
-  headerTitle,
-  headerIcon,
-  headerSubtitle,
-  tabs,
-  tab,
-  settingsCard,
-  profileHeaderTitle,
-  profileButtonsStack,
-  saveButton,
-  cancelButton,
-  editProfileButton,
-  profileAvatar,
-  changePhotoButton,
-  profileTextField,
-  securityTitle,
-  securitySubtitle,
-  passwordTextField,
-  updatePasswordButton,
-  securityPaper,
-  securityBodyText,
-  sessionPaper,
-  sessionDeviceText,
-  sessionTimeText,
-  logoutDevicesButton,
-  notificationsTitle,
-  notificationsPaper,
-  notificationsSubtitle,
-  notificationSwitch,
-  notificationLabel,
-  savePreferencesButton,
-  preferencesTitle,
-  preferencesPaper,
-  preferencesSubtitle,
-  darkModeSwitch,
-  darkModeLabel,
-  languageSelect,
-  logoutBox,
-  logoutButton,
-} from '../styles';
+  useProfile,
+  useSaveProfile,
+  useSavePassword,
+  useSaveNotifications,
+  useSavePreferences
+} from './useClientSettings'
 
-/**
- * Client Settings Screen
- * * Features:
- * - Account management (profile, security, notifications)
- * - Dark mode toggle
- * - Language selection
- * - Profile editing
- * - Password change
- * - Consistent dark theme with gold accents
- */
+export default function ClientSettingsPage() {
+  const { clientMenu, currentPath, setCurrentPath } = useClientStore()
+  const [tab, setTab] = useState(0)
+  const [editMode, setEditMode] = useState(false)
+  const { data: profile, isLoading } = useProfile()
+  const saveProfile = useSaveProfile()
+  const savePassword = useSavePassword()
+  const saveNotifications = useSaveNotifications()
+  const savePreferences = useSavePreferences()
 
-const clientMenu = [
-  { name: 'Project Details', path: '/dashboard/client/details' },
-  { name: 'Raise Query', path: '/dashboard/client/query' },
-  { name: 'Messages & Notifications', path: '/dashboard/client/messages' },
-  { name: 'Settings', path: '/dashboard/client/settings' }
-];
+  const [form, setForm] = useState({
+    name: '', email: '', company: '', position: '', phone: '',
+    currentPassword: '', newPassword: '', confirmPassword: '',
+    notifications: false, newsletter: false,
+    darkMode: false, language: 'en'
+  })
 
-export default function ClientSettings() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [editMode, setEditMode] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [formData, setFormData] = useState({
-    name: 'toro track',
-    email: 'trtrack@yahoo.com',
-    company: 'Law Firm Inc',
-    position: 'Marketing Director',
-    phone: '+27 45 847 8389',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-    notifications: true,
-    newsletter: false,
-    language: 'en'
-  });
+  // Load form from API
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name,
+        email: profile.email,
+        company: profile.company,
+        position: profile.position,
+        phone: profile.phone,
+        notifications: profile.notifications,
+        newsletter: profile.newsletter,
+        darkMode: profile.preferences.darkMode,
+        language: profile.preferences.language,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+    }
+  }, [profile])
+
+  // Sidebar highlight
+  useEffect(() => {
+    setCurrentPath('/dashboard/client/settings')
+  }, [setCurrentPath])
 
   const handleChange = (e) => {
-    const { name, value, checked, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+    const { name, value, checked, type } = e.target
+    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // backend
-    setEditMode(false);
-    alert('Settings saved successfully!');
-  };
+  const handleSubmitProfile = (e) => {
+    e.preventDefault()
+    saveProfile.mutate({
+      name: form.name,
+      email: form.email,
+      company: form.company,
+      position: form.position,
+      phone: form.phone
+    }, { onSuccess: () => setEditMode(false) })
+  }
 
-  const handleCancelEdit = () => {
-    setEditMode(false);
-    // Reset form data if needed
-  };
+  const handleSubmitPassword = (e) => {
+    e.preventDefault()
+    savePassword.mutate({
+      currentPassword: form.currentPassword,
+      newPassword: form.newPassword,
+      confirmPassword: form.confirmPassword
+    }, {
+      onSuccess: () => alert('Password updated!')
+    })
+  }
+
+  const handleSubmitNotifications = (e) => {
+    e.preventDefault()
+    saveNotifications.mutate({
+      notifications: form.notifications,
+      newsletter: form.newsletter
+    })
+  }
+
+  const handleSubmitPreferences = (e) => {
+    e.preventDefault()
+    savePreferences.mutate({
+      darkMode: form.darkMode,
+      language: form.language
+    })
+  }
 
   return (
-    <Box sx={mainBox}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': drawerPaper,
-        }}
-      >
-        <Box sx={drawerHeader}>
-          <Typography variant="h5">
-            Client Portal
-          </Typography>
+    <Box sx={s.mainBox}>
+      <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': s.drawerPaper }}>
+        <Box sx={s.drawerHeader}>
+          <Typography variant="h5">Client Portal</Typography>
         </Box>
         <List>
-          {clientMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
+          {clientMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
+                selected={item.path === currentPath}
                 sx={{
-                  ...listItemButton,
-                  ...(item.name === 'Settings' && activeListItemButton),
+                  ...s.listItemButton,
+                  ...(item.path === currentPath && s.activeListItemButton)
                 }}
               >
                 <ListItemText primary={item.name} />
@@ -176,399 +142,179 @@ export default function ClientSettings() {
         </List>
       </Drawer>
 
-      {/* Main Content */}
-      <Box component="main" sx={mainContentBox}>
-        {/* Header */}
-        <Box sx={headerBox}>
-          <Typography variant="h4" sx={headerTitle}>
-            <SettingsIcon sx={headerIcon} />
+      <Box component="main" sx={s.mainContentBox}>
+        <Box sx={g.headerBoxStyles}>
+          <Typography variant="h4" sx={g.headerTitleStyles}>
+            <SettingsIcon sx={g.headerIconStyles} />
             Settings
           </Typography>
-          <Typography variant="body1" sx={headerSubtitle}>
+          <Typography variant="body1" sx={g.headerSubtitleStyles}>
             Manage your account preferences and security settings
           </Typography>
         </Box>
 
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          sx={tabs}
-        >
-          <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={tab} />
-          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={tab} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={tab} />
-          <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={tab} />
+        <Tabs value={tab} onChange={(_, v) => { setTab(v); setEditMode(false) }} sx={g.tabsStyles}>
+          <Tab label="Profile"       icon={<ProfileIcon />}       iconPosition="start" sx={g.tabStyles} />
+          <Tab label="Security"      icon={<SecurityIcon />}      iconPosition="start" sx={g.tabStyles} />
+          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={g.tabStyles} />
+          <Tab label="Preferences"   icon={<LanguageIcon />}      iconPosition="start" sx={g.tabStyles} />
         </Tabs>
 
-        {/* Tab Content */}
-        <Card sx={settingsCard}>
+        <Card sx={g.cardStyles}>
           <CardContent>
-            {activeTab === 0 && ( /* Profile Tab */
-              <Box component="form" onSubmit={handleSubmit}>
+            {/* Profile */}
+            {tab === 0 && !isLoading && (
+              <Box component="form" onSubmit={handleSubmitProfile}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                  <Typography variant="h6" sx={profileHeaderTitle}>
-                    Personal Information
-                  </Typography>
+                  <Typography sx={s.profileHeaderTitle}>Personal Information</Typography>
                   {editMode ? (
-                    <Stack direction="row" spacing={1} sx={profileButtonsStack}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        startIcon={<CheckIcon />}
-                        sx={saveButton}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CloseIcon />}
-                        onClick={handleCancelEdit}
-                        sx={cancelButton}
-                      >
-                        Cancel
-                      </Button>
+                    <Stack direction="row" spacing={1} sx={s.profileButtonsStack}>
+                      <Button type="submit" startIcon={<CheckIcon />} sx={s.saveButton}>Save</Button>
+                      <Button onClick={() => setEditMode(false)} startIcon={<CloseIcon />} sx={s.cancelButton}>Cancel</Button>
                     </Stack>
                   ) : (
-                    <Button
-                      variant="outlined"
-                      startIcon={<EditIcon />}
-                      onClick={() => setEditMode(true)}
-                      sx={editProfileButton}
-                    >
-                      Edit Profile
-                    </Button>
+                    <Button onClick={() => setEditMode(true)} startIcon={<EditIcon />} sx={s.editProfileButton}>Edit Profile</Button>
                   )}
                 </Stack>
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <Box sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      mb: 3
-                    }}>
-                      <Avatar
-                        sx={profileAvatar}
-                      />
-                      {editMode && (
-                        <Button
-                          variant="outlined"
-                          sx={changePhotoButton}
-                        >
-                          Change Photo
-                        </Button>
-                      )}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+                      <Avatar sx={s.profileAvatar} />
+                      {editMode && <Button sx={s.changePhotoButton}>Change Photo</Button>}
                     </Box>
                   </Grid>
                   <Grid item xs={12} md={8}>
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Full Name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          disabled={!editMode}
-                          sx={profileTextField(editMode)}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={!editMode}
-                          sx={profileTextField(editMode)}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Company"
-                          name="company"
-                          value={formData.company}
-                          onChange={handleChange}
-                          disabled={!editMode}
-                          sx={profileTextField(editMode)}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Position"
-                          name="position"
-                          value={formData.position}
-                          onChange={handleChange}
-                          disabled={!editMode}
-                          sx={profileTextField(editMode)}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Phone Number"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          disabled={!editMode}
-                          sx={profileTextField(editMode)}
-                        />
-                      </Grid>
+                      {[
+                        ['Full Name','name'],
+                        ['Email','email'],
+                        ['Company','company'],
+                        ['Position','position'],
+                        ['Phone Number','phone']
+                      ].map(([label,name]) => (
+                        <Grid item xs={12} sm={6} key={name}>
+                          <TextField
+                            fullWidth
+                            label={label}
+                            name={name}
+                            value={form[name]}
+                            onChange={handleChange}
+                            disabled={!editMode}
+                            sx={s.profileTextField(editMode)}
+                          />
+                        </Grid>
+                      ))}
                     </Grid>
                   </Grid>
                 </Grid>
               </Box>
             )}
 
-            {activeTab === 1 && ( /* Security Tab */
-              <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={securityTitle}>
-                  Security Settings
-                </Typography>
-
+            {/* Security */}
+            {tab === 1 && (
+              <Box component="form" onSubmit={handleSubmitPassword}>
+                <Typography sx={s.securityTitle}>Security Settings</Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={securitySubtitle}>
-                      Change Password
-                    </Typography>
-
-                    <Stack spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="Current Password"
-                        name="currentPassword"
-                        type="password"
-                        value={formData.currentPassword}
-                        onChange={handleChange}
-                        sx={passwordTextField}
-                      />
-                      <TextField
-                        fullWidth
-                        label="New Password"
-                        name="newPassword"
-                        type="password"
-                        value={formData.newPassword}
-                        onChange={handleChange}
-                        sx={passwordTextField}
-                      />
-                      <TextField
-                        fullWidth
-                        label="Confirm New Password"
-                        name="confirmPassword"
-                        type="password"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        sx={passwordTextField}
-                      />
+                    <Typography sx={s.securitySubtitle}>Change Password</Typography>
+                    <Stack>
+                      {['currentPassword','newPassword','confirmPassword'].map((field) => (
+                        <TextField
+                          key={field}
+                          fullWidth
+                          type="password"
+                          label={field === 'currentPassword' ? 'Current Password' : field === 'newPassword' ? 'New Password' : 'Confirm New Password'}
+                          name={field}
+                          value={form[field]}
+                          onChange={handleChange}
+                          sx={s.passwordTextField}
+                        />
+                      ))}
                     </Stack>
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      startIcon={<SaveIcon />}
-                      sx={updatePasswordButton}
-                    >
-                      Update Password
-                    </Button>
+                    <Button type="submit" startIcon={<SaveIcon />} sx={s.updatePasswordButton}>Update Password</Button>
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={securitySubtitle}>
-                      Two-Factor Authentication
-                    </Typography>
-
-                    <Paper sx={securityPaper}>
+                    <Typography sx={s.securitySubtitle}>Two-Factor Authentication</Typography>
+                    <Paper sx={s.securityPaper}>
                       <FormControlLabel
-                        control={
-                          <Switch
-                            checked={true}
-                            onChange={() => {}}
-                            sx={notificationSwitch}
-                          />
-                        }
-                        label={
-                          <Typography sx={notificationLabel}>
-                            Enable Two-Factor Authentication
-                          </Typography>
-                        }
+                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
+                        label={<Typography sx={s.notificationLabel}>Enable 2FA</Typography>}
                       />
-                      <Typography variant="body2" sx={securityBodyText}>
-                        Adds an extra layer of security to your account
-                      </Typography>
+                      <Typography sx={s.securityBodyText}>Adds extra layer of security</Typography>
                     </Paper>
-
-                    <Typography variant="subtitle1" sx={securitySubtitle}>
-                      Active Sessions
-                    </Typography>
-
-                    <Paper sx={sessionPaper}>
-                      <Typography variant="body2" sx={sessionDeviceText}>
-                        Current Device (Chrome, Windows)
-                      </Typography>
-                      <Typography variant="caption" sx={sessionTimeText}>
-                        Last active: Just now
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={logoutDevicesButton}
-                      >
-                        Logout from all devices
-                      </Button>
+                    <Typography sx={s.securitySubtitle}>Active Sessions</Typography>
+                    <Paper sx={s.sessionPaper}>
+                      <Typography sx={s.sessionDeviceText}>Current Device (Chrome, Windows)</Typography>
+                      <Typography sx={s.sessionTimeText}>Last active: Just now</Typography>
+                      <Button size="small" sx={s.logoutDevicesButton}>Logout All</Button>
                     </Paper>
                   </Grid>
                 </Grid>
               </Box>
             )}
 
-            {activeTab === 2 && ( /* Notifications Tab */
-              <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={notificationsTitle}>
-                  Notification Preferences
-                </Typography>
-
+            {/* Notifications */}
+            {tab === 2 && (
+              <Box component="form" onSubmit={handleSubmitNotifications}>
+                <Typography sx={s.notificationsTitle}>Notification Preferences</Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Paper sx={notificationsPaper}>
-                      <Typography variant="subtitle1" sx={notificationsSubtitle}>
-                        Email Notifications
-                      </Typography>
-
-                      <Stack spacing={1}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              name="notifications"
-                              checked={formData.notifications}
-                              onChange={handleChange}
-                              sx={notificationSwitch}
-                            />
-                          }
-                          label={
-                            <Typography sx={notificationLabel}>
-                              Project Updates
-                            </Typography>
-                          }
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              name="newsletter"
-                              checked={formData.newsletter}
-                              onChange={handleChange}
-                              sx={notificationSwitch}
-                            />
-                          }
-                          label={
-                            <Typography sx={notificationLabel}>
-                              Newsletter
-                            </Typography>
-                          }
-                        />
-                      </Stack>
-                    </Paper>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={notificationsPaper}>
-                      <Typography variant="subtitle1" sx={notificationsSubtitle}>
-                        In-App Notifications
-                      </Typography>
-
-                      <Stack spacing={1}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={true}
-                              onChange={() => {}}
-                              sx={notificationSwitch}
-                            />
-                          }
-                          label={
-                            <Typography sx={notificationLabel}>
-                              Messages
-                            </Typography>
-                          }
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={true}
-                              onChange={() => {}}
-                              sx={notificationSwitch}
-                            />
-                          }
-                          label={
-                            <Typography sx={notificationLabel}>
-                              Meeting Reminders
-                            </Typography>
-                          }
-                        />
-                      </Stack>
-                    </Paper>
-                  </Grid>
-                </Grid>
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  sx={savePreferencesButton}
-                >
-                  Save Preferences
-                </Button>
-              </Box>
-            )}
-
-            {/* Preferences Tab */}
-            {activeTab === 3 && (
-              <Box component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6" sx={preferencesTitle}>
-                  App Preferences
-                </Typography>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={preferencesPaper}>
-                      <Typography variant="subtitle1" sx={preferencesSubtitle}>
-                        Display Settings
-                      </Typography>
+                    <Paper sx={s.notificationsPaper}>
+                      <Typography sx={s.notificationsSubtitle}>Email Notifications</Typography>
                       <FormControlLabel
-                        control={
-                          <Switch
-                            checked={darkMode}
-                            onChange={(e) => setDarkMode(e.target.checked)}
-                            sx={darkModeSwitch}
-                          />
-                        }
-                        label={
-                          <Typography sx={darkModeLabel}>
-                            Dark Mode
-                          </Typography>
-                        }
+                        control={<Switch name="notifications" checked={form.notifications} onChange={handleChange} sx={s.notificationSwitch}/>}
+                        label={<Typography sx={s.notificationLabel}>Project Updates</Typography>}
+                      />
+                      <FormControlLabel
+                        control={<Switch name="newsletter" checked={form.newsletter} onChange={handleChange} sx={s.notificationSwitch}/>}
+                        label={<Typography sx={s.notificationLabel}>Newsletter</Typography>}
                       />
                     </Paper>
                   </Grid>
-
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={preferencesSubtitle}>
-                      Language & Region
-                    </Typography>
-                    <Paper sx={preferencesPaper}>
+                    <Paper sx={s.notificationsPaper}>
+                      <Typography sx={s.notificationsSubtitle}>In-App Notifications</Typography>
+                      <FormControlLabel
+                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
+                        label={<Typography sx={s.notificationLabel}>Messages</Typography>}
+                      />
+                      <FormControlLabel
+                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
+                        label={<Typography sx={s.notificationLabel}>Meeting Reminders</Typography>}
+                      />
+                    </Paper>
+                  </Grid>
+                </Grid>
+                <Button type="submit" startIcon={<SaveIcon />} sx={s.savePreferencesButton}>Save Preferences</Button>
+              </Box>
+            )}
+
+            {/* Preferences */}
+            {tab === 3 && (
+              <Box component="form" onSubmit={handleSubmitPreferences}>
+                <Typography sx={s.preferencesTitle}>App Preferences</Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Paper sx={s.preferencesPaper}>
+                      <Typography sx={s.preferencesSubtitle}>Display Settings</Typography>
+                      <FormControlLabel
+                        control={<Switch name="darkMode" checked={form.darkMode} onChange={handleChange} sx={s.darkModeSwitch}/>}
+                        label={<Typography sx={s.darkModeLabel}>Dark Mode</Typography>}
+                      />
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography sx={s.preferencesSubtitle}>Language & Region</Typography>
+                    <Paper sx={s.preferencesPaper}>
                       <TextField
                         select
                         fullWidth
-                        label="Language"
                         name="language"
-                        value={formData.language}
+                        value={form.language}
                         onChange={handleChange}
-                        sx={languageSelect}
+                        sx={s.languageSelect}
                       >
                         <MenuItem value="en">English</MenuItem>
                         <MenuItem value="es">Spanish</MenuItem>
@@ -577,31 +323,16 @@ export default function ClientSettings() {
                     </Paper>
                   </Grid>
                 </Grid>
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  sx={savePreferencesButton}
-                >
-                  Save Preferences
-                </Button>
+                <Button type="submit" startIcon={<SaveIcon />} sx={s.savePreferencesButton}>Save Preferences</Button>
               </Box>
             )}
           </CardContent>
         </Card>
 
-        {/* Logout Button */}
-        <Box sx={logoutBox}>
-          <Button
-            variant="outlined"
-            startIcon={<LogoutIcon />}
-            sx={logoutButton}
-          >
-            Logout
-          </Button>
+        <Box sx={s.logoutBox}>
+          <Button startIcon={<LogoutIcon />} sx={s.logoutButton}>Logout</Button>
         </Box>
       </Box>
     </Box>
-  );
+  )
 }

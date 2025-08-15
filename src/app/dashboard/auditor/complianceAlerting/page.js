@@ -1,23 +1,25 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Box,
   Typography,
-  Container,
   List,
   ListItem,
-  ListItemText,
   Drawer,
   ListItemButton,
+  ListItemText,
   Paper,
-  TextField
-} from '@mui/material';
+  TextField,
+  Container
+} from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon,
-} from '@mui/icons-material';
+  CheckCircleOutline as CheckCircleOutlineIcon
+} from '@mui/icons-material'
+
+import { useAuditorStore } from '../common/auditorStore'
 import {
   fullScreenContainerStyles,
   drawerStyles,
@@ -35,68 +37,47 @@ import {
   complianceTitleStyles,
   complianceSubtitleStyles,
   compliancePaperStyles,
-  complianceFeatureTitleStyles,
-  complianceFeatureDescriptionStyles,
   complianceListItemStyles,
-} from '../styles';
+  complianceFeatureTitleStyles,
+  complianceFeatureDescriptionStyles
+} from './styles'
+import { useCompliance } from './useCompliance'
 
-const auditTrailMenu = [
-  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
-  { name: 'Settings', path: '/dashboard/auditor/settings' }
-];
+export default function ComplianceAlertingPage() {
+  const {
+    currentPath,
+    auditTrailMenu,
+    setCurrentPath
+  } = useAuditorStore()
+  const [search, setSearch] = useState('')
 
-const features = [
-  {
-    title: 'Compliance Checklist Templates',
-    description:
-      'Pre-define steps for software license audits, hardware disposal protocols, and data-protection reviews.',
-  },
-  {
-    title: 'Rule-Based Alerts',
-    description:
-      'Trigger notifications when required documentation is missing or retention periods are about to expire.',
-  },
-  {
-    title: 'Role-Based Access Controls',
-    description:
-      'Ensure auditors have read-only access to production systems, and that sensitive actions are logged and restricted.',
-  },
-];
+  // Mark this route active in the sidebar
+  useEffect(() => {
+    setCurrentPath('/dashboard/auditor/complianceAlerting')
+  }, [setCurrentPath])
 
-export default function CompliancePage() {
-  const [search, setSearch] = useState('');
-  const currentPath = '/dashboard/auditor/complianceAlerting';
+  const { data: features = [], isLoading, isError } = useCompliance()
 
-  const filteredFeatures = features.filter((feature) =>
-    feature.title.toLowerCase().includes(search.toLowerCase()) ||
-    feature.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = features.filter(f =>
+    f.title.toLowerCase().includes(search.toLowerCase()) ||
+    f.description.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <Box sx={fullScreenContainerStyles}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={drawerStyles}
-      >
+      {/* Sidebar */}
+      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">
-            Auditor Portal
-          </Typography>
+          <Typography variant="h5">Auditor Portal</Typography>
         </Box>
         <List>
-          {auditTrailMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
+          {auditTrailMenu.map(item => (
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
                 selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.name, currentPath)}
+                sx={listItemButtonStyles(item.path, currentPath)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -116,7 +97,7 @@ export default function CompliancePage() {
               variant="outlined"
               placeholder="Search compliance features"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               sx={searchFieldStyles}
             />
             <Box sx={userProfileStyles}>
@@ -131,7 +112,6 @@ export default function CompliancePage() {
           </Box>
         </Box>
 
-        {/* Compliance Content */}
         <Container maxWidth="md" sx={complianceContainerStyles}>
           <Typography variant="h4" sx={complianceTitleStyles}>
             Compliance & Alerting
@@ -142,21 +122,33 @@ export default function CompliancePage() {
 
           <Paper elevation={3} sx={compliancePaperStyles}>
             <List>
-              {filteredFeatures.map((feature, index) => (
-                <ListItem key={index} sx={complianceListItemStyles}>
-                  <CheckCircleOutlineIcon color="primary" />
-                  <div>
-                    <Typography variant="h6" sx={complianceFeatureTitleStyles}>{feature.title}</Typography>
-                    <Typography variant="body1" sx={complianceFeatureDescriptionStyles}>
-                      {feature.description}
-                    </Typography>
-                  </div>
-                </ListItem>
-              ))}
+              {isLoading && (
+                <Typography align="center">Loading features…</Typography>
+              )}
+              {isError && (
+                <Typography color="error" align="center">
+                  Failed to load features
+                </Typography>
+              )}
+              {!isLoading && !isError &&
+                filtered.map((feature, idx) => (
+                  <ListItem key={idx} sx={complianceListItemStyles}>
+                    <CheckCircleOutlineIcon />
+                    <div>
+                      <Typography variant="h6" sx={complianceFeatureTitleStyles}>
+                        {feature.title}
+                      </Typography>
+                      <Typography sx={complianceFeatureDescriptionStyles}>
+                        {feature.description}
+                      </Typography>
+                    </div>
+                  </ListItem>
+                ))
+              }
             </List>
           </Paper>
         </Container>
       </Box>
     </Box>
-  );
+  )
 }

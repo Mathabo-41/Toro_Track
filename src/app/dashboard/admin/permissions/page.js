@@ -1,280 +1,155 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
-  Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Stack,
-  Avatar,
-  List,
-  ListItem,
-  ListItemText,
-  Button,
-  Drawer,
-  ListItemButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Select,
-  FormControl,
-  MenuItem
+  Box, Typography, Grid, Card,
+  CardContent, Stack, Avatar, List,
+  ListItem, ListItemText, Button,
+  Drawer, ListItemButton, Paper,
+  Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow,
+  Select, FormControl, MenuItem
 } from '@mui/material';
+
 import {
   Lock as LockIcon,
-  AdminPanelSettings as AdminIcon,
-  Groups as TeamIcon,
-  Person as PersonIcon,
-  Save as SaveIcon,
-  CheckCircle as FullIcon,
-  Edit as EditIcon,
-  Visibility as ViewIcon,
-  Block as NoneIcon
+  Save as SaveIcon
 } from '@mui/icons-material';
 
+import usePermissions from './usePermissions/page';
+import { useAdminStore, adminMenu } from '../common/adminStore';
+import * as globalStyles from '../common/styles';
+import * as styles      from './styles';
 import {
-  rootBox,
-  drawerPaper,
-  drawerHeader,
-  listItemButton,
-  activeListItemButton,
-  mainContentBox,
-  pageHeader,
-  pageHeaderText,
-  pageHeaderIcon,
-  permissionsCard,
-  tableContainer,
-  tableHead,
-  tableHeaderCell,
-  tableRow,
-  tableCell,
-  roleIconStack,
-  roleSelect,
-  permissionMenuItem,
-  permissionChip,
-  summaryCard,
-  summaryCardContent,
-  summaryIconAvatar,
-  saveButtonBox,
-  saveButton,
-} from '.admin_styles/styles';
+  permissionLevels  // export this array from service or define locally
+} from './permissionsService/page';
 
-/**
- * Admin Permission Settings Screen
- * Manages role-based access control (RBAC) for the CRM system
- */
+export default function PermissionSettingsPage() {
+  const {
+    roles, selectedRole, setSelected,
+    loading, error,
+    handlePermissionChange, handleSave
+  } = usePermissions();
 
-const adminMenu = [
-  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
-  { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
-  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }
-];
-
-// Permission level configurations
-const permissionLevels = [
-  { value: 'Full', label: 'Full Access', icon: <FullIcon />, color: 'success' },
-  { value: 'Edit', label: 'Edit Access', icon: <EditIcon />, color: 'info' },
-  { value: 'View', label: 'View Access', icon: <ViewIcon />, color: 'default' },
-  { value: 'None', label: 'No Access', icon: <NoneIcon />, color: 'error' }
-];
-
-// Default role configurations
-const defaultRoles = [
-  { 
-    name: 'Admin', 
-    icon: <AdminIcon color="warning" />,
-    permissions: {
-      Projects: 'Full',
-      Clients: 'Full',
-      Team: 'Full',
-      Settings: 'Full'
-    }
-  },
-  { 
-    name: 'Project Manager', 
-    icon: <PersonIcon color="info" />,
-    permissions: {
-      Projects: 'Full',
-      Clients: 'Edit',
-      Team: 'Edit',
-      Settings: 'View'
-    }
-  },
-  { 
-    name: 'Team Lead', 
-    icon: <TeamIcon color="success" />,
-    permissions: {
-      Projects: 'Edit',
-      Clients: 'View',
-      Team: 'Edit',
-      Settings: 'None'
-    }
-  },
-  { 
-    name: 'Member', 
-    icon: <PersonIcon color="text.secondary" />,
-    permissions: {
-      Projects: 'View',
-      Clients: 'View',
-      Team: 'View',
-      Settings: 'None'
-    }
-  },
-  { 
-    name: 'Client', 
-    icon: <PersonIcon color="warning" />,
-    permissions: {
-      Projects: 'View',
-      Clients: 'None',
-      Team: 'None',
-      Settings: 'None'
-    }
-  }
-];
-
-export default function PermissionSettings() {
-  const [roles, setRoles] = useState(defaultRoles);
-  const [selectedRole, setSelectedRole] = useState('Admin');
-
-  // Handle permission level changes
-  const handlePermissionChange = (roleName, category, value) => {
-    setRoles(roles.map(role => 
-      role.name === roleName 
-        ? { 
-            ...role, 
-            permissions: { 
-              ...role.permissions, 
-              [category]: value 
-            } 
-          } 
-        : role
-    ));
-  };
-
-  const handleSave = () => {
-    alert('Permissions saved successfully!');
-  };
+  const { selectedMenu, setSelectedMenu } = useAdminStore();
 
   return (
-    <Box sx={rootBox}>
-      {/* Sidebar Navigation */}
+    <Box sx={globalStyles.rootBox}>
+      {/* Sidebar */}
       <Drawer
         variant="permanent"
         anchor="left"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': drawerPaper
-        }}
+        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={drawerHeader}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
+        <Box sx={globalStyles.drawerHeader}>
+          <Typography variant="h5">Admin Portal</Typography>
         </Box>
-        <List>
-          {adminMenu.map(({ name, path }, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={path}
-                sx={name === 'Permissions' ? activeListItemButton : listItemButton}
-              >
-                <ListItemText primary={name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {adminMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={
+                item.name === 'Permissions'
+                  ? globalStyles.activeListItemButton
+                  : globalStyles.listItemButton
+              }
+              selected={selectedMenu === item.path}
+              onClick={() => setSelectedMenu(item.path)}
+            >
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={mainContentBox}>
-        {/* Page Header */}
-        <Box sx={pageHeader}>
-          <Typography variant="h4" sx={pageHeaderText}>
-            <LockIcon sx={pageHeaderIcon} />
+      <Box component="main" sx={globalStyles.mainContentBox}>
+        <Box sx={globalStyles.pageHeader}>
+          <LockIcon sx={globalStyles.pageHeaderIcon} />
+          <Typography variant="h4" sx={globalStyles.pageHeaderText}>
             Permissions
-          </Typography>
-          <Typography variant="body1" sx={pageHeaderText}>
-            Manage role-based access control for your organization
           </Typography>
         </Box>
 
+        {error && (
+          <Typography color="error.main" sx={{ mb: 2 }}>
+            {error.message}
+          </Typography>
+        )}
+
         {/* Permissions Table */}
-        <Card sx={permissionsCard}>
+        <Card sx={styles.permissionsCard}>
           <CardContent>
-            <Typography variant="h6" sx={pageHeaderText}>
-              Role Permissions
-            </Typography>
-            <TableContainer component={Paper} sx={tableContainer}>
-              <Table>
-                <TableHead sx={tableHead}>
+            <TableContainer component={Paper} sx={styles.tableContainer}>
+              <Table stickyHeader>
+                <TableHead sx={styles.tableHead}>
                   <TableRow>
-                    <TableCell sx={tableHeaderCell}>Role</TableCell>
-                    <TableCell sx={tableHeaderCell}>Projects</TableCell>
-                    <TableCell sx={tableHeaderCell}>Clients</TableCell>
-                    <TableCell sx={tableHeaderCell}>Team</TableCell>
-                    <TableCell sx={tableHeaderCell}>Settings</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Role</TableCell>
+                    {['Projects','Clients','Team','Settings'].map((col) => (
+                      <TableCell key={col} sx={styles.tableHeaderCell}>
+                        {col}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {roles.map((role) => (
-                    <TableRow 
-                      key={role.name} 
-                      hover 
+                    <TableRow
+                      key={role.name}
+                      hover
                       selected={selectedRole === role.name}
-                      onClick={() => setSelectedRole(role.name)}
-                      sx={tableRow}
+                      onClick={() => setSelected(role.name)}
+                      sx={styles.tableRow}
                     >
-                      <TableCell sx={tableCell}>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={roleIconStack}>
+                      <TableCell sx={styles.tableCell}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          sx={styles.roleIconStack}
+                        >
                           {role.icon}
                           <Typography>{role.name}</Typography>
                         </Stack>
                       </TableCell>
-                      {['Projects', 'Clients', 'Team', 'Settings'].map((category) => {
-                        const level = role.permissions[category];
+
+                      {['Projects','Clients','Team','Settings'].map((cat) => {
+                        const level = role.permissions[cat];
                         const permission = permissionLevels.find(p => p.value === level);
+
                         return (
-                          <TableCell key={category} sx={tableCell}>
+                          <TableCell key={cat} sx={styles.tableCell}>
                             <FormControl fullWidth size="small">
                               <Select
                                 value={level}
-                                onChange={(e) => handlePermissionChange(role.name, category, e.target.value)}
-                                sx={roleSelect(permission.color)}
-                                renderValue={(selected) => (
+                                onChange={(e) =>
+                                  handlePermissionChange(role.name, cat, e.target.value)
+                                }
+                                sx={styles.roleSelect(permission.color)}
+                                renderValue={(sel) => (
                                   <Stack direction="row" alignItems="center" spacing={1}>
-                                    <Box sx={permissionChip(permission.color)}>
+                                    <Box sx={styles.permissionChip(permission.color)}>
                                       {permission.icon}
                                     </Box>
-                                    <Typography color={permission.color}>
-                                      {selected}
+                                    <Typography color={`${permission.color}.main`}>
+                                      {sel}
                                     </Typography>
                                   </Stack>
                                 )}
                               >
-                                {permissionLevels.map((level) => (
-                                  <MenuItem 
-                                    key={level.value} 
-                                    value={level.value}
-                                    sx={permissionMenuItem(level.color)}
+                                {permissionLevels.map((opt) => (
+                                  <MenuItem
+                                    key={opt.value}
+                                    value={opt.value}
+                                    sx={styles.permissionMenuItem(opt.color)}
                                   >
                                     <Stack direction="row" alignItems="center" spacing={1}>
-                                      <Box sx={permissionChip(level.color)}>
-                                        {level.icon}
+                                      <Box sx={styles.permissionChip(opt.color)}>
+                                        {opt.icon}
                                       </Box>
-                                      <Typography sx={tableCell}>{level.label}</Typography>
+                                      <Typography>{opt.label}</Typography>
                                     </Stack>
                                   </MenuItem>
                                 ))}
@@ -291,56 +166,49 @@ export default function PermissionSettings() {
           </CardContent>
         </Card>
 
-        {/* Selected Role Details */}
+        {/* Selected Role Summary */}
         {selectedRole && (
-          <Card sx={summaryCard}>
-            <CardContent>
-              <Typography variant="h6" sx={pageHeaderText}>
-                {selectedRole} Permissions Summary
-              </Typography>
-              <Grid container spacing={2}>
-                {Object.entries(roles.find(r => r.name === selectedRole).permissions).map(([category, level]) => {
-                  const permission = permissionLevels.find(p => p.value === level);
-                  return (
-                    <Grid item xs={12} sm={6} md={3} key={category}>
-                      <Card sx={summaryCardContent}>
-                        <CardContent>
-                          <Typography variant="subtitle1" sx={pageHeaderText}>
-                            {category}
-                          </Typography>
-                          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                            <Avatar sx={summaryIconAvatar(permission.color)}>
-                              {permission.icon}
-                            </Avatar>
-                            <Typography color={permission.color} sx={{ fontWeight: 'bold' }}>
-                              {permission.label}
-                            </Typography>
-                          </Stack>
-                          <Typography variant="body2" sx={tableCell}>
-                            {level === 'Full' && 'Can create, edit, delete, and view all content'}
-                            {level === 'Edit' && 'Can edit and view existing content'}
-                            {level === 'View' && 'Can view content only'}
-                            {level === 'None' && 'No access to this section'}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </CardContent>
-          </Card>
+          <Grid container spacing={2} sx={{ mt: 4 }}>
+            {Object.entries(
+              roles.find((r) => r.name === selectedRole).permissions
+            ).map(([category, level]) => {
+              const permission = permissionLevels.find((p) => p.value === level);
+              return (
+                <Grid item xs={12} sm={6} md={3} key={category}>
+                  <Card sx={styles.summaryCard}>
+                    <CardContent sx={styles.summaryCardContent}>
+                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                        <Avatar sx={styles.summaryIconAvatar(permission.color)}>
+                          {permission.icon}
+                        </Avatar>
+                        <Typography color={`${permission.color}.main`} fontWeight="bold">
+                          {permission.label}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="body2">
+                        {level === 'Full' && 'Can create, edit, delete, and view all content.'}
+                        {level === 'Edit' && 'Can edit and view existing content.'}
+                        {level === 'View' && 'Can view content only.'}
+                        {level === 'None' && 'No access to this section.'}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
         )}
 
         {/* Save Button */}
-        <Box sx={saveButtonBox}>
+        <Box sx={styles.saveButtonBox}>
           <Button
             variant="contained"
             startIcon={<SaveIcon />}
             onClick={handleSave}
-            sx={saveButton}
+            disabled={loading}
+            sx={styles.saveButton}
           >
-            Save Permissions
+            {loading ? 'Saving…' : 'Save Permissions'}
           </Button>
         </Box>
       </Box>

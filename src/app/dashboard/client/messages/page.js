@@ -1,217 +1,80 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Stack,
-  Button,
-  Drawer,
-  ListItemButton,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  TextField,
-  Avatar,
-  Badge,
-  Tabs,
-  Tab,
-  IconButton,
-  Chip,
-  Paper,
-} from '@mui/material';
+  Box, Typography, Card, CardContent, Stack, Button, Drawer,
+  List, ListItem, ListItemButton, ListItemText, Divider,
+  TextField, Avatar, Badge, Tabs, Tab, IconButton, Chip
+} from '@mui/material'
 import {
   Chat as ChatIcon,
   Notifications as NotificationsIcon,
   Schedule as MeetingsIcon,
   Send as SendIcon,
-  CheckCircle as ReadIcon,
-  Circle as UnreadIcon,
+  ArrowBack as BackIcon,
   MoreVert as MoreIcon,
   Search as SearchIcon,
-  Add as NewMeetingIcon,
-  ArrowBack as BackIcon,
-} from '@mui/icons-material';
+  Add as NewMeetingIcon
+} from '@mui/icons-material'
+
+import { useClientStore } from '../common/clientStore'
+import * as g from '../common/styles'
+import * as s from './styles'
 import {
-  mainBox,
-  drawerPaper,
-  drawerHeader,
-  listItemButton,
-  activeListItemButton,
-  mainContentBox,
-  headerBox,
-  headerTitle,
-  headerIcon,
-  headerSubtitle,
-  tabs,
-  tab,
-  card,
-  textField,
-  searchIcon,
-  conversationList,
-  conversationListItem,
-  conversationListItemButton,
-  conversationWithText,
-  conversationLastMessage,
-  conversationTime,
-  unreadChip,
-  activeConversationHeader,
-  backButton,
-  activeConversationTitle,
-  messageBox,
-  messageContainer,
-  myMessageContainer,
-  otherMessageContainer,
-  myMessageBubble,
-  otherMessageBubble,
-  messageTime,
-  myMessageTime,
-  otherMessageTime,
-  readIcon,
-  unreadIcon,
-  sendMessageForm,
-  sendButton,
-  meetingsHeader,
-  newMeetingButton,
-  meetingsList,
-  meetingsListItem,
-  meetingsListDivider,
-  meetingStatusChip,
-  meetingTitle,
-  meetingDate,
-  meetingParticipants,
-  noMeetingsBox,
-  noMeetingsText,
-  notificationsHeader,
-  notificationsList,
-  notificationsListItem,
-  notificationsListDivider,
-  newChip,
-  readNotificationText,
-  unreadNotificationText,
-  notificationTime,
-} from '../styles';
+  useConversations,
+  useConversationMessages,
+  useSendMessage,
+  useMeetings,
+  useNotifications
+} from './useClientMessages'
 
-/**
- * Client Messages & Notifications Screen
- */
+export default function ClientMessagesPage() {
+  const { clientMenu, currentPath, setCurrentPath } = useClientStore()
+  const [tabIndex, setTabIndex] = useState(0)
+  const [activeConv, setActiveConv] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [draft, setDraft] = useState('')
 
-const clientMenu = [
-  { name: 'Project Details', path: '/dashboard/client/details' },
-  { name: 'Raise Query', path: '/dashboard/client/query' },
-  { name: 'Messages & Notifications', path: '/dashboard/client/messages' },
-  { name: 'Settings', path: '/dashboard/client/settings' },
-];
+  // Sidebar highlight
+  useEffect(() => {
+    setCurrentPath('/dashboard/client/messages')
+  }, [setCurrentPath])
 
-// Sample data
-const teamMembers = [
-  { id: 1, name: 'Alex Johnson', role: 'Project Manager', avatar: '/avatars/1.jpg', online: true },
-  { id: 2, name: 'Sarah Chen', role: 'UI/UX Designer', avatar: '/avatars/2.jpg', online: false },
-  { id: 3, name: 'Michael Brown', role: 'Frontend Dev', avatar: '/avatars/3.jpg', online: true },
-  { id: 4, name: 'Thabo Johnson', role: 'Project Manager', avatar: '/avatars/1.jpg', online: true },
-  { id: 5, name: 'Sarah Mokoena', role: 'UI/UX Designer', avatar: '/avatars/2.jpg', online: true },
-];
+  // Queries
+  const { data: convs = [], isLoading: convLoading } = useConversations()
+  const { data: messages = [], isLoading: msgLoading } = useConversationMessages(activeConv?.id, { enabled: !!activeConv })
+  const sendMutation = useSendMessage(activeConv?.id)
+  const { data: meetings = [] }       = useMeetings()
+  const { data: notifications = [] }  = useNotifications()
 
-const conversations = [
-  {
-    id: 1,
-    with: 'Thabo Johnson',
-    lastMessage: 'Let me check the timeline and get back to you',
-    time: '2h ago',
-    unread: 3,
-    messages: [
-      { sender: 'Thabo Johnson', text: 'Hi there! How can I help?', time: '10:30 AM', read: true },
-      { sender: 'You', text: 'When will the next design mockups be ready?', time: '10:32 AM', read: true },
-      { sender: 'Thabo Johnson', text: 'We\'re targeting Friday for the first round', time: '11:45 AM', read: true },
-      { sender: 'Thabo Johnson', text: 'Let me check the timeline and get back to you', time: '2h ago', read: false },
-    ],
-  },
-  {
-    id: 2,
-    with: 'Sarah Mokoena',
-    lastMessage: 'I\'ve updated the color scheme per our discussion',
-    time: '1d ago',
-    unread: 0,
-    messages: [
-      { sender: 'Sarah Mokoena', text: 'Here are the initial color concepts', time: 'Yesterday', read: true },
-      { sender: 'You', text: 'I like option 2 but can we try darker blues?', time: 'Yesterday', read: true },
-      { sender: 'Sarah Mokoena', text: 'I\'ve updated the color scheme per our discussion', time: '1d ago', read: true },
-    ],
-  },
-];
-
-const notifications = [
-  { id: 1, text: 'New project milestone added', time: '30m ago', read: false, type: 'project' },
-  { id: 2, text: 'Meeting scheduled for tomorrow at 2pm', time: '2h ago', read: true, type: 'meeting' },
-  { id: 3, text: 'Alex Johnson replied to your query', time: '5h ago', read: true, type: 'query' },
-];
-
-const meetings = [
-  { id: 1, title: 'Design Review', date: 'Tomorrow, 2:00 PM', participants: ['Alex', 'Sarah'], status: 'confirmed' },
-  { id: 2, title: 'Project Kickoff', date: 'Jan 15, 10:00 AM', participants: ['Full Team'], status: 'completed' },
-];
-
-export default function ClientMessages() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [activeConversation, setActiveConversation] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (newMessage.trim() && activeConversation) {
-      // backend here
-      const updatedConversations = conversations.map((conv) => {
-        if (conv.id === activeConversation.id) {
-          return {
-            ...conv,
-            messages: [
-              ...conv.messages,
-              { sender: 'You', text: newMessage, time: 'Just now', read: true },
-            ],
-            lastMessage: newMessage,
-            time: 'Just now',
-          };
-        }
-        return conv;
-      });
-      setNewMessage('');
+  // Handlers
+  const handleSend = (e) => {
+    e.preventDefault()
+    if (draft.trim() && activeConv) {
+      sendMutation.mutate(draft)
+      setDraft('')
     }
-  };
+  }
 
-  const filteredConversations = conversations.filter((conv) =>
-    conv.with.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredConvs = convs.filter((c) =>
+    c.with.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-    <Box sx={mainBox}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': drawerPaper,
-        }}
-      >
-        <Box sx={drawerHeader}>
+    <Box sx={s.mainBox}>
+      <Drawer variant="permanent" anchor="left" sx={g.drawerStyles}>
+        <Box sx={s.drawerHeader}>
           <Typography variant="h5">Client Portal</Typography>
         </Box>
         <List>
-          {clientMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
+          {clientMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
-                sx={{
-                  ...listItemButton,
-                  ...(item.name === 'Messages & Notifications' && activeListItemButton),
-                }}
+                selected={item.path === currentPath}
+                sx={g.listItemButtonStyles(item.path, currentPath)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -220,285 +83,210 @@ export default function ClientMessages() {
         </List>
       </Drawer>
 
-      {/* Main Content */}
-      <Box component="main" sx={mainContentBox}>
-        {/* Header */}
-        <Box sx={headerBox}>
-          <Typography variant="h4" sx={headerTitle}>
-            <ChatIcon sx={headerIcon} />
+      <Box component="main" sx={g.mainContentBoxStyles}>
+        <Box sx={g.headerBoxStyles}>
+          <Typography variant="h4" sx={g.headerTitleStyles}>
+            <ChatIcon sx={g.headerIconStyles} />
             Messages & Notifications
           </Typography>
-          <Typography variant="body1" sx={headerSubtitle}>
+          <Typography variant="body1" sx={g.headerSubtitleStyles}>
             Communicate with your project team and stay updated
           </Typography>
         </Box>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} sx={tabs}>
-          <Tab label="Messages" icon={<ChatIcon />} iconPosition="start" sx={tab} />
-          <Tab label="Meetings" icon={<MeetingsIcon />} iconPosition="start" sx={tab} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={tab} />
+        <Tabs
+          value={tabIndex}
+          onChange={(_, v) => { setTabIndex(v); setActiveConv(null) }}
+          sx={g.tabsStyles}
+        >
+          <Tab label="Messages"       icon={<ChatIcon />}         iconPosition="start" sx={g.tabStyles} />
+          <Tab label="Meetings"       icon={<MeetingsIcon />}     iconPosition="start" sx={g.tabStyles} />
+          <Tab label="Notifications"  icon={<NotificationsIcon />}iconPosition="start" sx={g.tabStyles} />
         </Tabs>
 
-        {/* Tab Content */}
-        {activeTab === 0 && (
-          <Card sx={card}>
+        {tabIndex === 0 && (
+          <Card sx={g.cardStyles}>
             <CardContent>
-              {!activeConversation ? (
-                <Box>
+              {!activeConv ? (
+                <>
                   <TextField
                     fullWidth
-                    placeholder="Search conversations..."
+                    placeholder="Search conversations…"
                     variant="outlined"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     InputProps={{
-                      startAdornment: <SearchIcon sx={searchIcon} />,
+                      startAdornment: <SearchIcon sx={s.searchIcon} />
                     }}
-                    sx={textField}
+                    sx={s.textField}
                   />
 
-                  <List sx={conversationList}>
-                    {filteredConversations.map((conversation) => (
-                      <ListItem key={conversation.id} disablePadding sx={conversationListItem}>
-                        <ListItemButton
-                          onClick={() => setActiveConversation(conversation)}
-                          sx={conversationListItemButton}
-                        >
-                          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                            <Badge
-                              overlap="circular"
-                              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                              variant="dot"
-                              color="success"
-                              invisible={!teamMembers.find((m) => m.name === conversation.with)?.online}
-                            >
-                              <Avatar
-                                src={teamMembers.find((m) => m.name === conversation.with)?.avatar}
-                                sx={{ width: 48, height: 48 }}
-                              />
-                            </Badge>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="subtitle1" sx={conversationWithText}>
-                                {conversation.with}
-                              </Typography>
-                              <Typography variant="body2" sx={conversationLastMessage}>
-                                {conversation.lastMessage}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: 'right' }}>
-                              <Typography variant="caption" sx={conversationTime}>
-                                {conversation.time}
-                              </Typography>
-                              {conversation.unread > 0 && (
-                                <Chip label={conversation.unread} size="small" sx={unreadChip} />
-                              )}
-                            </Box>
-                          </Stack>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
+                  <List sx={s.conversationList}>
+                    {convLoading && <Typography>Loading…</Typography>}
+                    {!convLoading &&
+                      filteredConvs.map((c) => (
+                        <ListItem key={c.id} sx={s.conversationListItem}>
+                          <ListItemButton
+                            onClick={() => setActiveConv(c)}
+                            sx={s.conversationListItemButton}
+                          >
+                            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                              <Badge
+                                overlap="circular"
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                variant="dot"
+                                color="success"
+                                invisible={!c.online}
+                              >
+                                <Avatar src={c.avatar} />
+                              </Badge>
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography sx={s.conversationWithText}>{c.with}</Typography>
+                                <Typography sx={s.conversationLastMessage}>{c.lastMessage}</Typography>
+                              </Box>
+                              <Box>
+                                <Typography sx={s.conversationTime}>{c.time}</Typography>
+                                {c.unread > 0 && <Chip label={c.unread} size="small" sx={s.unreadChip} />}
+                              </Box>
+                            </Stack>
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
                   </List>
-                </Box>
+                </>
               ) : (
-                <Box>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={activeConversationHeader}>
-                    <Button startIcon={<BackIcon />} onClick={() => setActiveConversation(null)} sx={backButton}>
+                <>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={s.activeConversationHeader}>
+                    <Button startIcon={<BackIcon />} onClick={() => setActiveConv(null)} sx={s.backButton}>
                       Back
                     </Button>
-                    <Typography variant="h6" sx={activeConversationTitle}>
-                      {activeConversation.with}
-                    </Typography>
-                    <IconButton sx={{ color: '#283618' }}>
-                      <MoreIcon />
-                    </IconButton>
+                    <Typography sx={s.activeConversationTitle}>{activeConv.with}</Typography>
+                    <IconButton><MoreIcon /></IconButton>
                   </Stack>
 
-                  <Box sx={messageBox}>
-                    {activeConversation.messages.map((message, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          ...messageContainer,
-                          ...(message.sender === 'You' ? myMessageContainer : otherMessageContainer),
-                        }}
-                      >
-                        <Avatar
-                          src={message.sender !== 'You' ? teamMembers.find((m) => m.name === message.sender)?.avatar : ''}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            mr: message.sender === 'You' ? 0 : 2,
-                            ml: message.sender === 'You' ? 2 : 0,
-                          }}
-                        />
+                  <Box sx={s.messageBox}>
+                    {msgLoading && <Typography>Loading messages…</Typography>}
+                    {!msgLoading &&
+                      messages.map((m,i) => (
                         <Box
-                          sx={
-                            message.sender === 'You'
-                              ? myMessageBubble
-                              : otherMessageBubble
-                          }
+                          key={i}
+                          sx={{
+                            ...s.messageContainer,
+                            ...(m.sender === 'You' ? s.myMessageContainer : s.otherMessageContainer)
+                          }}
                         >
-                          <Typography component="div" variant="body1">
-                            {message.text}
-                          </Typography>
-                          <Stack
-                            direction="row"
-                            justifyContent="flex-end"
-                            alignItems="center"
-                            spacing={0.5}
-                            sx={{ mt: 1 }}
-                          >
-                            <Typography
-                              component="span"
-                              variant="caption"
-                              sx={
-                                message.sender === 'You'
-                                  ? myMessageTime
-                                  : otherMessageTime
-                              }
-                            >
-                              {message.time}
-                            </Typography>
-                            {message.sender === 'You' &&
-                              (message.read ? <ReadIcon sx={readIcon} /> : <UnreadIcon sx={unreadIcon} />)}
-                          </Stack>
+                          {m.sender !== 'You' && <Avatar src={m.avatar} sx={{ mr: 1 }} />}
+                          <Box sx={m.sender === 'You' ? s.myMessageBubble : s.otherMessageBubble}>
+                            <Typography>{m.text}</Typography>
+                            <Stack direction="row" justifyContent="flex-end" spacing={0.5}>
+                              <Typography sx={m.sender === 'You' ? s.myMessageTime : s.otherMessageTime}>
+                                {m.time}
+                              </Typography>
+                              {m.sender === 'You' && (m.read ? <ReadIcon sx={s.readIcon}/> : <MoreIcon sx={s.unreadIcon}/> )}
+                            </Stack>
+                          </Box>
+                          {m.sender === 'You' && <Avatar sx={{ ml: 1, visibility: 'hidden' }}> </Avatar>}
                         </Box>
-                      </Box>
-                    ))}
+                      ))}
                   </Box>
 
-                  <Box component="form" onSubmit={handleSendMessage} sx={sendMessageForm}>
-                    <Stack direction="row" spacing={1}>
-                      <TextField
-                        fullWidth
-                        placeholder="Type your message..."
-                        variant="outlined"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        sx={textField}
-                      />
-                      <Button type="submit" variant="contained" sx={sendButton}>
-                        <SendIcon />
-                      </Button>
-                    </Stack>
+                  <Box component="form" onSubmit={handleSend} sx={s.sendMessageForm}>
+                    <TextField
+                      fullWidth
+                      placeholder="Type your message…"
+                      variant="outlined"
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      sx={s.textField}
+                    />
+                    <Button type="submit" variant="contained" sx={s.sendButton}>
+                      <SendIcon />
+                    </Button>
                   </Box>
-                </Box>
+                </>
               )}
             </CardContent>
           </Card>
         )}
 
-        {activeTab === 1 && (
-          <Card sx={card}>
+        {tabIndex === 1 && (
+          <Card sx={g.cardStyles}>
             <CardContent>
-              <Stack direction="row" justifyContent="space-between" sx={meetingsHeader}>
-                <Typography variant="h6" sx={{ color: '#283618' }}>
-                  Upcoming Meetings
-                </Typography>
-                <Button variant="contained" startIcon={<NewMeetingIcon />} sx={newMeetingButton}>
+              <Stack direction="row" justifyContent="space-between" sx={s.meetingsHeader}>
+                <Typography variant="h6">Upcoming Meetings</Typography>
+                <Button startIcon={<NewMeetingIcon />} sx={s.newMeetingButton}>
                   New Meeting
                 </Button>
               </Stack>
 
-              {meetings.length > 0 ? (
-                <List sx={meetingsList}>
-                  {meetings.map((meeting) => (
-                    <div key={meeting.id}>
-                      <ListItem
-                        secondaryAction={
-                          <Chip
-                            label={meeting.status}
-                            size="small"
-                            sx={meetingStatusChip(meeting.status)}
-                          />
-                        }
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography variant="subtitle1" sx={meetingTitle}>
-                              {meeting.title}
-                            </Typography>
-                          }
-                          secondary={
-                            <>
-                              <Typography component="span" variant="body2" display="block" sx={meetingDate}>
-                                {meeting.date}
-                              </Typography>
-                              <Typography component="span" variant="caption" sx={meetingParticipants}>
-                                With: {meeting.participants.join(', ')}
-                              </Typography>
-                            </>
-                          }
-                        />
-                      </ListItem>
-                      <Divider sx={meetingsListDivider} />
-                    </div>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={noMeetingsBox}>
-                  <Typography variant="body1" sx={noMeetingsText}>
-                    No upcoming meetings scheduled
-                  </Typography>
+              {meetings.length === 0 ? (
+                <Box sx={s.noDataBox}>
+                  <Typography sx={s.noDataText}>No upcoming meetings</Typography>
                 </Box>
+              ) : (
+                meetings.map((m) => (
+                  <React.Fragment key={m.id}>
+                    <ListItem
+                      secondaryAction={
+                        <Chip label={m.status} size="small" sx={s.meetingStatusChip(m.status)} />
+                      }
+                      sx={s.meetingsListItem}
+                    >
+                      <ListItemText
+                        primary={<Typography sx={s.meetingTitle}>{m.title}</Typography>}
+                        secondary={
+                          <>
+                            <Typography sx={s.meetingDate}>{m.date}</Typography>
+                            <Typography sx={s.meetingParticipants}>
+                              With: {m.participants.join(', ')}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    <Divider sx={s.meetingsListDivider} />
+                  </React.Fragment>
+                ))
               )}
             </CardContent>
           </Card>
         )}
 
-        {activeTab === 2 && (
-          <Card sx={card}>
+        {tabIndex === 2 && (
+          <Card sx={g.cardStyles}>
             <CardContent>
-              <Typography variant="h6" sx={notificationsHeader}>
+              <Typography variant="h6" sx={s.notificationsHeader}>
                 Recent Notifications
               </Typography>
 
-              {notifications.length > 0 ? (
-                <List sx={notificationsList}>
-                  {notifications.map((notification) => (
-                    <div key={notification.id}>
-                      <ListItem
-                        secondaryAction={
-                          !notification.read && <Chip label="New" size="small" sx={newChip} />
-                        }
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography
-                              component="div"
-                              variant="subtitle1"
-                              sx={
-                                notification.read
-                                  ? readNotificationText
-                                  : unreadNotificationText
-                              }
-                            >
-                              {notification.text}
-                            </Typography>
-                          }
-                          secondary={
-                            <Typography component="span" variant="caption" sx={notificationTime}>
-                              {notification.time}
-                            </Typography>
-                          }
-                        />
-                      </ListItem>
-                      <Divider sx={notificationsListDivider} />
-                    </div>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={noMeetingsBox}>
-                  <Typography variant="body1" sx={noMeetingsText}>
-                    No new notifications
-                  </Typography>
+              {notifications.length === 0 ? (
+                <Box sx={s.noDataBox}>
+                  <Typography sx={s.noDataText}>No new notifications</Typography>
                 </Box>
+              ) : (
+                notifications.map((n) => (
+                  <React.Fragment key={n.id}>
+                    <ListItem
+                      secondaryAction={!n.read && <Chip label="New" size="small" sx={s.newChip} />}
+                      sx={s.notificationsListItem}
+                    >
+                      <ListItemText
+                        primary={
+                          <Typography sx={n.read ? s.readNotificationText : s.unreadNotificationText}>
+                            {n.text}
+                          </Typography>
+                        }
+                        secondary={<Typography sx={s.notificationTime}>{n.time}</Typography>}
+                      />
+                    </ListItem>
+                    <Divider sx={s.notificationsListDivider} />
+                  </React.Fragment>
+                ))
               )}
             </CardContent>
           </Card>
         )}
       </Box>
     </Box>
-  );
+  )
 }

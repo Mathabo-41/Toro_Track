@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { Controller } from 'react-hook-form';
 import {
   Box,
   Typography,
@@ -10,19 +11,16 @@ import {
   Stack,
   Button,
   Drawer,
-  ListItemButton,
   List,
-  Grid,
   ListItem,
+  ListItemButton,
   ListItemText,
-  Divider,
+  Grid,
   TextField,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
-  Chip,
-  Avatar,
+  Select,
+  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -31,6 +29,10 @@ import {
   TableHead,
   TableRow,
   IconButton,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  Chip,
 } from '@mui/material';
 import {
   Help as QueryIcon,
@@ -84,375 +86,135 @@ import {
   queryRow,
   noQueriesBox,
   noQueriesText,
-} from '../styles';
+} from './styles';
+import { useRaiseQuery } from './useRaiseQuery';
+import { useClientStore } from '../common/clientStore';
 
-/**
- * Client Query Screen
- */
+// Sidebar Navigation
+const Sidebar = () => {
+  const clientMenu = [
+    { name: 'Project Details', path: '/dashboard/client/details' },
+    { name: 'Raise Query', path: '/dashboard/client/query' },
+    { name: 'Meetings & Messages', path: '/dashboard/client/messages' },
+    { name: 'Settings', path: '/dashboard/client/settings' },
+  ];
 
-const clientMenu = [
-  { name: 'Project Details', path: '/dashboard/client/details' },
-  { name: 'Raise Query', path: '/dashboard/client/query' },
-  { name: 'Meetings & Messages', path: '/dashboard/client/messages' },
-  { name: 'Settings', path: '/dashboard/client/settings' },
-];
+  return (
+    <Drawer
+      variant="permanent"
+      anchor="left"
+      sx={{ width: 240, flexShrink: 0, '& .MuiDrawer-paper': drawerPaper }}
+    >
+      <Box sx={drawerHeader}>
+        <Typography variant="h5">Client Portal</Typography>
+      </Box>
+      <List>
+        {clientMenu.map((item) => (
+          <ListItem key={item.name} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={{
+                ...listItemButton,
+                ...(item.name === 'Raise Query' && activeListItemButton),
+              }}
+            >
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Drawer>
+  );
+};
 
-// Sample query data
-const queryData = [
-  {
-    id: 'QRY-001',
-    title: 'Checkout Page Issue',
-    status: 'resolved',
-    date: '2023-11-15',
-    category: 'Technical',
-    description:
-      'The checkout page is not loading properly on mobile devices. The payment button disappears when scrolling.',
-    response: 'This has been fixed in the latest update. Please clear your cache and try again.',
-    attachments: [],
-  },
-  {
-    id: 'QRY-002',
-    title: 'Design Revision Request',
-    status: 'in-progress',
-    date: '2023-12-03',
-    category: 'Design',
-    description:
-      'Can we make the product images larger on the category pages? They seem too small compared to the mockups.',
-    response: 'Our design team is reviewing this request. We\'ll get back to you by Friday.',
-    attachments: [{ name: 'mockup-v1.pdf', size: '2.4 MB' }],
-  },
-  {
-    id: 'QRY-003',
-    title: 'API Documentation',
-    status: 'pending',
-    date: '2023-12-10',
-    category: 'Documentation',
-    description: 'Where can I find the updated API documentation for the new endpoints?',
-    response: '',
-    attachments: [],
-  },
-];
+// Page Header
+const Header = ({ isDetailView }) => (
+  <Box sx={headerBox}>
+    <Typography variant="h4" sx={headerTitle}>
+      <QueryIcon sx={headerIcon} />
+      {isDetailView ? 'Query Details' : 'Raise a Query'}
+    </Typography>
+    <Typography variant="body1" sx={headerSubtitle}>
+      {isDetailView
+        ? 'View and manage your query'
+        : 'Submit questions or issues about your project'}
+    </Typography>
+  </Box>
+);
 
-export default function ClientQuery() {
-  const [activeQuery, setActiveQuery] = useState(null);
-  const [newQuery, setNewQuery] = useState({
-    title: '',
-    category: '',
-    description: '',
-    attachments: [],
-  });
-  const [fileToUpload, setFileToUpload] = useState(null);
+// Global Notification Snackbar
+const Notification = () => {
+  const { notification, hideNotification } = useClientStore();
 
-  const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFileToUpload({
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      });
-    }
-  };
+  return (
+    <Snackbar
+      open={notification.isOpen}
+      autoHideDuration={6000}
+      onClose={hideNotification}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+    >
+      <Alert
+        onClose={hideNotification}
+        severity={notification.severity}
+        sx={{ width: '100%' }}
+      >
+        {notification.message}
+      </Alert>
+    </Snackbar>
+  );
+};
 
-  const handleRemoveFile = () => {
-    setFileToUpload(null);
-  };
-
-  const handleSubmitQuery = (e) => {
-    e.preventDefault();
-    // this is where we are going to send the data/user input to our backend
-    alert('Query submitted successfully!');
-    setNewQuery({
-      title: '',
-      category: '',
-      description: '',
-      attachments: [],
-    });
-    setFileToUpload(null);
-  };
+// Main Page
+export default function ClientQueryPage() {
+  const {
+    activeQuery,
+    queries,
+    isLoadingQueries,
+    queriesError,
+    isSubmittingQuery,
+    fileToUpload,
+    errors,
+    control,
+    register,
+    handleSubmit,
+    handleFileChange,
+    handleRemoveFile,
+    handleViewQuery,
+    handleCloseQueryView,
+  } = useRaiseQuery();
 
   return (
     <Box sx={mainBox}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': drawerPaper,
-        }}
-      >
-        <Box sx={drawerHeader}>
-          <Typography variant="h5">Client Portal</Typography>
-        </Box>
-        <List>
-          {clientMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                sx={{
-                  ...listItemButton,
-                  ...(item.name === 'Raise Query' && activeListItemButton),
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+      <Sidebar />
+      <Notification />
 
-      {/* Main Content */}
       <Box component="main" sx={mainContentBox}>
-        {/* Header */}
-        <Box sx={headerBox}>
-          <Typography variant="h4" sx={headerTitle}>
-            <QueryIcon sx={headerIcon} />
-            {activeQuery ? 'Query Details' : 'Raise a Query'}
-          </Typography>
-          <Typography variant="body1" sx={headerSubtitle}>
-            {activeQuery ? 'View and manage your query' : 'Submit questions or issues about your project'}
-          </Typography>
-        </Box>
+        <Header isDetailView={!!activeQuery} />
 
         {activeQuery ? (
-          /* Query Detail View */
-          <Card sx={queryCard}>
-            <CardContent>
-              <Button startIcon={<BackIcon />} onClick={() => setActiveQuery(null)} sx={backButton}>
-                Back to queries
-              </Button>
-
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Typography variant="h5" sx={queryDetailTitle}>
-                  {activeQuery.title}
-                </Typography>
-                <Chip
-                  label={
-                    activeQuery.status === 'resolved'
-                      ? 'Resolved'
-                      : activeQuery.status === 'in-progress'
-                      ? 'In Progress'
-                      : 'Pending'
-                  }
-                  icon={activeQuery.status === 'resolved' ? <ResolvedIcon /> : <PendingIcon />}
-                  sx={queryStatusChip(activeQuery.status)}
-                />
-              </Stack>
-
-              <Box sx={queryInfoBox}>
-                <Typography variant="body2" sx={queryInfoLabel}>
-                  Category
-                </Typography>
-                <Typography variant="body1" sx={queryInfoValue}>
-                  {activeQuery.category}
-                </Typography>
-
-                <Typography variant="body2" sx={queryInfoLabel}>
-                  Submitted on
-                </Typography>
-                <Typography variant="body1" sx={queryInfoValue}>
-                  {activeQuery.date}
-                </Typography>
-
-                <Typography variant="body2" sx={queryInfoLabel}>
-                  Description
-                </Typography>
-                <Typography variant="body1" sx={queryInfoValue}>
-                  {activeQuery.description}
-                </Typography>
-              </Box>
-
-              {activeQuery.attachments.length > 0 && (
-                <Box sx={attachmentsBox}>
-                  <Typography variant="body2" sx={queryInfoLabel}>
-                    Attachments
-                  </Typography>
-                  <TableContainer component={Paper} sx={attachmentsTableContainer}>
-                    <Table>
-                      <TableBody>
-                        {activeQuery.attachments.map((file, index) => (
-                          <TableRow key={index}>
-                            <TableCell sx={queryInfoValue}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <AttachIcon fontSize="small" sx={attachmentFileIcon} />
-                                <Typography>{file.name}</Typography>
-                              </Stack>
-                            </TableCell>
-                            <TableCell sx={queryInfoValue}>{file.size}</TableCell>
-                            <TableCell>
-                              <Button variant="outlined" size="small" sx={downloadButton}>
-                                Download
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Box>
-              )}
-
-              {activeQuery.response && (
-                <Box sx={responseBox}>
-                  <Typography variant="body2" sx={responseLabel}>
-                    Response from Team
-                  </Typography>
-                  <Typography variant="body1" sx={queryInfoValue}>
-                    {activeQuery.response}
-                  </Typography>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
+          <QueryDetailView query={activeQuery} onClose={handleCloseQueryView} />
         ) : (
-          /* Main Query View (List + Form) */
           <Grid container spacing={3}>
-            {/* New Query Form */}
             <Grid item xs={12} md={5}>
-              <Card sx={newQueryCard}>
-                <CardContent>
-                  <Typography variant="h6" sx={newQueryTitle}>
-                    Submit New Query
-                  </Typography>
-
-                  <Box component="form" onSubmit={handleSubmitQuery}>
-                    <Stack spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="Query Title"
-                        variant="outlined"
-                        value={newQuery.title}
-                        onChange={(e) => setNewQuery({ ...newQuery, title: e.target.value })}
-                        required
-                        sx={newQueryTextField}
-                      />
-
-                      <FormControl fullWidth>
-                        <InputLabel sx={newQueryInputLabel}>Category</InputLabel>
-                        <Select
-                          value={newQuery.category}
-                          onChange={(e) => setNewQuery({ ...newQuery, category: e.target.value })}
-                          label="Category"
-                          required
-                          sx={{
-                            ...newQuerySelect,
-                            '& .MuiOutlinedInput-notchedOutline': newQuerySelectOutline,
-                            '&:hover .MuiOutlinedInput-notchedOutline': newQuerySelectOutline,
-                            '& .MuiSvgIcon-root': {
-                              color: '#6b705c',
-                            },
-                          }}
-                        >
-                          <MenuItem value="Technical">Technical</MenuItem>
-                          <MenuItem value="Design">Design</MenuItem>
-                          <MenuItem value="Billing">Billing</MenuItem>
-                          <MenuItem value="Documentation">Documentation</MenuItem>
-                          <MenuItem value="Other">Other</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      <TextField
-                        fullWidth
-                        label="Description"
-                        variant="outlined"
-                        multiline
-                        rows={4}
-                        value={newQuery.description}
-                        onChange={(e) => setNewQuery({ ...newQuery, description: e.target.value })}
-                        required
-                        sx={newQueryTextField}
-                      />
-
-                      <Box>
-                        <Button
-                          component="label"
-                          variant="outlined"
-                          startIcon={<AttachIcon />}
-                          sx={attachFileButton}
-                        >
-                          Attach File
-                          <input type="file" hidden onChange={handleFileChange} />
-                        </Button>
-                        {fileToUpload && (
-                          <Box sx={attachedFileBox}>
-                            <Typography variant="body2" sx={attachedFileText}>
-                              {fileToUpload.name} ({fileToUpload.size})
-                            </Typography>
-                            <IconButton size="small" onClick={handleRemoveFile} sx={removeFileButton}>
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        )}
-                      </Box>
-
-                      <Button type="submit" variant="contained" startIcon={<SendIcon />} fullWidth sx={submitButton}>
-                        Submit Query
-                      </Button>
-                    </Stack>
-                  </Box>
-                </CardContent>
-              </Card>
+              <NewQueryForm
+                register={register}
+                control={control}
+                errors={errors}
+                isSubmitting={isSubmittingQuery}
+                fileToUpload={fileToUpload}
+                onFileChange={handleFileChange}
+                onRemoveFile={handleRemoveFile}
+                handleSubmit={handleSubmit}
+              />
             </Grid>
-
-            {/* Previous Queries */}
             <Grid item xs={12} md={7}>
-              <Card sx={previousQueriesCard}>
-                <CardContent>
-                  <Typography variant="h6" sx={previousQueriesTitle}>
-                    Your Previous Queries
-                  </Typography>
-
-                  {queryData.length > 0 ? (
-                    <TableContainer component={Paper} sx={previousQueriesTableContainer}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell sx={previousQueriesTableCellHeader}>Query</TableCell>
-                            <TableCell sx={previousQueriesTableCellHeader}>Category</TableCell>
-                            <TableCell sx={previousQueriesTableCellHeader}>Status</TableCell>
-                            <TableCell sx={previousQueriesTableCellHeader}>Date</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {queryData.map((query) => (
-                            <TableRow
-                              key={query.id}
-                              hover
-                              onClick={() => setActiveQuery(query)}
-                              sx={queryRow}
-                            >
-                              <TableCell sx={previousQueriesTableCell}>{query.title}</TableCell>
-                              <TableCell sx={previousQueriesTableCell}>{query.category}</TableCell>
-                              <TableCell>
-                                <Chip
-                                  label={
-                                    query.status === 'resolved'
-                                      ? 'Resolved'
-                                      : query.status === 'in-progress'
-                                      ? 'In Progress'
-                                      : 'Pending'
-                                  }
-                                  size="small"
-                                  sx={queryStatusChip(query.status)}
-                                />
-                              </TableCell>
-                              <TableCell sx={previousQueriesTableCell}>{query.date}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  ) : (
-                    <Box sx={noQueriesBox}>
-                      <Typography variant="body1" sx={noQueriesText}>
-                        You haven't submitted any queries yet.
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
+              <PreviousQueriesList
+                queries={queries}
+                isLoading={isLoadingQueries}
+                error={queriesError}
+                onViewQuery={handleViewQuery}
+              />
             </Grid>
           </Grid>
         )}
@@ -460,3 +222,308 @@ export default function ClientQuery() {
     </Box>
   );
 }
+
+// New Query Form
+const NewQueryForm = ({
+  register,
+  control,
+  errors,
+  isSubmitting,
+  fileToUpload,
+  onFileChange,
+  onRemoveFile,
+  handleSubmit,
+}) => (
+  <Card sx={newQueryCard}>
+    <CardContent>
+      <Typography variant="h6" sx={newQueryTitle}>
+        Submit New Query
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Stack spacing={2}>
+          <TextField
+            fullWidth
+            label="Query Title"
+            variant="outlined"
+            required
+            {...register('title', { required: 'Title is required' })}
+            error={!!errors.title}
+            helperText={errors.title?.message}
+            disabled={isSubmitting}
+            sx={newQueryTextField}
+          />
+
+          <FormControl fullWidth error={!!errors.category}>
+            <InputLabel sx={newQueryInputLabel}>Category</InputLabel>
+            <Controller
+              name="category"
+              control={control}
+              defaultValue=""
+              rules={{ required: 'Please select a category' }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  label="Category"
+                  disabled={isSubmitting}
+                  sx={{
+                    ...newQuerySelect,
+                    '& .MuiOutlinedInput-notchedOutline': newQuerySelectOutline,
+                  }}
+                >
+                  <MenuItem value="Technical">Technical</MenuItem>
+                  <MenuItem value="Design">Design</MenuItem>
+                  <MenuItem value="Billing">Billing</MenuItem>
+                  <MenuItem value="Documentation">Documentation</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              )}
+            />
+            {errors.category && (
+              <Typography
+                color="error"
+                variant="caption"
+                sx={{ pl: 2, pt: 0.5 }}
+              >
+                {errors.category.message}
+              </Typography>
+            )}
+          </FormControl>
+
+          <TextField
+            fullWidth
+            label="Description"
+            variant="outlined"
+            multiline
+            rows={4}
+            required
+            {...register('description', {
+              required: 'Description is required',
+            })}
+            error={!!errors.description}
+            helperText={errors.description?.message}
+            disabled={isSubmitting}
+            sx={newQueryTextField}
+          />
+
+          <Box>
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<AttachIcon />}
+              sx={attachFileButton}
+              disabled={isSubmitting}
+            >
+              Attach File
+              <input type="file" hidden onChange={onFileChange} />
+            </Button>
+            {fileToUpload && (
+              <Box sx={attachedFileBox}>
+                <Typography variant="body2" sx={attachedFileText}>
+                  {fileToUpload.name} ({fileToUpload.size})
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={onRemoveFile}
+                  sx={removeFileButton}
+                  disabled={isSubmitting}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
+
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={
+              isSubmitting ? <CircularProgress size={20} /> : <SendIcon />
+            }
+            fullWidth
+            sx={submitButton}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Query'}
+          </Button>
+        </Stack>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+// Previous Queries List
+const PreviousQueriesList = ({ queries, isLoading, error, onViewQuery }) => (
+  <Card sx={previousQueriesCard}>
+    <CardContent>
+      <Typography variant="h6" sx={previousQueriesTitle}>
+        Your Previous Queries
+      </Typography>
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error">
+          Could not load queries. Please try again later.
+        </Alert>
+      ) : queries.length > 0 ? (
+        <TableContainer component={Paper} sx={previousQueriesTableContainer}>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={previousQueriesTableCellHeader}>
+                  Query
+                </TableCell>
+                <TableCell sx={previousQueriesTableCellHeader}>
+                  Category
+                </TableCell>
+                <TableCell sx={previousQueriesTableCellHeader}>
+                  Status
+                </TableCell>
+                <TableCell sx={previousQueriesTableCellHeader}>
+                  Date
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {queries.map((q) => (
+                <TableRow
+                  key={q.id}
+                  hover
+                  onClick={() => onViewQuery(q)}
+                  sx={queryRow}
+                >
+                  <TableCell sx={previousQueriesTableCell}>
+                    {q.title}
+                  </TableCell>
+                  <TableCell sx={previousQueriesTableCell}>
+                    {q.category}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={q.status}
+                      size="small"
+                      sx={queryStatusChip(q.status)}
+                    />
+                  </TableCell>
+                  <TableCell sx={previousQueriesTableCell}>
+                    {new Date(q.created_at).toLocaleDateString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Box sx={noQueriesBox}>
+          <Typography variant="body1" sx={noQueriesText}>
+            You haven't submitted any queries yet.
+          </Typography>
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+);
+
+// Query Detail View
+const QueryDetailView = ({ query, onClose }) => (
+  <Card sx={queryCard}>
+    <CardContent>
+      <Button
+        startIcon={<BackIcon />}
+        onClick={onClose}
+        sx={backButton}
+      >
+        Back to queries
+      </Button>
+
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 3 }}
+      >
+        <Typography variant="h5" sx={queryDetailTitle}>
+          {query.title}
+        </Typography>
+        <Chip
+          label={query.status}
+          icon={query.status === 'resolved' ? <ResolvedIcon /> : <PendingIcon />}
+          sx={queryStatusChip(query.status)}
+        />
+      </Stack>
+
+      <Box sx={queryInfoBox}>
+        <Typography variant="body2" sx={queryInfoLabel}>
+          Category
+        </Typography>
+        <Typography variant="body1" sx={queryInfoValue}>
+          {query.category}
+        </Typography>
+
+        <Typography variant="body2" sx={queryInfoLabel}>
+          Submitted on
+        </Typography>
+        <Typography variant="body1" sx={queryInfoValue}>
+          {new Date(query.created_at).toLocaleString()}
+        </Typography>
+
+        <Typography variant="body2" sx={queryInfoLabel}>
+          Description
+        </Typography>
+        <Typography variant="body1" sx={queryInfoValue}>
+          {query.description}
+        </Typography>
+      </Box>
+
+      {query.attachment_url && (
+        <Box sx={attachmentsBox}>
+          <Typography variant="body2" sx={queryInfoLabel}>
+            Attachments
+          </Typography>
+          <TableContainer component={Paper} sx={attachmentsTableContainer}>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell sx={queryInfoValue}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <AttachIcon fontSize="small" sx={attachmentFileIcon} />
+                      <Typography>
+                        {query.attachment_name || 'Attached File'}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      component="a"
+                      href={query.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="outlined"
+                      size="small"
+                      sx={downloadButton}
+                    >
+                      Download
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+
+      {query.response && (
+        <Box sx={responseBox}>
+          <Typography variant="body2" sx={responseLabel}>
+            Response from Team
+          </Typography>
+          <Typography variant="body1" sx={queryInfoValue}>
+            {query.response}
+          </Typography>
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+);

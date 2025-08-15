@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Box,
   Typography,
@@ -12,14 +12,14 @@ import {
   Drawer,
   ListItemButton,
   TextField,
-  MenuItem,
   FormControl,
   InputLabel,
   Select,
-} from '@mui/material';
-import {
-  AccountCircle as AccountCircleIcon
-} from '@mui/icons-material';
+  MenuItem
+} from '@mui/material'
+import { AccountCircle as AccountCircleIcon } from '@mui/icons-material'
+
+import { useAuditorStore } from '../common/auditorStore'
 import {
   fullScreenContainerStyles,
   drawerStyles,
@@ -32,53 +32,57 @@ import {
   searchFieldStyles,
   userProfileStyles,
   userInfoStyles,
-  auditorTextStyles,
+  auditorTextStyles
+} from '../common/styles'
+import {
   reportingExportContainerStyles,
   reportingExportTitle,
   reportingExportSubtitle,
   reportingExportSection,
   reportingExportSectionTitle,
   reportingExportSectionDescription,
-  reportingExportButton,
   reportingExportFormControl,
-  reportingExportMenuItem,
   reportingExportSelect,
-} from '../styles';
-
-const auditTrailMenu = [
-  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
-  { name: 'Settings', path: '/dashboard/auditor/settings' }
-];
+  reportingExportButton
+} from './styles'
+import { useReportingExportOptions } from './useReportingExport'
 
 export default function ReportingExportPage() {
-  const [search, setSearch] = useState("");
-  const currentPath = '/dashboard/auditor/reportingExport';
+  const { auditTrailMenu, currentPath, setCurrentPath } = useAuditorStore()
+  const [search, setSearch] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [client, setClient] = useState('')
+  const [assetType, setAssetType] = useState('')
+  const [frequency, setFrequency] = useState('')
+  const [snapshotDate, setSnapshotDate] = useState('')
+
+  const {
+    data: options = { clients: [], assetTypes: [], frequencies: [] },
+    isLoading,
+    isError
+  } = useReportingExportOptions()
+
+  // Activate sidebar highlight
+  useEffect(() => {
+    setCurrentPath('/dashboard/auditor/reportingExport')
+  }, [setCurrentPath])
 
   return (
     <Box sx={fullScreenContainerStyles}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={drawerStyles}
-      >
+      {/* Sidebar */}
+      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">
-            Auditor Portal
-          </Typography>
+          <Typography variant="h5">Auditor Portal</Typography>
         </Box>
         <List>
-          {auditTrailMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
+          {auditTrailMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
                 selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.name, currentPath)}
+                sx={listItemButtonStyles(item.path, currentPath)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -89,9 +93,10 @@ export default function ReportingExportPage() {
 
       {/* Main Content */}
       <Box component="main" sx={mainContentBoxStyles}>
+        {/* Header */}
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
-            Reporting & Export
+            Reporting &amp; Export
           </Typography>
           <Box sx={headerRightSectionStyles}>
             <TextField
@@ -113,27 +118,27 @@ export default function ReportingExportPage() {
           </Box>
         </Box>
 
-        {/* Reporting & Export Content */}
+        {/* Reporting & Export Sections */}
         <Box sx={reportingExportContainerStyles}>
-          <Grid container maxWidth="md" sx={{ margin: '0 auto' }}>
+          <Grid container maxWidth="md" sx={{ mx: 'auto' }}>
             {/* Main Header */}
             <Grid item xs={12}>
               <Typography variant="h4" sx={reportingExportTitle}>
-                Reporting & Export
+                Reporting &amp; Export
               </Typography>
               <Typography variant="subtitle1" sx={reportingExportSubtitle}>
-                Provides flexible, exportable views for internal reviews and external compliance checks.
+                Flexible, exportable views for internal reviews and external compliance checks.
               </Typography>
             </Grid>
 
-            {/* Section 1 */}
+            {/* Custom Reports */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
                   Customizable PDF/CSV Reports
                 </Typography>
                 <Typography variant="body1" sx={reportingExportSectionDescription}>
-                  Pre-built templates for delivery logs, license statuses, and audit summaries, with filters by date, client, or asset type.
+                  Pre-built templates for delivery logs, license statuses, and audit summaries.
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
@@ -142,6 +147,8 @@ export default function ReportingExportPage() {
                       type="date"
                       fullWidth
                       InputLabelProps={{ shrink: true }}
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
@@ -150,19 +157,40 @@ export default function ReportingExportPage() {
                       type="date"
                       fullWidth
                       InputLabelProps={{ shrink: true }}
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <TextField label="Client" placeholder="Select client" fullWidth />
+                    <FormControl fullWidth sx={reportingExportFormControl}>
+                      <InputLabel>Client</InputLabel>
+                      <Select
+                        value={client}
+                        onChange={(e) => setClient(e.target.value)}
+                        sx={reportingExportSelect}
+                      >
+                        {isLoading
+                          ? <MenuItem disabled>Loading…</MenuItem>
+                          : isError
+                            ? <MenuItem disabled>Error</MenuItem>
+                            : options.clients.map((c) => (
+                                <MenuItem key={c} value={c}>{c}</MenuItem>
+                              ))
+                        }
+                      </Select>
+                    </FormControl>
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <FormControl fullWidth sx={{reportingExportFormControl,}}>
-                      <InputLabel id="asset-type-label">Asset Type</InputLabel>
-                      <Select labelId="asset-type-label" label="Asset Type" value="" sx={reportingExportSelect}>
-                        <MenuItem value="">All</MenuItem>
-                        <MenuItem value="type1">Type 1</MenuItem>
-                        <MenuItem value="type2">Type 2</MenuItem>
-                        <MenuItem value="type3">Type 3</MenuItem>
+                    <FormControl fullWidth sx={reportingExportFormControl}>
+                      <InputLabel>Asset Type</InputLabel>
+                      <Select
+                        value={assetType}
+                        onChange={(e) => setAssetType(e.target.value)}
+                        sx={reportingExportSelect}
+                      >
+                        {options.assetTypes.map((t) => (
+                          <MenuItem key={t} value={t}>{t}</MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -180,28 +208,33 @@ export default function ReportingExportPage() {
               </Box>
             </Grid>
 
-            {/* Section 2 */}
+            {/* Scheduled Delivery */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
                   Scheduled Report Delivery
                 </Typography>
                 <Typography variant="body1" sx={reportingExportSectionDescription}>
-                  Automate sending of monthly or quarterly audit packs to designated stakeholders via email or SharePoint.
+                  Automate sending of monthly or quarterly audit packs to stakeholders.
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth sx={reportingExportFormControl}>
-                      <InputLabel id="schedule-frequency-label">Frequency</InputLabel>
-                      <Select labelId="schedule-frequency-label" label="Frequency" value="" sx={reportingExportSelect}>
-                        <MenuItem value="monthly">Monthly</MenuItem>
-                        <MenuItem value="quarterly">Quarterly</MenuItem>
+                      <InputLabel>Frequency</InputLabel>
+                      <Select
+                        value={frequency}
+                        onChange={(e) => setFrequency(e.target.value)}
+                        sx={reportingExportSelect}
+                      >
+                        {options.frequencies.map((f) => (
+                          <MenuItem key={f} value={f}>{f}</MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
-                      label="Send To (Email or SharePoint)"
+                      label="Send To"
                       placeholder="email@example.com"
                       fullWidth
                     />
@@ -215,14 +248,14 @@ export default function ReportingExportPage() {
               </Box>
             </Grid>
 
-            {/* Section 3 */}
+            {/* On‐Demand Snapshots */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
                   On-Demand Audit Snapshots
                 </Typography>
                 <Typography variant="body1" sx={reportingExportSectionDescription}>
-                  Generate instant snapshots of the entire asset register for any cut-off date.
+                  Generate instant snapshots of the asset register for any cut‐off date.
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -231,6 +264,8 @@ export default function ReportingExportPage() {
                       type="date"
                       fullWidth
                       InputLabelProps={{ shrink: true }}
+                      value={snapshotDate}
+                      onChange={(e) => setSnapshotDate(e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -245,5 +280,5 @@ export default function ReportingExportPage() {
         </Box>
       </Box>
     </Box>
-  );
+  )
 }

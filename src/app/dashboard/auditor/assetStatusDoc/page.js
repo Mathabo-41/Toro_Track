@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect } from 'react'
+import Link from 'next/link'
 import {
   Box,
   Typography,
@@ -11,12 +11,10 @@ import {
   Drawer,
   ListItemButton,
   Paper,
-  TextField,
-  colors
-} from '@mui/material';
-import {
-  AccountCircle as AccountCircleIcon
-} from '@mui/icons-material';
+  TextField
+} from '@mui/material'
+import { AccountCircle as AccountCircleIcon } from '@mui/icons-material'
+import { useAuditorStore } from '../common/auditorStore'
 import {
   fullScreenContainerStyles,
   drawerStyles,
@@ -29,81 +27,66 @@ import {
   searchFieldStyles,
   userProfileStyles,
   userInfoStyles,
-  auditorTextStyles,
+  auditorTextStyles
+} from '../common/styles'
+import {
   assetStatusContainer,
   assetStatusTitle,
   assetStatusSubtitle,
   assetStatusPaper,
   assetStatusSectionTitle
-} from '../styles';
+} from './styles'
+import {
+  useAssetStatus,
+  useDocuments,
+  useDigitalSignatures
+} from './useAssetStaDoc'
 
-const auditTrailMenu = [
-  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
-  { name: 'Settings', path: '/dashboard/auditor/settings' }
-];
+export default function AssetStatusPage() {
+  const {
+    currentPath,
+    auditTrailMenu,
+    searchQuery,
+    setSearchQuery,
+    setCurrentPath
+  } = useAuditorStore()
 
-const statusData = [
-  { id: 1, asset: "Laptop - Dell XPS 13", status: "Deployed" },
-  { id: 2, asset: "Router - Cisco 2901", status: "In Transit" },
-  { id: 3, asset: "Software - Adobe CC", status: "Under Maintenance" },
-  { id: 4, asset: "Printer - HP LaserJet", status: "Retired" },
-];
+  // Ensure sidebar highlights correct item
+  useEffect(() => {
+    setCurrentPath('/dashboard/auditor/assetStatusDoc')
+  }, [setCurrentPath])
 
-const documentsData = [
-  "Delivery Note #12345.pdf",
-  "Client Sign-off Form - Project Alpha.pdf",
-  "Warranty Certificate - Dell XPS 13.pdf",
-  "Disposal Form - HP Printer.pdf",
-];
+  // Fetch data
+  const { data: statusData = [] } = useAssetStatus()
+  const { data: documentsData = [] } = useDocuments()
+  const { data: signaturesData = [] } = useDigitalSignatures()
 
-const digitalSignatures = [
-  { client: "Acme Corp", date: "2025-07-30", status: "Accepted" },
-  { client: "Globex Inc", date: "2025-07-28", status: "Pending" },
-];
-
-export default function AssetStatusDocumentation() {
-  const [search, setSearch] = useState("");
-  const currentPath = '/dashboard/auditor/assetStatusDoc';
-
-  const filteredStatusData = statusData.filter(item =>
-    item.asset.toLowerCase().includes(search.toLowerCase()) ||
-    item.status.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const filteredDocumentsData = documentsData.filter(doc =>
-    doc.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const filteredSignatures = digitalSignatures.filter(sig =>
-    sig.client.toLowerCase().includes(search.toLowerCase()) ||
-    sig.status.toLowerCase().includes(search.toLowerCase())
-  );
+  // Apply client-side filtering
+  const filter = (text) => text.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStatus = statusData.filter(({ asset, status }) =>
+    filter(asset) || filter(status)
+  )
+  const filteredDocs = documentsData.filter((name) =>
+    filter(name)
+  )
+  const filteredSigs = signaturesData.filter(
+    ({ client, status }) => filter(client) || filter(status)
+  )
 
   return (
     <Box sx={fullScreenContainerStyles}>
-      {/* Sidebar Navigation */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={drawerStyles}
-      >
+      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
         <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">
-            Auditor Portal
-          </Typography>
+          <Typography variant="h5">Auditor Portal</Typography>
         </Box>
         <List>
-          {auditTrailMenu.map((item, index) => (
-            <ListItem key={index} disablePadding>
+          {auditTrailMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
                 selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.name, currentPath)}
+                sx={listItemButtonStyles(item.path, currentPath)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -112,7 +95,6 @@ export default function AssetStatusDocumentation() {
         </List>
       </Drawer>
 
-      {/* Main Content */}
       <Box component="main" sx={mainContentBoxStyles}>
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
@@ -122,8 +104,8 @@ export default function AssetStatusDocumentation() {
             <TextField
               variant="outlined"
               placeholder="Search assets or documents"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               sx={searchFieldStyles}
             />
             <Box sx={userProfileStyles}>
@@ -136,16 +118,15 @@ export default function AssetStatusDocumentation() {
               <AccountCircleIcon sx={{ fontSize: 32 }} />
             </Box>
           </Box>
+
         </Box>
 
-        {/* Content Section */}
-        <Box sx={{assetStatusContainer, backgroundColor: '#fefae0', p: 2}}>
+        <Box sx={assetStatusContainer}>
           <Typography variant="h4" sx={assetStatusTitle}>
             Asset Status & Documentation
           </Typography>
           <Typography variant="subtitle1" sx={assetStatusSubtitle}>
-            Gives auditors a clear view of each asset’s lifecycle and associated
-            paperwork.
+            Gives auditors a clear view of each asset’s lifecycle and associated paperwork.
           </Typography>
 
           <Paper elevation={2} sx={assetStatusPaper}>
@@ -153,7 +134,7 @@ export default function AssetStatusDocumentation() {
               Status Dashboard
             </Typography>
             <List>
-              {filteredStatusData.map(({ id, asset, status }) => (
+              {filteredStatus.map(({ id, asset, status }) => (
                 <ListItem key={id} divider>
                   <ListItemText
                     primary={asset}
@@ -169,7 +150,7 @@ export default function AssetStatusDocumentation() {
               Document Attachment Support
             </Typography>
             <List>
-              {filteredDocumentsData.map((doc, idx) => (
+              {filteredDocs.map((doc, idx) => (
                 <ListItem key={idx} divider>
                   <ListItemText primary={doc} />
                 </ListItem>
@@ -182,10 +163,10 @@ export default function AssetStatusDocumentation() {
               Digital Signature Capture
             </Typography>
             <List>
-              {filteredSignatures.map(({ client, date, status }, idx) => (
+              {filteredSigs.map(({ client, date, status }, idx) => (
                 <ListItem key={idx} divider>
                   <ListItemText
-                    primary={`${client} - ${date}`}
+                    primary={`${client} – ${date}`}
                     secondary={`Signature Status: ${status}`}
                   />
                 </ListItem>
@@ -195,5 +176,5 @@ export default function AssetStatusDocumentation() {
         </Box>
       </Box>
     </Box>
-  );
+  )
 }

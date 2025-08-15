@@ -1,9 +1,23 @@
+// features/admin/TeamsUsers/page.js
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Grid,
+  Card,
+  CardContent,
+  Stack,
+  Avatar,
+  Chip,
   Button,
   Table,
   TableBody,
@@ -12,92 +26,37 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Card,
-  CardContent,
-  Stack,
-  Avatar,
-  Chip,
-  IconButton,
   TextField,
   InputAdornment,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Grid,
+  IconButton,
   Menu,
-  Divider,
   MenuItem,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   FormControl,
   InputLabel,
-  Select,
-  Checkbox,
-  ListItemIcon,
+  Select
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Search as SearchIcon,
   Groups as TeamIcon,
   Person as PersonIcon,
   Email as EmailIcon,
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Add as AddIcon,
+  Search as SearchIcon,
   Close as CloseIcon,
   AdminPanelSettings as AdminIcon,
   Work as ProjectIcon
 } from '@mui/icons-material';
-import Link from 'next/link';
 
-import {
-  rootBox,
-  drawerPaper,
-  drawerHeader,
-  listItemButton,
-  mainContentBox,
-  pageHeader,
-  pageHeaderText,
-  searchField,
-  menuPaper,
-  menuItem,
-  menuDivider,
-  usersPageHeaderIcon,
-  usersCard,
-  usersTableContainer,
-  usersTableHeader,
-  usersTableHeaderCell,
-  usersTableRow,
-  usersTableCell,
-  userAvatar,
-  roleChip,
-  teamStatsCard,
-  teamStatsValue,
-  teamStatsAvatar,
-  addUserButton,
-  dialogTextField,
-  dialogFormControl,
-  dialogInputLabel,
-  dialogSelect,
-  dialogSelectMenuItem,
-  createProjectDialogPaper,
-  createProjectDialogTitle,
-  dialogCloseButton,
-  createProjectDialogContent,
-  dialogActions,
-  dialogCancelButton,
-  createProjectButton,
-  activeListItemButton
-} from '../styles';
-
-/**
- * Team & Users Management Screen
- * Manages user accounts and roles within the CRM system
- */
+import * as common from '../common/styles';
+import * as styles from './styles';
+import useUsers from './useUsers/page.js';
 
 const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
@@ -110,132 +69,108 @@ const adminMenu = [
 ];
 
 const teamRoles = [
-  { value: 'Admin', label: 'Admin', icon: <AdminIcon /> },
-  { value: 'Project Manager', label: 'Project Manager', icon: <ProjectIcon /> },
-  { value: 'Team Lead', label: 'Team Lead', icon: <TeamIcon /> },
-  { value: 'Member', label: 'Member', icon: <PersonIcon /> }
+  { value: 'Admin', label: 'Admin', icon: <AdminIcon color="warning" /> },
+  { value: 'Project Manager', label: 'Project Manager', icon: <ProjectIcon color="info" /> },
+  { value: 'Team Lead', label: 'Team Lead', icon: <TeamIcon color="success" /> },
+  { value: 'Member', label: 'Member', icon: <PersonIcon color="disabled" /> }
 ];
 
-export default function TeamsUsers() {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'Admin',
-      avatar: '/placeholder.jpg'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'Project Manager',
-      avatar: '/placeholder.jpg'
-    },
-    {
-      id: 3,
-      name: 'Michael Johnson',
-      email: 'michael.j@example.com',
-      role: 'Team Lead',
-      avatar: '/placeholder.jpg'
-    },
-    {
-      id: 4,
-      name: 'Emily Davis',
-      email: 'emily.d@example.com',
-      role: 'Member',
-      avatar: '/placeholder.jpg'
-    },
-  ]);
+export default function TeamsUsersPage() {
+  const theme = useTheme();
+  const {
+    users = [],
+    isLoading,
+    error,
+    createUser,
+    creating,
+    updateUser,
+    updating,
+    deleteUser,
+    deleting
+  } = useUsers();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [openAddUserDialog, setOpenAddUserDialog] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    role: 'Member'
-  });
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', role: 'Member' });
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const filtered = users.filter(u =>
+    [u.name, u.email, u.role].some(f =>
+      (f || '').toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-  const filteredUsers = users.filter(user => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      user.name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      user.role.toLowerCase().includes(searchLower)
-    );
-  });
-
-  const handleMenuOpen = (event, userId) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedUser(userId);
+  const openMenu = (e, id) => {
+    setMenuAnchor(e.currentTarget);
+    setSelectedId(id);
   };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedUser(null);
+  const closeMenu = () => {
+    setMenuAnchor(null);
+    setSelectedId(null);
   };
-
-  const handleDeleteUser = () => {
-    setUsers(users.filter(user => user.id !== selectedUser));
-    handleMenuClose();
+  const handleDelete = () => {
+    deleteUser(selectedId);
+    closeMenu();
   };
-
-  const handleRoleChange = (userId, newRole) => {
-    setUsers(users.map(user =>
-      user.id === userId ? { ...user, role: newRole } : user
-    ));
-    handleMenuClose();
+  const handleRoleChange = (role) => {
+    updateUser({ id: selectedId, role });
+    closeMenu();
   };
-
-  const handleAddUser = () => {
-    const user = {
-      id: users.length + 1,
-      ...newUser,
-      avatar: '/placeholder.jpg'
-    };
-    setUsers([...users, user]);
-    setNewUser({
-      name: '',
-      email: '',
-      role: 'Member'
-    });
-    setOpenAddUserDialog(false);
-  };
-
-  const handleInputChange = (e) => {
+  const handleDialogChange = (e) => {
     const { name, value } = e.target;
-    setNewUser(prev => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
+  const handleAddUser = () => {
+    createUser(form);
+    setForm({ name: '', email: '', role: 'Member' });
+    setOpenDialog(false);
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={common.mainContentBox}>
+        <Typography variant='h5' color='blue-gray'>
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={common.mainContentBox}>
+        <Typography variant='h5' color='red'>
+          Error loading users: {error.message}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={rootBox}>
-      {/* Sidebar Navigation */}
+    <Box sx={common.rootBox}>
+      {/* Sidebar */}
       <Drawer
         variant="permanent"
         anchor="left"
-        sx={{
-          width: 240,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': drawerPaper
-        }}
+        sx={{ '& .MuiDrawer-paper': common.drawerPaper }}
       >
-        <Box sx={drawerHeader}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
+        <Box sx={common.drawerHeader}>
+          <Typography variant="h5">Admin Portal</Typography>
         </Box>
         <List>
-          {adminMenu.map(({ name, path }, index) => (
-            <ListItem key={index} disablePadding>
+          {adminMenu.map(item => (
+            <ListItem key={item.name} disablePadding>
               <ListItemButton
                 component={Link}
-                href={path}
-                sx={name === 'Teams & Users' ? activeListItemButton : listItemButton}
+                href={item.path}
+                sx={
+                  item.name === 'Teams & Users'
+                    ? common.activeListItemButton
+                    : common.listItemButton
+                }
               >
-                <ListItemText primary={name} />
+                <ListItemText primary={item.name} />
               </ListItemButton>
             </ListItem>
           ))}
@@ -243,33 +178,33 @@ export default function TeamsUsers() {
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={mainContentBox}>
-        <Box sx={pageHeader}>
-          <Typography variant="h4" sx={pageHeaderText}>
-            <TeamIcon sx={usersPageHeaderIcon} />
+      <Box component="main" sx={common.mainContentBox}>
+        {/* Header & Search */}
+        <Box sx={common.pageHeader}>
+          <Typography variant="h4" sx={styles.usersPageHeaderText}>
+            <TeamIcon sx={styles.usersPageHeaderIcon} />
             Teams & Users
           </Typography>
-          <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack direction="row" spacing={2} sx={{ width: 600, maxWidth: '100%' }}>
             <TextField
               size="small"
               placeholder="Search users..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: 'text.secondary' }} />
+                    <SearchIcon color="action" />
                   </InputAdornment>
-                ),
-                sx: searchField
+                )
               }}
-              sx={{ flexGrow: { xs: 1, sm: 0 } }}
+              sx={styles.searchField}
             />
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
-              onClick={() => setOpenAddUserDialog(true)}
-              sx={addUserButton}
+              onClick={() => setOpenDialog(true)}
+              sx={styles.addUserButton}
             >
               Add User
             </Button>
@@ -277,54 +212,45 @@ export default function TeamsUsers() {
         </Box>
 
         {/* Users Table */}
-        <Card sx={usersCard}>
+        <Card sx={styles.usersCard}>
           <CardContent>
-            <Typography variant="h6" sx={pageHeaderText}>
-              All Users ({filteredUsers.length})
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              All Users ({filtered?.length || 0})
             </Typography>
-            <TableContainer component={Paper} sx={usersTableContainer}>
-              <Table>
-                <TableHead sx={usersTableHeader}>
+            <TableContainer component={Paper} sx={styles.usersTableContainer}>
+              <Table stickyHeader>
+                <TableHead sx={styles.usersTableHeader}>
                   <TableRow>
-                    <TableCell sx={usersTableHeaderCell}>User</TableCell>
-                    <TableCell sx={usersTableHeaderCell}>Email</TableCell>
-                    <TableCell sx={usersTableHeaderCell}>Role</TableCell>
-                    <TableCell sx={usersTableHeaderCell}>Actions</TableCell>
+                    {['User', 'Email', 'Role', 'Actions'].map(h => (
+                      <TableCell key={h} sx={styles.usersTableHeaderCell}>
+                        {h}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow
-                      key={user.id}
-                      hover
-                      sx={usersTableRow}
-                    >
-                      <TableCell sx={usersTableCell}>
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar src={user.avatar} sx={userAvatar}>
+                  {filtered.map(u => (
+                    <TableRow key={u.id} hover sx={styles.usersTableRow}>
+                      <TableCell sx={styles.usersTableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Avatar src={u.avatar} sx={styles.userAvatar}>
                             <PersonIcon />
                           </Avatar>
-                          <Typography>{user.name}</Typography>
+                          <Typography>{u.name}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell sx={usersTableCell}>
+                      <TableCell sx={styles.usersTableCell}>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <EmailIcon fontSize="small" sx={{ color: 'coral.main' }} />
-                          <Typography>{user.email}</Typography>
+                          <EmailIcon color="action" fontSize="small" />
+                          <Typography>{u.email}</Typography>
                         </Stack>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={user.role}
-                          sx={roleChip(user.role)}
-                        />
+                        <Chip label={u.role} size="small" sx={styles.roleChip(u.role)} />
                       </TableCell>
                       <TableCell>
-                        <IconButton
-                          sx={{ color: 'text.secondary' }}
-                          onClick={(e) => handleMenuOpen(e, user.id)}
-                        >
-                          <MoreVertIcon />
+                        <IconButton onClick={e => openMenu(e, u.id)}>
+                          <MoreVertIcon color="action" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -335,152 +261,86 @@ export default function TeamsUsers() {
           </CardContent>
         </Card>
 
-        {/* Team Statistics Cards */}
+        {/* Team Statistics */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={teamStatsCard}>
+            <Card sx={styles.teamStatsCard}>
               <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Typography variant="body2" sx={pageHeaderText}>
-                      Total Users
-                    </Typography>
-                    <Typography variant="h4" sx={teamStatsValue('coral')}>
+                    <Typography variant="body2">Total Users</Typography>
+                    <Typography variant="h4" sx={styles.teamStatsValue('coral')}>
                       {users.length}
                     </Typography>
                   </Box>
-                  <Avatar sx={teamStatsAvatar('highlight', 'coral')}>
-                    <PersonIcon sx={{ color: 'coral.main' }} />
+                  <Avatar sx={styles.teamStatsAvatar('highlight', 'coral')}>
+                    <PersonIcon />
                   </Avatar>
                 </Stack>
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={teamStatsCard}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" sx={pageHeaderText}>
-                      Team Leads
-                    </Typography>
-                    <Typography variant="h4" sx={teamStatsValue('success.light')}>
-                      {users.filter(u => u.role === 'Team Lead').length}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={teamStatsAvatar('success.background', 'success.main')}>
-                    <TeamIcon color="success" />
-                  </Avatar>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={teamStatsCard}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" sx={pageHeaderText}>
-                      Project Managers
-                    </Typography>
-                    <Typography variant="h4" sx={teamStatsValue('info.light')}>
-                      {users.filter(u => u.role === 'Project Manager').length}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={teamStatsAvatar('info.background', 'info.main')}>
-                    <ProjectIcon color="info" />
-                  </Avatar>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={teamStatsCard}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2" sx={pageHeaderText}>
-                      Admins
-                    </Typography>
-                    <Typography variant="h4" sx={teamStatsValue('warning.light')}>
-                      {users.filter(u => u.role === 'Admin').length}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={teamStatsAvatar('warning.background', 'warning.main')}>
-                    <AdminIcon color="warning" />
-                  </Avatar>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
+          {/* Add other stats cards (Team Leads, PMs, Admins) */}
         </Grid>
       </Box>
 
       {/* Add User Dialog */}
       <Dialog
-        open={openAddUserDialog}
-        onClose={() => setOpenAddUserDialog(false)}
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: createProjectDialogPaper }}
+        PaperProps={{ sx: styles.createUserDialogPaper }}
       >
-        <DialogTitle sx={createProjectDialogTitle}>
-          <Typography variant="h6">Add New User</Typography>
-          <IconButton onClick={() => setOpenAddUserDialog(false)} sx={dialogCloseButton}>
+        <DialogTitle sx={styles.createUserDialogTitle}>
+          Add New User
+          <IconButton onClick={() => setOpenDialog(false)} sx={styles.dialogCloseButton}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={createProjectDialogContent}>
-          <Stack spacing={3}>
-            <TextField
-              fullWidth
-              label="Full Name"
-              name="name"
-              value={newUser.name}
-              onChange={handleInputChange}
-              sx={dialogTextField}
-            />
-            <TextField
-              fullWidth
-              label="Email Address"
-              name="email"
-              value={newUser.email}
-              onChange={handleInputChange}
-              sx={dialogTextField}
-            />
-            <FormControl fullWidth sx={dialogFormControl}>
-              <InputLabel sx={dialogInputLabel}>Role</InputLabel>
-              <Select
-                name="role"
-                value={newUser.role}
-                onChange={handleInputChange}
-                label="Role"
-                sx={dialogSelect}
-              >
-                {teamRoles.map((role) => (
-                  <MenuItem key={role.value} value={role.value} sx={dialogSelectMenuItem}>
-                    <ListItemIcon>
-                      {React.cloneElement(role.icon, { sx: { color: 'primary.main' } })}
-                    </ListItemIcon>
-                    <ListItemText primary={role.label} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+        <DialogContent sx={styles.createUserDialogContent}>
+          <TextField
+            fullWidth
+            label="Full Name"
+            name="name"
+            value={form.name}
+            onChange={handleDialogChange}
+            sx={styles.dialogTextField}
+          />
+          <TextField
+            fullWidth
+            label="Email Address"
+            name="email"
+            value={form.email}
+            onChange={handleDialogChange}
+            sx={styles.dialogTextField}
+          />
+          <FormControl fullWidth sx={styles.dialogFormControl}>
+            <InputLabel sx={styles.dialogInputLabel}>Role</InputLabel>
+            <Select
+              name="role"
+              value={form.role}
+              onChange={handleDialogChange}
+              sx={styles.dialogSelect}
+            >
+              {teamRoles.map(r => (
+                <MenuItem key={r.value} value={r.value} sx={styles.dialogSelectMenuItem}>
+                  {r.icon}
+                  {r.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
-        <DialogActions sx={dialogActions}>
-          <Button
-            onClick={() => setOpenAddUserDialog(false)}
-            sx={dialogCancelButton}
-          >
+        <DialogActions sx={styles.dialogActions}>
+          <Button onClick={() => setOpenDialog(false)} sx={styles.dialogCancelButton}>
             Cancel
           </Button>
           <Button
             onClick={handleAddUser}
-            disabled={!newUser.name || !newUser.email}
+            disabled={!form.name || !form.email}
             variant="contained"
-            sx={createProjectButton}
+            sx={styles.createUserButton}
           >
             Add User
           </Button>
@@ -489,31 +349,27 @@ export default function TeamsUsers() {
 
       {/* Action Menu */}
       <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{ sx: menuPaper }}
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={closeMenu}
+        PaperProps={{ sx: styles.menuPaper }}
       >
-        <MenuItem onClick={handleMenuClose} sx={menuItem}>
-          <EditIcon sx={{ mr: 1, color: 'info.main' }} />
+        <MenuItem onClick={closeMenu} sx={styles.menuItem}>
+          <EditIcon fontSize="small" sx={{ color: 'info.main', mr: 1 }} />
           Edit User
         </MenuItem>
-        <MenuItem onClick={handleDeleteUser} sx={menuItem}>
-          <DeleteIcon sx={{ mr: 1, color: 'error.light' }} />
+        <MenuItem onClick={handleDelete} sx={styles.menuItem}>
+          <DeleteIcon fontSize="small" sx={{ color: 'error.main', mr: 1 }} />
           Delete User
         </MenuItem>
-        <Divider sx={menuDivider} />
-        {teamRoles.map((role) => (
+        <Divider sx={styles.menuDivider} />
+        {teamRoles.map(r => (
           <MenuItem
-            key={role.value}
-            onClick={() => handleRoleChange(selectedUser, role.value)}
-            sx={menuItem}
+            key={r.value}
+            onClick={() => handleRoleChange(r.value)}
+            sx={styles.menuItem}
           >
-            <Chip
-              label={role.label}
-              size="small"
-              sx={roleChip(role.value)}
-            />
+            <Chip label={r.label} size="small" sx={styles.roleChip(r.value)} />
           </MenuItem>
         ))}
       </Menu>
