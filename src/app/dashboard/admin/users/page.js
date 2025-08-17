@@ -1,174 +1,99 @@
-// features/admin/TeamsUsers/page.js
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useTheme } from '@mui/material/styles';
+
+// Import Material-UI components
 import {
   Box,
   Typography,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Grid,
   Card,
   CardContent,
   Stack,
-  Avatar,
-  Chip,
+  List,
+  ListItem,
+  ListItemText,
   Button,
+  Drawer,
+  ListItemButton,
+  TextField,
+  Chip,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Menu,
-  MenuItem,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Select,
   FormControl,
-  InputLabel,
-  Select
+  InputAdornment
 } from '@mui/material';
+
+// Import Material-UI icons
 import {
-  Groups as TeamIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
+  People as PeopleIcon,
+  Groups as TeamsIcon,
   MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Search as SearchIcon,
-  Close as CloseIcon,
-  AdminPanelSettings as AdminIcon,
-  Work as ProjectIcon
+  Email as EmailIcon,
+  Assignment as AssignmentIcon,
+  GroupAdd as GroupAddIcon,
 } from '@mui/icons-material';
 
-import * as common from '../common/styles';
-import * as styles from './styles';
-import useUsers from './useUsers/page.js';
+// Import local files
+import { styles } from './styles';
+import { useUsers } from './useUsers/page';
+import { adminMenuData } from './usersService/page';
 
-const adminMenu = [
-  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
-  { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
-  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }
-];
-
-const teamRoles = [
-  { value: 'Admin', label: 'Admin', icon: <AdminIcon color="warning" /> },
-  { value: 'Project Manager', label: 'Project Manager', icon: <ProjectIcon color="info" /> },
-  { value: 'Team Lead', label: 'Team Lead', icon: <TeamIcon color="success" /> },
-  { value: 'Member', label: 'Member', icon: <PersonIcon color="disabled" /> }
-];
-
-export default function TeamsUsersPage() {
-  const theme = useTheme();
+// Main Component
+// ------------------------------------------------
+export default function TeamsAndUsers() {
+  // Region: Hooks and State
+  // ------------------------------------------------
   const {
-    users = [],
-    isLoading,
-    error,
-    createUser,
-    creating,
-    updateUser,
-    updating,
-    deleteUser,
-    deleting
+    inviteEmail,
+    setInviteEmail,
+    users,
+    teams,
+    selectedUser,
+    newTask,
+    setNewTask,
+    anchorEl,
+    isMenuOpen,
+    handleInviteUser,
+    handleAddTask,
+    handleMenuOpen,
+    handleMenuClose,
+    handleAssignTask,
+    handleRemoveUser,
+    handleUpdateRole,
+    handleUpdateTeam
   } = useUsers();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', role: 'Member' });
-
-  const filtered = users.filter(u =>
-    [u.name, u.email, u.role].some(f =>
-      (f || '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const openMenu = (e, id) => {
-    setMenuAnchor(e.currentTarget);
-    setSelectedId(id);
-  };
-  const closeMenu = () => {
-    setMenuAnchor(null);
-    setSelectedId(null);
-  };
-  const handleDelete = () => {
-    deleteUser(selectedId);
-    closeMenu();
-  };
-  const handleRoleChange = (role) => {
-    updateUser({ id: selectedId, role });
-    closeMenu();
-  };
-  const handleDialogChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-  const handleAddUser = () => {
-    createUser(form);
-    setForm({ name: '', email: '', role: 'Member' });
-    setOpenDialog(false);
-  };
-
-  if (isLoading) {
-    return (
-      <Box sx={common.mainContentBox}>
-        <Typography variant='h5' color='blue-gray'>
-          Loading...
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={common.mainContentBox}>
-        <Typography variant='h5' color='red'>
-          Error loading users: {error.message}
-        </Typography>
-      </Box>
-    );
-  }
-
+  // Region: Render
+  // ------------------------------------------------
   return (
-    <Box sx={common.rootBox}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ '& .MuiDrawer-paper': common.drawerPaper }}
-      >
-        <Box sx={common.drawerHeader}>
-          <Typography variant="h5">Admin Portal</Typography>
+    <Box sx={styles.mainContainer}>
+      {/* Region: Sidebar Navigation */}
+      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
+        <Box sx={styles.sidebarHeader}>
+          <Typography variant="h5">
+            Admin Panel
+          </Typography>
         </Box>
         <List>
-          {adminMenu.map(item => (
-            <ListItem key={item.name} disablePadding>
+          {adminMenuData.map((item, index) => (
+            <ListItem key={index} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
-                sx={
-                  item.name === 'Teams & Users'
-                    ? common.activeListItemButton
-                    : common.listItemButton
-                }
+                sx={styles.sidebarListItemButton(item.name)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -177,80 +102,148 @@ export default function TeamsUsersPage() {
         </List>
       </Drawer>
 
-      {/* Main Content */}
-      <Box component="main" sx={common.mainContentBox}>
-        {/* Header & Search */}
-        <Box sx={common.pageHeader}>
-          <Typography variant="h4" sx={styles.usersPageHeaderText}>
-            <TeamIcon sx={styles.usersPageHeaderIcon} />
+      {/* Region: Main Content Area */}
+      <Box component="main" sx={styles.mainContent}>
+        {/* Page Header */}
+        <Box sx={styles.pageHeader}>
+          <Typography variant="h4" sx={styles.pageTitle}>
+            <TeamsIcon sx={styles.headerIcon} />
             Teams & Users
           </Typography>
-          <Stack direction="row" spacing={2} sx={{ width: 600, maxWidth: '100%' }}>
-            <TextField
-              size="small"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color="action" />
-                  </InputAdornment>
-                )
-              }}
-              sx={styles.searchField}
-            />
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenDialog(true)}
-              sx={styles.addUserButton}
-            >
-              Add User
-            </Button>
-          </Stack>
+          <Typography variant="body1" sx={styles.pageSubtitle}>
+            Manage your team members and assign tasks
+          </Typography>
         </Box>
+
+        {/* Invite User Card */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={12}>
+            <Card sx={styles.inviteCard}>
+              <CardContent>
+                <Typography variant="h6" sx={styles.inviteCardHeader}>
+                  Invite New User
+                </Typography>
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Email address"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    InputProps={{
+                      style: { color: '#525252' },
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailIcon sx={styles.emailIcon} />
+                        </InputAdornment>
+                      ),
+                      sx: styles.emailInput,
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    startIcon={<GroupAddIcon />}
+                    onClick={handleInviteUser}
+                    sx={styles.inviteButton}
+                  >
+                    Invite
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         {/* Users Table */}
         <Card sx={styles.usersCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              All Users ({filtered?.length || 0})
+            <Typography variant="h6" sx={styles.usersCardHeader}>
+              Team Members
             </Typography>
-            <TableContainer component={Paper} sx={styles.usersTableContainer}>
-              <Table stickyHeader>
-                <TableHead sx={styles.usersTableHeader}>
-                  <TableRow>
-                    {['User', 'Email', 'Role', 'Actions'].map(h => (
-                      <TableCell key={h} sx={styles.usersTableHeaderCell}>
-                        {h}
-                      </TableCell>
-                    ))}
+            <TableContainer component={Paper} sx={styles.tableContainer}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={styles.tableHeaderRow}>
+                    <TableCell sx={styles.tableHeaderCell}>Name</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Email</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Role</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Team</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Tasks</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filtered.map(u => (
-                    <TableRow key={u.id} hover sx={styles.usersTableRow}>
-                      <TableCell sx={styles.usersTableCell}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Avatar src={u.avatar} sx={styles.userAvatar}>
-                            <PersonIcon />
-                          </Avatar>
-                          <Typography>{u.name}</Typography>
-                        </Stack>
+                  {users.map((user) => (
+                    <TableRow key={user.id} sx={styles.tableBodyRow}>
+                      <TableCell sx={styles.tableBodyCell}>{user.name}</TableCell>
+                      <TableCell sx={styles.tableBodyCell}>{user.email}</TableCell>
+                      <TableCell sx={styles.tableBodyCell}>
+                        <FormControl fullWidth size="small">
+                          <Select
+                            value={user.role}
+                            onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+                            sx={styles.selectInput}
+                          >
+                            <MenuItem value="Admin" sx={styles.selectMenuItem}>Admin</MenuItem>
+                            <MenuItem value="Project Manager" sx={styles.selectMenuItem}>Project Manager</MenuItem>
+                            <MenuItem value="Developer" sx={styles.selectMenuItem}>Developer</MenuItem>
+                            <MenuItem value="Designer" sx={styles.selectMenuItem}>Designer</MenuItem>
+                            <MenuItem value="Member" sx={styles.selectMenuItem}>Member</MenuItem>
+                          </Select>
+                        </FormControl>
                       </TableCell>
-                      <TableCell sx={styles.usersTableCell}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <EmailIcon color="action" fontSize="small" />
-                          <Typography>{u.email}</Typography>
+                      <TableCell sx={styles.tableBodyCell}>
+                        <FormControl fullWidth size="small">
+                          <Select
+                            value={user.team}
+                            onChange={(e) => handleUpdateTeam(user.id, e.target.value)}
+                            sx={styles.selectInput}
+                          >
+                            {teams.map((team) => (
+                              <MenuItem key={team} value={team} sx={styles.selectMenuItem}>
+                                {team}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                      <TableCell sx={styles.tableBodyCell}>
+                        <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap' }}>
+                          {user.tasks.map((task, index) => (
+                            <Chip
+                              key={index}
+                              label={task}
+                              size="small"
+                              sx={styles.taskChip}
+                            />
+                          ))}
                         </Stack>
+                        {selectedUser === user.id && (
+                          <Stack direction="row" spacing={1}>
+                            <TextField
+                              size="small"
+                              placeholder="Add task"
+                              value={newTask}
+                              onChange={(e) => setNewTask(e.target.value)}
+                              sx={styles.taskInput}
+                            />
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => handleAddTask(user.id)}
+                              sx={styles.addTaskButton}
+                            >
+                              Add
+                            </Button>
+                          </Stack>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Chip label={u.role} size="small" sx={styles.roleChip(u.role)} />
-                      </TableCell>
-                      <TableCell>
-                        <IconButton onClick={e => openMenu(e, u.id)}>
-                          <MoreVertIcon color="action" />
+                        <IconButton
+                          onClick={(e) => handleMenuOpen(e, user.id)}
+                          sx={styles.menuIconButton}
+                        >
+                          <MoreVertIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -260,118 +253,23 @@ export default function TeamsUsersPage() {
             </TableContainer>
           </CardContent>
         </Card>
-
-        {/* Team Statistics */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={styles.teamStatsCard}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="body2">Total Users</Typography>
-                    <Typography variant="h4" sx={styles.teamStatsValue('coral')}>
-                      {users.length}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={styles.teamStatsAvatar('highlight', 'coral')}>
-                    <PersonIcon />
-                  </Avatar>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-          {/* Add other stats cards (Team Leads, PMs, Admins) */}
-        </Grid>
       </Box>
 
-      {/* Add User Dialog */}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{ sx: styles.createUserDialogPaper }}
-      >
-        <DialogTitle sx={styles.createUserDialogTitle}>
-          Add New User
-          <IconButton onClick={() => setOpenDialog(false)} sx={styles.dialogCloseButton}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={styles.createUserDialogContent}>
-          <TextField
-            fullWidth
-            label="Full Name"
-            name="name"
-            value={form.name}
-            onChange={handleDialogChange}
-            sx={styles.dialogTextField}
-          />
-          <TextField
-            fullWidth
-            label="Email Address"
-            name="email"
-            value={form.email}
-            onChange={handleDialogChange}
-            sx={styles.dialogTextField}
-          />
-          <FormControl fullWidth sx={styles.dialogFormControl}>
-            <InputLabel sx={styles.dialogInputLabel}>Role</InputLabel>
-            <Select
-              name="role"
-              value={form.role}
-              onChange={handleDialogChange}
-              sx={styles.dialogSelect}
-            >
-              {teamRoles.map(r => (
-                <MenuItem key={r.value} value={r.value} sx={styles.dialogSelectMenuItem}>
-                  {r.icon}
-                  {r.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions sx={styles.dialogActions}>
-          <Button onClick={() => setOpenDialog(false)} sx={styles.dialogCancelButton}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddUser}
-            disabled={!form.name || !form.email}
-            variant="contained"
-            sx={styles.createUserButton}
-          >
-            Add User
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Action Menu */}
+      {/* Action Menu (dropdown) */}
       <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={closeMenu}
-        PaperProps={{ sx: styles.menuPaper }}
+        anchorEl={anchorEl}
+        open={isMenuOpen}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{ sx: styles.actionMenu }}
       >
-        <MenuItem onClick={closeMenu} sx={styles.menuItem}>
-          <EditIcon fontSize="small" sx={{ color: 'info.main', mr: 1 }} />
-          Edit User
+        <MenuItem onClick={handleAssignTask} sx={styles.actionMenuItem}>
+          <AssignmentIcon sx={styles.actionMenuIcon('#f3722c')} /> Assign Task
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={styles.menuItem}>
-          <DeleteIcon fontSize="small" sx={{ color: 'error.main', mr: 1 }} />
-          Delete User
+        <MenuItem onClick={handleRemoveUser} sx={styles.actionMenuItem}>
+          <PeopleIcon sx={styles.actionMenuIcon('#f44336')} /> Remove User
         </MenuItem>
-        <Divider sx={styles.menuDivider} />
-        {teamRoles.map(r => (
-          <MenuItem
-            key={r.value}
-            onClick={() => handleRoleChange(r.value)}
-            sx={styles.menuItem}
-          >
-            <Chip label={r.label} size="small" sx={styles.roleChip(r.value)} />
-          </MenuItem>
-        ))}
       </Menu>
     </Box>
   );

@@ -1,13 +1,15 @@
-// The hook that loads metrics + activities, manages loading/error flags, and display error messages to the user interface.
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 import { useState, useEffect } from 'react';
 import * as service from '../overviewService/page'; 
 
+//manage state and logic for this screen
 export default function useOverview() {
   const [metrics,   setMetrics]   = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading,    setLoading]    = useState({ metrics: false, activities: false });
   const [error,      setError]      = useState({ metrics: null, activities: null });
 
+  // Where we will use React Query to fetch data from database
   useEffect(() => {
     setLoading((l) => ({ ...l, metrics: true }));
     service.fetchMetrics()

@@ -1,46 +1,52 @@
-// Replace with your real API endpoints
-export async function fetchProfile() {
-  const res = await fetch('/api/client/settings/profile')
-  if (!res.ok) throw new Error('Failed to load profile')
-  return res.json()
-}
+// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
 
-export async function updateProfile(data) {
-  const res = await fetch('/api/client/settings/profile', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  if (!res.ok) throw new Error('Failed to update profile')
-  return res.json()
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-export async function updatePassword(data) {
-  const res = await fetch('/api/client/settings/password', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  if (!res.ok) throw new Error('Failed to update password')
-  return res.json()
-}
+// hardcodde data to simulate server-side state
+const DUMMY_SETTINGS_DATA = {
+    id: 'user1',
+    name: 'toro track',
+    email: 'trtrack@yahoo.com',
+    company: 'Law Firm Inc',
+    position: 'Marketing Director',
+    phone: '+27 45 847 8389',
+    notifications: true,
+    newsletter: false,
+    language: 'en'
+};
 
-export async function updateNotifications(data) {
-  const res = await fetch('/api/client/settings/notifications', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  if (!res.ok) throw new Error('Failed to update notifications')
-  return res.json()
-}
+// Mock API call to get user settings
+export const getSettings = () => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(DUMMY_SETTINGS_DATA);
+        }, 500); // Simulate network delay
+    });
+};
 
-export async function updatePreferences(data) {
-  const res = await fetch('/api/client/settings/preferences', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  if (!res.ok) throw new Error('Failed to update preferences')
-  return res.json()
-}
+// Mock API call to update user settings
+export const updateSettings = (updatedData) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            console.log('Updating settings with:', updatedData);
+            resolve({ success: true, message: 'Settings saved successfully!' });
+        }, 500); // Simulate network delay
+    });
+};
+
+export const useGetSettingsQuery = () => {
+    return useQuery({
+        queryKey: ['userSettings'],
+        queryFn: getSettings,
+    });
+};
+
+export const useUpdateSettingsMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: updateSettings,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+        },
+    });
+};

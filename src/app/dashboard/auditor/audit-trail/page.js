@@ -1,10 +1,13 @@
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   Box,
   Typography,
+  Grid,
   List,
   ListItem,
   ListItemText,
@@ -18,77 +21,68 @@ import {
   TableCell,
   TextField
 } from '@mui/material';
-import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
-
-import { useAuditorStore } from '../common/auditorStore';
 import {
-  fullScreenContainerStyles,
-  drawerStyles,
-  drawerHeaderStyles,
-  listItemButtonStyles,
-  mainContentBoxStyles,
+  AccountCircle as AccountCircleIcon
+} from '@mui/icons-material';
+
+// Import global styles for layout and navigation
+import * as commonStyles from '../common/styles';
+
+// Import local styles for page-specific components
+import {
   headerBoxStyles,
   pageTitleStyles,
   headerRightSectionStyles,
   searchFieldStyles,
   userProfileStyles,
   userInfoStyles,
-  auditorTextStyles
-} from '../common/styles';
-import {
+  auditorTextStyles,
   tablePaperStyles,
   tableCellHeaderStyles,
   tableCellBodyStyles
 } from './styles';
-import { useAuditTrail } from './useAuditTrail';
+
+// Import hooks and data from the service file.
+import useAuditTrail from './useAudit-Trail/page';
 
 export default function AuditTrailPage() {
+  // Use the custom hook to manage all state and handlers.
   const {
-    currentPath,
     auditTrailMenu,
-    searchQuery,
-    setSearchQuery,
-    setCurrentPath
-  } = useAuditorStore();
+    filteredRows,
+    search,
+    handleSearchChange,
+    currentPath
+  } = useAuditTrail();
 
-  // Highlight this feature in sidebar
-  useEffect(() => {
-    setCurrentPath('/dashboard/auditor/audit-trail');
-  }, [setCurrentPath]);
-
-  // Fetch rows
-  const { data: rows = [], isLoading, isError } = useAuditTrail();
-
-  // Filter by orderId
-  const filteredRows = rows.filter((r) =>
-    r.orderId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  // #region Rendered UI
   return (
-    <Box sx={fullScreenContainerStyles}>
-      {/* Sidebar */}
-      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
-        <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">Auditor Portal</Typography>
-        </Box>
-        <List>
-          {auditTrailMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.path, currentPath)}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+    <Box sx={commonStyles.rootBox}>
+      {/* Sidebar Navigation */}
+      <Drawer
+       variant="permanent"
+              anchor="left"
+              sx={{ '& .MuiDrawer-paper': commonStyles.drawerPaper }}
+            >
+              <Box sx={commonStyles.drawerHeader}>
+                <Typography variant="h5">Admin Portal</Typography>
+              </Box>
+              {auditTrailMenu.map((item) => (
+                <ListItem key={item.path} disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    href={item.path}
+                    sx={commonStyles.listItemButton}
+                  >
+                    <ListItemText primary={item.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}       
+       </Drawer>
 
-      {/* Main */}
-      <Box component="main" sx={mainContentBoxStyles}>
+      {/* Main Content */}
+      <Box component="main" sx={commonStyles.mainContentBox}>
+        {/* Page Header and Controls */}
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
             Audit Trail & Logging
@@ -97,8 +91,8 @@ export default function AuditTrailPage() {
             <TextField
               variant="outlined"
               placeholder="Search Order ID"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={search}
+              onChange={handleSearchChange}
               sx={searchFieldStyles}
             />
             <Box sx={userProfileStyles}>
@@ -113,7 +107,7 @@ export default function AuditTrailPage() {
           </Box>
         </Box>
 
-        {/* Table */}
+        {/* Audit trail table */}
         <Box component={Paper} sx={tablePaperStyles}>
           <Table>
             <TableHead>
@@ -127,41 +121,24 @@ export default function AuditTrailPage() {
                 <TableCell sx={tableCellHeaderStyles}>Serial Number</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {isLoading && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    Loading…
-                  </TableCell>
+              {filteredRows.map((r) => (
+                <TableRow key={r.orderId} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell sx={tableCellBodyStyles}>{r.orderId}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.signOff}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.timestamp}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.status}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.receiver}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.type}</TableCell>
+                  <TableCell sx={tableCellBodyStyles}>{r.serial}</TableCell>
                 </TableRow>
-              )}
-              {isError && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    Failed to load data
-                  </TableCell>
-                </TableRow>
-              )}
-              {!isLoading &&
-                !isError &&
-                filteredRows.map((r) => (
-                  <TableRow
-                    key={r.orderId}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell sx={tableCellBodyStyles}>{r.orderId}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.signOff}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.timestamp}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.status}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.receiver}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.type}</TableCell>
-                    <TableCell sx={tableCellBodyStyles}>{r.serial}</TableCell>
-                  </TableRow>
-                ))}
+              ))}
             </TableBody>
           </Table>
         </Box>
       </Box>
     </Box>
   );
+  // #endregion
 }

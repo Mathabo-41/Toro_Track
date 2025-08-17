@@ -1,19 +1,119 @@
-import { colors } from '@mui/material'
+// Contains the inline styles and sx overrides for the settings screen
 
-export const settingsContainerStyles = {
-  maxWidth: 800,
-  mx: 'auto',
-  mb: 4,
+export const fullScreenContainerStyles = {
+  display: 'flex',
+  minHeight: '100vh',
+  backgroundColor: '#f5f7fa',
+};
+
+export const drawerStyles = {
+  width: 240,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: 240,
+    boxSizing: 'border-box',
+    backgroundColor: '#fff',
+    color: '#333',
+    boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
+  },
+};
+
+export const drawerHeaderStyles = {
+  p: 2,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderBottom: '2px solid #525252',
+};
+
+export const mainContentBoxStyles = {
+  flexGrow: 1,
   p: 3,
-  backgroundColor: colors.common.white,
-  borderRadius: 2
-}
+  ml: '240px',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+export const headerBoxStyles = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  mb: 4,
+  pb: 2,
+  borderBottom: '1px solid #ddd',
+};
+
+export const pageTitleStyles = {
+  fontfamily: 'Disek, monospace',
+  color: '#525252',
+};
+
+export const headerRightSectionStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 2,
+};
+
+export const searchFieldStyles = {
+  width: '300px',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '5px',
+    backgroundColor: '#fefaf0',
+    fontSize: '0.9rem',
+    height: '40px', // Adjust this value to your desired height
+    '& fieldset': {
+      borderColor: '#525252',
+    },
+    '&:hover fieldset': {
+      borderColor: '#525252',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#283618',
+      borderWidth: '2px',
+    },
+  },
+};
+
+export const userProfileStyles = {
+  display: 'flex',
+  color: '#525252',
+  alignItems: 'center',
+  gap: 1,
+};
+
+export const userInfoStyles = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+};
+
+export const auditorTextStyles = {
+  color: '#000',
+};
 
 export const saveButton = {
-  mt: 4,
-  backgroundColor: colors.indigo[500],
-  color: colors.common.white,
-  '&:hover': {
-    backgroundColor: colors.indigo[700]
-  }
-}
+    backgroundColor: '#283618',
+    color: 'white',
+    padding: '8px 24px',
+    borderRadius: '4px',
+    border: '2px solid #606c38',
+    cursor: 'pointer',
+    textAlign: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background-color 0.3s ease',
+    '&:hover': {
+      backgroundColor: '#606c38',
+      borderColor: '#283618',
+    },
+};
+
+export const settingsContainerStyles = {
+  p: 4,
+  color:'#525252',
+  backgroundColor: '#fefaf0',
+  borderRadius: 2,
+  border: '2px solid #525252',
+  boxShadow: 3,
+};

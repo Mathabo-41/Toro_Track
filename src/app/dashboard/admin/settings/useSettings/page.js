@@ -1,34 +1,35 @@
-// features/admin/SystemSettings/useSettings.js
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as svc from '../settingsService/page';
+import { useState } from 'react';
+import { settingsCategoriesData, adminMenuData } from '../settingsService/page';
 
-export function useSettings() {
-  const qc = useQueryClient();
+//manage state and logic for this screen
+export const useSettings = () => {
+// Where we will use React Query to fetch data
+  const settingsCategories = settingsCategoriesData;
+  const menu = adminMenuData;
 
-  const {
-    data: categories = [],
-    isLoading: categoriesLoading,
-    error: categoriesError
-  } = useQuery('settings:categories', svc.getCategories);
-
-  const updateMut = useMutation(svc.updateCategory, {
-    onSuccess: () => qc.invalidateQueries('settings:categories')
-  });
-
-  const maintenanceMut = useMutation(svc.performMaintenance);
-
-  const dangerousMut = useMutation(svc.dangerousAction);
-
-  return {
-    categories,
-    categoriesLoading,
-    categoriesError,
-    updateCategory: updateMut.mutate,
-    updating: updateMut.isLoading,
-    runMaintenance: maintenanceMut.mutate,
-    maintenanceLoading: maintenanceMut.isLoading,
-    runDangerous: dangerousMut.mutate,
-    dangerousLoading: dangerousMut.isLoading
+  /**
+   * Handles the 'Configure' action for a specific setting category.
+   * @param {string} categoryName - The name of the settings category.
+   */
+  const handleConfigure = (categoryName) => {
+    alert(`Configuring ${categoryName} settings...`);
   };
-}
+
+  /**
+   * Handles a system maintenance action.
+   * @param {string} action - The maintenance action to perform ( 'Backup', 'Clear Cache').
+   */
+  const handleMaintenance = (action) => {
+    alert(`Initiating system action: ${action}`);
+  };
+
+  // This is where we call the data that we are sending anf fetching from the database. We call it so that it can be displayed
+  return {
+    settingsCategories,
+    menu,
+    handleConfigure,
+    handleMaintenance,
+  };
+};

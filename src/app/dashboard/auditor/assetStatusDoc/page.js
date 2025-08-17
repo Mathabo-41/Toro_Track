@@ -1,7 +1,9 @@
-'use client'
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
+'use client';
 
-import React, { useEffect } from 'react'
-import Link from 'next/link'
+import React from 'react';
+import Link from 'next/link';
 import {
   Box,
   Typography,
@@ -11,170 +13,121 @@ import {
   Drawer,
   ListItemButton,
   Paper,
-  TextField
-} from '@mui/material'
-import { AccountCircle as AccountCircleIcon } from '@mui/icons-material'
-import { useAuditorStore } from '../common/auditorStore'
-import {
-  fullScreenContainerStyles,
-  drawerStyles,
-  drawerHeaderStyles,
-  listItemButtonStyles,
-  mainContentBoxStyles,
-  headerBoxStyles,
-  pageTitleStyles,
-  headerRightSectionStyles,
-  searchFieldStyles,
-  userProfileStyles,
-  userInfoStyles,
-  auditorTextStyles
-} from '../common/styles'
-import {
-  assetStatusContainer,
-  assetStatusTitle,
-  assetStatusSubtitle,
-  assetStatusPaper,
-  assetStatusSectionTitle
-} from './styles'
-import {
-  useAssetStatus,
-  useDocuments,
-  useDigitalSignatures
-} from './useAssetStaDoc'
+  TextField,
+} from '@mui/material';
+import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
+import useAssetStatusDoc from './useAssetStaDoc/page';
+// Import global styles for layout and navigation
+import * as globalStyles from '../common/styles';
+import { useAuditorStore } from '../common/auditorStore';
+import { auditorMenu } from '../common/auditorStore';
 
-export default function AssetStatusPage() {
+// Component for the sidebar
+const Sidebar = ({ currentPath }) => {
+  const { selectedMenu, setSelectedMenu } = useAuditorStore();
+  
+  return (
+    <Drawer
+      variant="permanent"
+      anchor="left"
+      sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+    >
+      <Box sx={globalStyles.drawerHeader}>
+        <Typography variant="h5">Admin Portal</Typography>
+      </Box>
+      {auditorMenu.map((item) => (
+        <ListItem key={item.path} disablePadding>
+          <ListItemButton
+            component={Link}
+            href={item.path}
+            sx={globalStyles.listItemButton}
+            onClick={() => setSelectedMenu(item.path)}
+          >
+            <ListItemText primary={item.name} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </Drawer>
+  );
+};
+
+// Component for the header
+const Header = () => {
+  return (
+    <Box sx={globalStyles.pageHeader}>
+      <Box sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" sx={globalStyles.pageHeaderText}>
+          Asset Status & Documentation
+        </Typography>
+        <Typography variant="subtitle1" sx={globalStyles.pageHeaderText}>
+          Gives auditors a clear view of each asset’s lifecycle and associated paperwork.
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+// Component for a section with a list
+const DataSection = ({ title, data, primaryKey, secondaryKey }) => (
+  <Paper elevation={2} sx={globalStyles.assetStatusPaper}>
+    <Typography variant="h6" sx={globalStyles.pageHeaderText}>
+      {title}
+    </Typography>
+    <List>
+      {data.map((item, idx) => (
+        <ListItem key={idx} divider>
+          <ListItemText
+            primary={item[primaryKey]}
+            secondary={secondaryKey ? `Current Status: ${item[secondaryKey]}` : null}
+          />
+        </ListItem>
+      ))}
+    </List>
+  </Paper>
+);
+
+// Main page component
+export default function AssetStatusDocumentation() {
   const {
-    currentPath,
-    auditTrailMenu,
-    searchQuery,
-    setSearchQuery,
-    setCurrentPath
-  } = useAuditorStore()
-
-  // Ensure sidebar highlights correct item
-  useEffect(() => {
-    setCurrentPath('/dashboard/auditor/assetStatusDoc')
-  }, [setCurrentPath])
-
-  // Fetch data
-  const { data: statusData = [] } = useAssetStatus()
-  const { data: documentsData = [] } = useDocuments()
-  const { data: signaturesData = [] } = useDigitalSignatures()
-
-  // Apply client-side filtering
-  const filter = (text) => text.toLowerCase().includes(searchQuery.toLowerCase())
-  const filteredStatus = statusData.filter(({ asset, status }) =>
-    filter(asset) || filter(status)
-  )
-  const filteredDocs = documentsData.filter((name) =>
-    filter(name)
-  )
-  const filteredSigs = signaturesData.filter(
-    ({ client, status }) => filter(client) || filter(status)
-  )
+    state,
+    handlers,
+    data
+  } = useAssetStatusDoc();
 
   return (
-    <Box sx={fullScreenContainerStyles}>
-      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
-        <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">Auditor Portal</Typography>
-        </Box>
-        <List>
-          {auditTrailMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.path, currentPath)}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+    <Box sx={globalStyles.rootBox}>
+      {/* Sidebar Navigation */}
+      <Sidebar currentPath={state.currentPath} auditorMenu={data.auditorMenu} />
 
-      <Box component="main" sx={mainContentBoxStyles}>
-        <Box sx={headerBoxStyles}>
-          <Typography variant="h4" sx={pageTitleStyles}>
-            Asset Status & Documentation
-          </Typography>
-          <Box sx={headerRightSectionStyles}>
-            <TextField
-              variant="outlined"
-              placeholder="Search assets or documents"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={searchFieldStyles}
-            />
-            <Box sx={userProfileStyles}>
-              <Box sx={userInfoStyles}>
-                <Typography variant="body2">Sipho Ellen</Typography>
-                <Typography variant="caption" sx={auditorTextStyles}>
-                  Auditor
-                </Typography>
-              </Box>
-              <AccountCircleIcon sx={{ fontSize: 32 }} />
-            </Box>
-          </Box>
+      {/* Main Content */}
+      <Box component="main" sx={globalStyles.mainContentBox}>
+        {/* Header */}
+        <Header />
 
-        </Box>
-
-        <Box sx={assetStatusContainer}>
-          <Typography variant="h4" sx={assetStatusTitle}>
-            Asset Status & Documentation
-          </Typography>
-          <Typography variant="subtitle1" sx={assetStatusSubtitle}>
-            Gives auditors a clear view of each asset’s lifecycle and associated paperwork.
-          </Typography>
-
-          <Paper elevation={2} sx={assetStatusPaper}>
-            <Typography variant="h6" sx={assetStatusSectionTitle}>
-              Status Dashboard
-            </Typography>
-            <List>
-              {filteredStatus.map(({ id, asset, status }) => (
-                <ListItem key={id} divider>
-                  <ListItemText
-                    primary={asset}
-                    secondary={`Current Status: ${status}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-
-          <Paper elevation={2} sx={assetStatusPaper}>
-            <Typography variant="h6" sx={assetStatusSectionTitle}>
-              Document Attachment Support
-            </Typography>
-            <List>
-              {filteredDocs.map((doc, idx) => (
-                <ListItem key={idx} divider>
-                  <ListItemText primary={doc} />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-
-          <Paper elevation={2} sx={assetStatusPaper}>
-            <Typography variant="h6" sx={assetStatusSectionTitle}>
-              Digital Signature Capture
-            </Typography>
-            <List>
-              {filteredSigs.map(({ client, date, status }, idx) => (
-                <ListItem key={idx} divider>
-                  <ListItemText
-                    primary={`${client} – ${date}`}
-                    secondary={`Signature Status: ${status}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
+        {/* Content Section */}
+        <Box sx={globalStyles.assetStatusPaper}>
+          <DataSection
+            title="Status Dashboard"
+            data={state.filteredStatusData}
+            primaryKey="asset"
+            secondaryKey="status"
+          />
+          <DataSection
+            title="Document Attachment Support"
+            data={state.filteredDocumentsData.map(doc => ({ primaryKey: doc }))}
+            primaryKey="primaryKey"
+          />
+          <DataSection
+            title="Digital Signature Capture"
+            data={state.filteredSignatures.map(sig => ({
+              primaryKey: `${sig.client} - ${sig.date}`,
+              secondaryKey: sig.status
+            }))}
+            primaryKey="primaryKey"
+            secondaryKey="secondaryKey"
+          />
         </Box>
       </Box>
     </Box>
-  )
+  );
 }

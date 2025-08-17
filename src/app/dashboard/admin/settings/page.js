@@ -1,31 +1,27 @@
-// features/admin/SystemSettings/page.js
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Typography,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Grid,
+  Button,
   Card,
   CardContent,
   Stack,
   Avatar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Drawer,
+  Grid,
   Chip,
-  Button
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  Palette as PaletteIcon,
-  Security as SecurityIcon,
-  Link as LinkIcon,
   Edit as EditIcon,
   Backup as BackupIcon,
   Cached as CachedIcon,
@@ -33,53 +29,35 @@ import {
   DeleteForever as DeleteForeverIcon
 } from '@mui/icons-material';
 
-import * as common from '../common/styles';
-import * as styles from './styles';
+// Import local files
+import { styles } from './styles';
 import { useSettings } from './useSettings/page';
 
-const adminMenu = [
-  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
-  { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
-  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }
-];
+// Main Component
+// ------------------------------------------------
+export default function SystemSettings() {
+  // Region: Hooks and State
+  // ------------------------------------------------
+  const { settingsCategories, menu, handleConfigure, handleMaintenance } = useSettings();
 
-export default function SystemSettingsPage() {
-  const theme = useTheme();
-  const {
-    categories,
-    categoriesLoading,
-    categoriesError,
-    runMaintenance,
-    maintenanceLoading,
-    runDangerous,
-    dangerousLoading
-  } = useSettings();
-
+  // Region: Render
+  // ------------------------------------------------
   return (
-    <Box sx={common.rootBox}>
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ width: 240, '& .MuiDrawer-paper': common.drawerPaper }}
-      >
-        <Box sx={common.drawerHeader}>
-          <Typography variant="h5">Admin Panel</Typography>
+    <Box sx={styles.mainContainer}>
+      {/* Sidebar Navigation */}
+      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
+        <Box sx={styles.sidebarHeader}>
+          <Typography variant="h5" sx={{ color: '#fefae0' }}>
+            Admin Panel
+          </Typography>
         </Box>
         <List>
-          {adminMenu.map((item) => (
-            <ListItem key={item.name} disablePadding>
+          {menu.map((item, index) => (
+            <ListItem key={index} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
-                sx={
-                  item.name === 'Settings'
-                    ? common.activeListItemButton
-                    : common.listItemButton
-                }
+                sx={styles.sidebarListItemButton(item.name)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -88,72 +66,66 @@ export default function SystemSettingsPage() {
         </List>
       </Drawer>
 
-      <Box component="main" sx={common.mainContentBox}>
-        <Box sx={common.pageHeader}>
-          <Typography sx={styles.settingsPageHeaderText(theme)} variant="h4">
-            <SettingsIcon sx={styles.settingsPageHeaderIcon(theme)} />
+      {/* Main Content */}
+      <Box component="main" sx={styles.mainContent}>
+        {/* Page Header */}
+        <Box sx={styles.pageHeader}>
+          <Typography variant="h4" sx={styles.pageTitle}>
+            <SettingsIcon sx={styles.headerIcon} />
             System Settings
           </Typography>
-          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+          <Typography variant="body1" sx={{ color: '#525252' }}>
             Configure application-wide preferences and options
           </Typography>
         </Box>
 
+        {/* Settings Cards */}
         <Grid container spacing={3}>
-          {!categoriesLoading &&
-            !categoriesError &&
-            categories.map((cat) => (
-              <Grid item xs={12} sm={6} md={4} key={cat.name}>
-                <Card sx={styles.categoryCard(theme)}>
-                  <CardContent>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                      <Avatar sx={styles.summaryIconAvatar(cat.color)(theme)}>
-                        {{
-                          Notifications: <NotificationsIcon />,
-                          Theme: <PaletteIcon />,
-                          Security: <SecurityIcon />,
-                          Integrations: <LinkIcon />,
-                          'Data Management': <SettingsIcon />,
-                          'API Configuration': <SettingsIcon />
-                        }[cat.name]}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                          {cat.name}
-                        </Typography>
-                        <Chip
-                          label={cat.status}
-                          size="small"
-                          sx={styles.statusChipStyle(cat.status)(theme)}
-                        />
+          {settingsCategories.map((category, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card sx={styles.settingsCard}>
+                <CardContent>
+                  <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+                    <Avatar sx={styles.settingsAvatar}>
+                      <Box sx={{ color: '#525252' }}>
+                        {category.icon}
                       </Box>
-                    </Stack>
-                    <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
-                      {cat.description}
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      startIcon={<EditIcon />}
-                      fullWidth
-                      sx={styles.configureButton(theme)}
-                    >
-                      Configure
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" sx={styles.settingsCardTitle}>
+                        {category.name}
+                      </Typography>
+                      <Chip
+                        label={category.status}
+                        size="small"
+                        sx={styles.statusChip(category.status)}
+                      />
+                    </Box>
+                  </Stack>
+                  <Typography variant="body2" sx={{ color: '#525252', mb: 2 }}>
+                    {category.description}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    fullWidth
+                    onClick={() => handleConfigure(category.name)}
+                    sx={styles.configureButton}
+                  >
+                    Configure
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
-        {/* System Maintenance */}
+        {/* System Actions with High Contrast */}
         <Grid container spacing={3} sx={{ mt: 2 }}>
           <Grid item xs={12} md={6}>
-            <Card sx={styles.maintenanceCard(theme)}>
+            <Card sx={styles.maintenanceCard}>
               <CardContent>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: 2, fontWeight: 500, color: theme.palette.text.secondary }}
-                >
+                <Typography variant="h6" sx={styles.maintenanceTitle}>
                   System Maintenance
                 </Typography>
                 <Stack spacing={2}>
@@ -161,9 +133,8 @@ export default function SystemSettingsPage() {
                     variant="contained"
                     startIcon={<BackupIcon />}
                     fullWidth
-                    onClick={() => runMaintenance('backup')}
-                    disabled={maintenanceLoading}
-                    sx={styles.backupButton(theme)}
+                    onClick={() => handleMaintenance('Backup Database')}
+                    sx={styles.backupButton}
                   >
                     Backup Database
                   </Button>
@@ -171,9 +142,8 @@ export default function SystemSettingsPage() {
                     variant="outlined"
                     startIcon={<CachedIcon />}
                     fullWidth
-                    onClick={() => runMaintenance('clear-cache')}
-                    disabled={maintenanceLoading}
-                    sx={styles.clearCacheButton(theme)}
+                    onClick={() => handleMaintenance('Clear Cache')}
+                    sx={styles.clearCacheButton}
                   >
                     Clear Cache
                   </Button>
@@ -181,15 +151,10 @@ export default function SystemSettingsPage() {
               </CardContent>
             </Card>
           </Grid>
-
-          {/* Dangerous Zone */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ backgroundColor: theme.palette.background.default, border: `1px solid ${theme.palette.error.main}` }}>
+            <Card sx={styles.dangerousCard}>
               <CardContent>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: 2, fontWeight: 500, color: theme.palette.error.main }}
-                >
+                <Typography variant="h6" sx={styles.dangerousTitle}>
                   Dangerous Zone
                 </Typography>
                 <Stack spacing={2}>
@@ -197,9 +162,8 @@ export default function SystemSettingsPage() {
                     variant="outlined"
                     startIcon={<RestartAltIcon />}
                     fullWidth
-                    onClick={() => runDangerous('reset-settings')}
-                    disabled={dangerousLoading}
-                    sx={styles.resetButton(theme)}
+                    onClick={() => handleMaintenance('Reset All Settings')}
+                    sx={styles.resetButton}
                   >
                     Reset All Settings
                   </Button>
@@ -207,9 +171,8 @@ export default function SystemSettingsPage() {
                     variant="contained"
                     startIcon={<DeleteForeverIcon />}
                     fullWidth
-                    onClick={() => runDangerous('purge-data')}
-                    disabled={dangerousLoading}
-                    sx={styles.purgeButton(theme)}
+                    onClick={() => handleMaintenance('Purge Test Data')}
+                    sx={styles.purgeButton}
                   >
                     Purge Test Data
                   </Button>

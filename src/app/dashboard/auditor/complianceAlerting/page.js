@@ -1,25 +1,26 @@
-'use client'
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
+import React from 'react';
+import Link from 'next/link';
 import {
   Box,
   Typography,
+  Container,
   List,
   ListItem,
+  ListItemText,
   Drawer,
   ListItemButton,
-  ListItemText,
   Paper,
   TextField,
-  Container
-} from '@mui/material'
+  Grid
+} from '@mui/material';
 import {
   AccountCircle as AccountCircleIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon
-} from '@mui/icons-material'
-
-import { useAuditorStore } from '../common/auditorStore'
+  CheckCircleOutline as CheckCircleOutlineIcon,
+} from '@mui/icons-material';
 import {
   fullScreenContainerStyles,
   drawerStyles,
@@ -37,57 +38,53 @@ import {
   complianceTitleStyles,
   complianceSubtitleStyles,
   compliancePaperStyles,
-  complianceListItemStyles,
   complianceFeatureTitleStyles,
-  complianceFeatureDescriptionStyles
-} from './styles'
-import { useCompliance } from './useCompliance'
+  complianceFeatureDescriptionStyles,
+  complianceListItemStyles,
+} from './styles';
+import { useCompliance } from './useCompliance/page';
 
-export default function ComplianceAlertingPage() {
+// Import global styles for layout and navigation
+import * as globalStyles from '../common/styles';
+import { useAuditorStore } from '../common/auditorStore';
+import { auditorMenu } from '../common/auditorStore';
+
+export default function CompliancePage() {
   const {
-    currentPath,
     auditTrailMenu,
-    setCurrentPath
-  } = useAuditorStore()
-  const [search, setSearch] = useState('')
-
-  // Mark this route active in the sidebar
-  useEffect(() => {
-    setCurrentPath('/dashboard/auditor/complianceAlerting')
-  }, [setCurrentPath])
-
-  const { data: features = [], isLoading, isError } = useCompliance()
-
-  const filtered = features.filter(f =>
-    f.title.toLowerCase().includes(search.toLowerCase()) ||
-    f.description.toLowerCase().includes(search.toLowerCase())
-  )
+    filteredFeatures,
+    search,
+    handleSearchChange,
+    currentPath,
+  } = useCompliance();
 
   return (
-    <Box sx={fullScreenContainerStyles}>
-      {/* Sidebar */}
-      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
-        <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">Auditor Portal</Typography>
-        </Box>
-        <List>
-          {auditTrailMenu.map(item => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={item.path === currentPath}
-                sx={listItemButtonStyles(item.path, currentPath)}
+      <Box sx={globalStyles.rootBox}>
+      {/* --- Sidebar Navigation --- */}
+            <Drawer
+             variant="permanent"
+                anchor="left"
+                sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
               >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+             <Box sx={globalStyles.drawerHeader}>
+                <Typography variant="h5">Admin Portal</Typography>
+             </Box>
+                {auditorMenu.map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                   <ListItemButton
+                      component={Link}
+                      href={item.path}
+                      sx={globalStyles.listItemButton}
+                   >
+                  <ListItemText primary={item.name} />
+                   </ListItemButton>
+                  </ListItem>
+          ))}       
       </Drawer>
 
-      {/* Main Content */}
+      {/* Region: Main Content */}
       <Box component="main" sx={mainContentBoxStyles}>
+        {/* Region: Header */}
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
             Compliance & Alerting
@@ -97,7 +94,7 @@ export default function ComplianceAlertingPage() {
               variant="outlined"
               placeholder="Search compliance features"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               sx={searchFieldStyles}
             />
             <Box sx={userProfileStyles}>
@@ -112,43 +109,27 @@ export default function ComplianceAlertingPage() {
           </Box>
         </Box>
 
+        {/* Region: Compliance Content */}
         <Container maxWidth="md" sx={complianceContainerStyles}>
-          <Typography variant="h4" sx={complianceTitleStyles}>
-            Compliance & Alerting
-          </Typography>
-          <Typography variant="subtitle1" sx={complianceSubtitleStyles}>
-            Keeps the company aligned with internal policies and external regulations.
-          </Typography>
-
           <Paper elevation={3} sx={compliancePaperStyles}>
-            <List>
-              {isLoading && (
-                <Typography align="center">Loading features…</Typography>
-              )}
-              {isError && (
-                <Typography color="error" align="center">
-                  Failed to load features
-                </Typography>
-              )}
-              {!isLoading && !isError &&
-                filtered.map((feature, idx) => (
-                  <ListItem key={idx} sx={complianceListItemStyles}>
-                    <CheckCircleOutlineIcon />
-                    <div>
-                      <Typography variant="h6" sx={complianceFeatureTitleStyles}>
-                        {feature.title}
-                      </Typography>
-                      <Typography sx={complianceFeatureDescriptionStyles}>
+            <Grid container spacing={2}>
+              {filteredFeatures.map((feature) => (
+                <Grid item xs={12} sm={6} md={4} key={feature.title}>
+                  <Box sx={complianceListItemStyles}>
+                    <CheckCircleOutlineIcon color="primary" />
+                    <Box>
+                      <Typography variant="h6" sx={complianceFeatureTitleStyles}>{feature.title}</Typography>
+                      <Typography variant="body1" sx={complianceFeatureDescriptionStyles}>
                         {feature.description}
                       </Typography>
-                    </div>
-                  </ListItem>
-                ))
-              }
-            </List>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Paper>
         </Container>
       </Box>
     </Box>
-  )
+  );
 }

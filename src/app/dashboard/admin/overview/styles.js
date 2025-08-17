@@ -1,10 +1,13 @@
-// All Overview-specific sx style overrides
+// Contains the inline styles and sx overrides for the dahsboard overview screen
 
 import { BorderColor, HomeMaxSharp } from "@mui/icons-material";
 
 export const summaryCard = {
   p: 2,
-  boder: '1px solid #6b705c',
+  border: '1px solid #525252',
+  borderRadius: 2,
+  backgroundColor: '#fefaf0',
+  color: '#525252',
   display: 'flex',
   alignItems: 'center',
   '&:hover': {
@@ -40,6 +43,8 @@ export const activityCard = {
   maxHeight: 500,
   color:'#525252',
   overflow: 'auto',
+  border: '1px solid #525252',
+  borderRadius: 2,
   backgroundColor:'#fefaf0',
 };
 
@@ -47,6 +52,8 @@ export const quickActionsCard = {
   color: '#fefaf0',
   p: 2,
   backgroundColor:'#283618',
+  border: '1px solid #525252',
+  borderRadius: 2,
   BorderColor: '#fefaf0',
   border: '1px solid',
 };

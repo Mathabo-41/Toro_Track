@@ -1,3 +1,5 @@
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
 import React from 'react';
@@ -173,9 +175,9 @@ export default function ClientProfilesPage() {
         {/* Stats Cards */}
         <Grid container spacing={3}>
           {[
-            { label: 'Total Clients',   value: clients.length,                   icon: <PeopleIcon />,        color: 'primary' },
-            { label: 'Active Clients',  value: clients.filter(c => c.status==='active').length,   icon: <PeopleIcon color="info" />,    color: 'info'    },
-            { label: 'Premium Clients', value: clients.filter(c => c.status==='premium').length, icon: <PremiumIcon color="success" />, color: 'success' }
+            { label: 'Total Clients',   value: clients.length,  icon: <PeopleIcon color='#1b4332'/>,        color: '#525252' },
+            { label: 'Active Clients',  value: clients.filter(c => c.status==='active').length,   icon: <PeopleIcon color="info" />,    color: '#ffb703'    },
+            { label: 'Premium Clients', value: clients.filter(c => c.status==='premium').length, icon: <PremiumIcon color="success" />, color: '#40916c' }
           ].map(({ label, value, icon, color }) => (
             <Grid item xs={12} sm={6} md={4} key={label}>
               <Card sx={styles.statsCard}>

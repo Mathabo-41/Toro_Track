@@ -1,45 +1,28 @@
-// features/admin/PerformanceReports/useReports.js
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as svc from '../reportsService/page';
+import { useState } from 'react';
+import { reportMetricsData, recentActivitiesData, adminMenuData } from '../reportsService/page';
 
-export function useReports() {
-  const qc = useQueryClient();
-
-  // Fetch key metrics
-  const {
-    data: metrics = {},
-    isLoading: metricsLoading,
-    error: metricsError
-  } = useQuery('reports:metrics', svc.getMetrics);
-
-  // Fetch recent activities
-  const {
-    data: activities = [],
-    isLoading: activitiesLoading,
-    error: activitiesError
-  } = useQuery('reports:activities', svc.getActivities);
-
-  // Export mutation
-  const exportMutation = useMutation(svc.exportReport, {
-    onSuccess: (blob, format) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `report.${format}`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  });
-
-  return {
-    metrics,
-    metricsLoading,
-    metricsError,
-    activities,
-    activitiesLoading,
-    activitiesError,
-    exportReport: exportMutation.mutate,
-    exporting: exportMutation.isLoading
+//manage state and logic for this screen
+export const useReports = () => {
+  // Where we will use React Query to fetch data
+  const reports = reportMetricsData;
+  const activities = recentActivitiesData;
+  const menu = adminMenuData;
+  
+  /**
+   * Handles the export action for a selected format.
+   * @param {string} format - The file format to export ('CSV', 'PDF').
+   */
+  const handleExport = (format) => {
+    alert(`Downloading report in ${format} format...`);
   };
-}
+
+  // This is where we call the data that we are sending anf fetching from the database. We call it so that it can be displayed
+  return {
+    reports,
+    activities,
+    menu,
+    handleExport,
+  };
+};

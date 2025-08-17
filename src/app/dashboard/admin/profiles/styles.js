@@ -1,121 +1,145 @@
+// Contains the inline styles and sx overrides for the client profile screen
+
 export const searchField = {
-  bgcolor: '#fefaf0',
-  boder: '2x solid #525252',
-  color:'#525252',
+  backgroundColor: '#fefae0',
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: '#525252',
+    },
+    '&:hover fieldset': {
+      borderColor: '#b71c1c',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#b71c1c',
+    },
+  },
 };
 
 export const addClientButton = {
-  color: '#fefaf0',
-  backgroundColor:'#283618',
-  BorderColor: '#fefaf0',
-  border: '1px solid',
+  backgroundColor: '#283618',
+  color: '#fefae0',
+  borderColor: '#6b705c',
+  marginLeft: 2,
+  fontWeight: 500,
   '&:hover': {
-    backgroundColor: '#31572c', 
-    color: '#fefaf0',
-    BorderColor: '#fefaf0',
-    border: '1px solid',
+    backgroundColor: '#606c38',
+    borderColor: '#fefae0'
   },
-  ml: 2
-
+  whiteSpace: 'nowrap'
 };
 
 export const clientCard = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
-  boder: '2x solid #525252',
-  mb: 4
+  backgroundColor: '#fefae0',
+  mb: 3,
+  border: '1px solid #222',
 };
 
 export const tableContainer = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
-  boder: '2x solid #525252',
-  maxHeight: 400
+  backgroundColor: 'transparent',
+  border: '2px solid #525252',
 };
 
 export const tableHeader = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
+  backgroundColor: '#525252',
 };
 
 export const tableHeaderCell = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
-  fontWeight: 700
+  color: '#525252',
+  fontWeight: 'bold',
+  backgroundColor: '#fefae0',
 };
 
 export const tableRow = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
-  cursor: 'pointer'
+  '&:hover': {
+    backgroundColor: '#e9e9e9',
+  }
 };
 
 export const clientTableCell = {
-  color:'#525252',
-  backgroundColor:'#fefaf0',
-  py: 1
+  color: '#283618',
 };
 
 export const clientLogoAvatar = {
-  bground:'#525252',
   width: 40,
-  height: 40
+  height: 40,
+  bgcolor: '#333',
+  border: '1px solid #444',
 };
 
 export const contactIcon = {
-  color: '#525252'
+  color: '#f3722c',
 };
 
 export const projectsIcon = {
-  color: 'text.secondary'
+  color: '#f3722c',
 };
 
 export const statusChip = (status) => {
-  const colorMap = {
-    premium: '#6a994e',
-    active: '#f77f00',
-    inactive: '#e63946'
+  const styles = {
+    premium: {
+      backgroundColor: 'rgba(46, 125, 50, 0.2)',
+      color: '#81c784',
+      border: '1px solid #2e7d32',
+    },
+    active: {
+      backgroundColor: 'rgba(2, 136, 209, 0.2)',
+      color: '#4fc3f7',
+      border: '1px solid #0288d1',
+    },
+    inactive: {
+      backgroundColor: 'rgba(97, 97, 97, 0.2)',
+      color: '#bdbdbd',
+      border: '1px solid #616161',
+    },
   };
   return {
-    textTransform: 'capitalize',
-    color: `${colorMap[status]}.main`
+    ...styles[status],
+    fontWeight: 'bold',
+    pl: 1
   };
 };
 
 export const actionButton = {
-  color: '#525252'
+  color: '#525252',
 };
 
 export const statsCard = {
-  p: 2
+  backgroundColor: '#fefae0',
+  border: '1px solid #222',
+  height: '100%',
 };
 
 export const statsCardContent = {
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center'
+  alignItems: 'center',
 };
 
 export const statsCardValue = (color) => ({
-  fontWeight: 700,
-  color: `${color}.main`
+  color: color === 'primary' ? '#f3722c' : (color === 'info' ? '#4fc3f7' : '#81c784'),
+  fontWeight: 500
 });
 
-export const statsAvatar = (bg, fg) => ({
-  bgcolor: `${bg}.main`,
-  color: `${fg}.contrastText`
+export const statsAvatar = (bgColor, iconColor) => ({
+  bgcolor: iconColor === 'primary' ? 'rgba(244, 193, 15, 0.1)' : (iconColor === 'info' ? 'rgba(2, 136, 209, 0.1)' : 'rgba(46, 125, 50, 0.1)'),
+  width: 56,
+  height: 56,
+  border: iconColor === 'primary' ? '1px solid #f3722c' : (iconColor === 'info' ? '1px solid #0288d1' : '1px solid #2e7d32'),
 });
 
 export const menuPaper = {
-  mt: 1
+  backgroundColor: '#f1faee',
+  color: '#283618',
+  border: '2px solid #283618',
+  minWidth: '200px',
 };
 
 export const menuItem = {
   '&:hover': {
-    bgcolor: 'action.hover'
-  }
+    backgroundColor: '#606c38',
+  },
 };
 
 export const menuDivider = {
-  my: 1
+  backgroundColor: '#333',
 };

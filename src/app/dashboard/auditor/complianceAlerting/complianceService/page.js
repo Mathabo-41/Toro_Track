@@ -1,31 +1,42 @@
-// Temporary stub; replace with real endpoint when available
-const BASE_URL = '/api/auditor/compliance'
+// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
 
-const mockFeatures = [
+//hardcode
+const complianceFeaturesDummyData = [
   {
     title: 'Compliance Checklist Templates',
     description:
-      'Pre-define steps for software license audits, hardware disposal protocols, and data-protection reviews.'
+      'Pre-define steps for software license audits, hardware disposal protocols, and data-protection reviews.',
   },
   {
     title: 'Rule-Based Alerts',
     description:
-      'Trigger notifications when required documentation is missing or retention periods are about to expire.'
+      'Trigger notifications when required documentation is missing or retention periods are about to expire.',
   },
   {
     title: 'Role-Based Access Controls',
     description:
-      'Ensure auditors have read-only access to production systems, and that sensitive actions are logged and restricted.'
-  }
-]
+      'Ensure auditors have read-only access to production systems, and that sensitive actions are logged and restricted.',
+  },
+  {
+    title: 'Reporting & Analytics',
+    description:
+      'Generate detailed reports on compliance status and identify areas of concern.',
+  },
+  {
+    title: 'Audit Trail Logging',
+    description:
+      'Maintain a chronological record of all actions for accountability and verification.',
+  },
+];
 
+/**
+ * Simulates an asynchronous API call to fetch compliance features.
+ * @returns {Promise<Array<Object>>} A promise that resolves with the compliance features data.
+ */
 export async function fetchComplianceFeatures() {
-  // Example fetch; fall back to mock
-  try {
-    const res = await fetch(`${BASE_URL}/features`)
-    if (!res.ok) throw new Error('Network response was not ok')
-    return res.json()
-  } catch {
-    return mockFeatures
-  }
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(complianceFeaturesDummyData);
+    }, 500); // Simulate network delay
+  });
 }

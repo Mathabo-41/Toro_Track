@@ -1,93 +1,73 @@
-// features/admin/PerformanceReports/page.js
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   Box,
   Typography,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Grid,
+  Button,
   Card,
   CardContent,
   Stack,
   Avatar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Drawer,
+  Grid,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Chip,
-  Button,
-  IconButton
+  Chip
 } from '@mui/material';
 import {
   Assessment as ReportsIcon,
+  Download as DownloadIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
   Timeline as TimelineIcon,
-  People as PeopleIcon,
-  Work as WorkIcon,
-  Star as StarIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Download as DownloadIcon
+  People as PeopleIcon,
+  Star as StarIcon, 
+  TrendingDown as TrendingDownIcon
 } from '@mui/icons-material';
 
-import * as common from '../common/styles';
-import * as styles from './styles';
+// Import local files
+import { styles } from './styles';
 import { useReports } from './useReports/page';
 
-const adminMenu = [
-  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
-  { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
-  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }
-];
+// Main Component
+// ------------------------------------------------
+export default function PerformanceReports() {
+  // Region: Hooks and State
+  // ------------------------------------------------
+  const { reports, activities, menu, handleExport } = useReports();
 
-export default function PerformanceReportsPage() {
-  const {
-    metrics,
-    metricsLoading,
-    metricsError,
-    activities,
-    activitiesLoading,
-    activitiesError,
-    exportReport,
-    exporting
-  } = useReports();
-
+  // Region: Render
+  // ------------------------------------------------
   return (
-    <Box sx={common.rootBox}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ width: 240, '& .MuiDrawer-paper': common.drawerPaper }}
-      >
-        <Box sx={common.drawerHeader}>
-          <Typography variant="h5">Admin Panel</Typography>
+    <Box sx={styles.mainContainer}>
+      {/* Sidebar Navigation */}
+      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
+        <Box sx={styles.sidebarHeader}>
+          <Typography variant="h5" sx={{ color: '#fefae0' }}>
+            Admin Panel
+          </Typography>
         </Box>
         <List>
-          {adminMenu.map((item) => (
-            <ListItem key={item.name} disablePadding>
+          {menu.map((item, index) => (
+            <ListItem key={index} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
-                sx={
-                  item.name === 'Performance Reports'
-                    ? common.activeListItemButton
-                    : common.listItemButton
-                }
+                sx={styles.sidebarListItemButton(item.name)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -96,110 +76,80 @@ export default function PerformanceReportsPage() {
         </List>
       </Drawer>
 
-      {/* Main */}
-      <Box component="main" sx={styles.reportsMainContentBox}>
-        {/* Header */}
-        <Box sx={common.pageHeader}>
-          <Typography variant="h4" sx={styles.reportsPageHeaderText}>
-            <ReportsIcon sx={styles.reportsPageHeaderIcon} />
+      {/* Main Content */}
+      <Box component="main" sx={styles.mainContent}>
+        {/* Page Header */}
+        <Box sx={styles.pageHeader}>
+          <Typography variant="h4" sx={styles.pageTitle}>
+            <ReportsIcon sx={styles.headerIcon} />
             Performance Reports
           </Typography>
-          <Typography variant="body1" sx={common.pageHeaderText}>
+          <Typography variant="body1" sx={styles.pageSubtitle}>
             Analytics and insights for your CRM system
           </Typography>
         </Box>
 
-        {/* Metrics */}
+        {/* Key Metrics Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {!metricsLoading &&
-            !metricsError &&
-            Object.entries(metrics).map(([key, metric]) => (
-              <Grid item xs={12} sm={6} md={4} key={key}>
-                <Card sx={styles.reportsMetricCard}>
-                  <CardContent>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          sx={styles.reportsMetricTitle}
-                        >
-                          {metric.title}
+          {Object.entries(reports).map(([key, metric], index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card sx={styles.metricCard}>
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Box>
+                      <Typography variant="body2" sx={{ color: '#525252' }}>
+                        {metric.title}
+                      </Typography>
+                      <Typography variant="h4" sx={styles.metricValue}>
+                        {metric.value}
+                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        {metric.trend === 'up' ? (
+                          <TrendingUpIcon sx={styles.trendIcon('up')} fontSize="small" />
+                        ) : (
+                          <TrendingDownIcon sx={styles.trendIcon('down')} fontSize="small" />
+                        )}
+                        <Typography variant="body2" sx={styles.trendIcon(metric.trend)}>
+                          {metric.change}
                         </Typography>
-                        <Typography
-                          variant="h4"
-                          sx={styles.reportsMetricValue}
-                        >
-                          {metric.value}
-                        </Typography>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={0.5}
-                          sx={styles.reportsTrend}
-                        >
-                          {metric.trend === 'up' ? (
-                            <TrendingUpIcon
-                              sx={styles.reportsTrendIconUp}
-                              fontSize="small"
-                            />
-                          ) : (
-                            <TrendingDownIcon
-                              sx={styles.reportsTrendIconDown}
-                              fontSize="small"
-                            />
-                          )}
-                          <Typography
-                            variant="body2"
-                            sx={styles.reportsTrendText(metric.trend)}
-                          >
-                            {metric.change}
-                          </Typography>
-                        </Stack>
-                      </Box>
-                      <Avatar sx={styles.reportsMetricAvatar}>
-                        {key.includes('Client') && <PeopleIcon />}
-                        {key.includes('Project') && <WorkIcon />}
-                        {key.includes('Revenue') && <StarIcon />}
-                        {key.includes('Satisfaction') && <StarIcon />}
-                        {key.includes('Performance') && <BarChartIcon />}
-                      </Avatar>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                      </Stack>
+                    </Box>
+                    <Avatar sx={styles.metricAvatar}>
+                      {metric.icon}
+                    </Avatar>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
-        {/* Charts */}
+        {/* Report Visualization Section */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} md={6}>
-            <Card sx={styles.reportsChartCard}>
+            <Card sx={styles.chartCard}>
               <CardContent>
-                <Typography
-                  variant="h6"
-                  sx={styles.reportsChartTitle}
-                >
-                  <PeopleIcon sx={styles.reportsPageHeaderIcon} />
+                <Typography variant="h6" sx={styles.chartTitle}>
+                  <PeopleIcon sx={styles.headerIcon} />
                   Client Acquisition Trend
                 </Typography>
-                <Box sx={styles.reportsChartBox}>
-                  <BarChartIcon sx={{ fontSize: 60 }} />
+                <Box sx={styles.dummyChartBox}>
+                  <BarChartIcon sx={{ fontSize: 60, mb: 1 }} />
+                  <Typography>Client Acquisition Chart</Typography>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Card sx={styles.reportsChartCard}>
+            <Card sx={styles.chartCard}>
               <CardContent>
-                <Typography
-                  variant="h6"
-                  sx={styles.reportsChartTitle}
-                >
-                  <StarIcon sx={styles.reportsPageHeaderIcon} />
+                <Typography variant="h6" sx={styles.chartTitle}>
+                  <StarIcon sx={styles.headerIcon} />
                   Revenue Breakdown
                 </Typography>
-                <Box sx={styles.reportsChartBox}>
-                  <PieChartIcon sx={{ fontSize: 60 }} />
+                <Box sx={styles.dummyChartBox}>
+                  <PieChartIcon sx={{ fontSize: 60, mb: 1 }} />
+                  <Typography>Revenue Breakdown Chart</Typography>
                 </Box>
               </CardContent>
             </Card>
@@ -207,85 +157,63 @@ export default function PerformanceReportsPage() {
         </Grid>
 
         {/* Recent Activities */}
-        <Card sx={styles.reportsRecentActivitiesCard}>
+        <Card sx={styles.activityCard}>
           <CardContent>
-            <Typography
-              variant="h6"
-              sx={styles.reportsChartTitle}
-            >
-              <TimelineIcon sx={styles.reportsPageHeaderIcon} />
+            <Typography variant="h6" sx={styles.chartTitle}>
+              <TimelineIcon sx={styles.headerIcon} />
               Recent Client Activities
             </Typography>
-            <TableContainer
-              component={Paper}
-              sx={styles.reportsTableContainer}
-            >
-              <Table stickyHeader>
-                <TableHead sx={styles.reportsTableHeader}>
-                  <TableRow>
-                    {['Client', 'Activity', 'Date', 'Status'].map((h) => (
-                      <TableCell
-                        key={h}
-                        sx={styles.reportsTableHeaderCell}
-                      >
-                        {h}
-                      </TableCell>
-                    ))}
+            <TableContainer component={Paper} sx={styles.activityTableContainer}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={styles.activityTableHead}>
+                    <TableCell sx={styles.activityTableHeaderCell}>Client</TableCell>
+                    <TableCell sx={styles.activityTableHeaderCell}>Activity</TableCell>
+                    <TableCell sx={styles.activityTableHeaderCell}>Date</TableCell>
+                    <TableCell sx={styles.activityTableHeaderCell}>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {!activitiesLoading &&
-                    !activitiesError &&
-                    activities.map((row, i) => (
-                      <TableRow
-                        key={i}
-                        hover
-                        sx={styles.reportsTableRow}
-                      >
-                        <TableCell sx={styles.reportsTableCell}>
-                          {row.client}
-                        </TableCell>
-                        <TableCell sx={styles.reportsTableCell}>
-                          {row.activity}
-                        </TableCell>
-                        <TableCell sx={styles.reportsTableCell}>
-                          {row.date}
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={row.status}
-                            sx={styles.reportsStatusChip(row.status)}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {activities.map((row, index) => (
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={styles.activityTableRow}
+                    >
+                      <TableCell sx={styles.activityTableCell}>{row.client}</TableCell>
+                      <TableCell sx={styles.activityTableCell}>{row.activity}</TableCell>
+                      <TableCell sx={styles.activityTableCell}>{row.date}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={row.status.replace('-', ' ')}
+                          sx={styles.statusChip(row.status)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
           </CardContent>
         </Card>
 
-        {/* Export Section */}
-        <Card sx={styles.reportsExportCard}>
+        {/* Data Export Section */}
+        <Card sx={styles.exportCard}>
           <CardContent>
-            <Typography
-              variant="h6"
-              sx={styles.reportsChartTitle}
-            >
-              <DownloadIcon sx={styles.reportsPageHeaderIcon} />
+            <Typography variant="h6" sx={styles.chartTitle}>
+              <DownloadIcon sx={styles.headerIcon} />
               Export Reports
             </Typography>
             <Stack direction="row" spacing={2}>
-              {['csv', 'xlsx', 'pdf'].map((fmt) => (
+              {['CSV', 'Excel', 'PDF'].map((format) => (
                 <Button
-                  key={fmt}
+                  key={format}
                   variant="outlined"
                   startIcon={<DownloadIcon />}
-                  sx={styles.reportsExportButton}
-                  onClick={() => exportReport(fmt)}
-                  disabled={exporting}
+                  onClick={() => handleExport(format)}
+                  sx={styles.exportButton}
                 >
-                  Download {fmt.toUpperCase()}
+                  Download {format}
                 </Button>
               ))}
             </Stack>

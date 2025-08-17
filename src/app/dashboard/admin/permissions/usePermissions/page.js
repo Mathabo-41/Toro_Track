@@ -1,64 +1,53 @@
-// /features/admin/Permissions/usePermissions.js
-import { useState, useEffect } from 'react';
-import * as service from '../permissionsService/page';
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 
-const defaultRoles = [
-  /* same defaultRoles array you supplied */
-];
+import { useState } from 'react';
+import { defaultRolesData, permissionLevelsData } from '../permissionsService/page';
 
-export default function usePermissions() {
-  const [roles, setRoles]             = useState([]);
-  const [selectedRole, setSelected]   = useState('');
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState(null);
+//manage state and logic for this screen
+export const usePermissions = () => {
+  // State for the roles and their permissions
+  const [roles, setRoles] = useState(defaultRolesData);
+  
+  // State to track the currently selected role for the summary view
+  const [selectedRole, setSelectedRole] = useState('Admin');
 
-  // Load roles from server (or fallback to defaults)
-  useEffect(() => {
-    setLoading(true);
-    service.fetchRoles()
-      .then((data) => {
-        setRoles(data.length ? data : defaultRoles);
-        setSelected(data[0]?.name || defaultRoles[0].name);
-      })
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
+  // Static data imported from the service file
+  const permissionLevels = permissionLevelsData;
 
+  /**
+   * Handles changes to a permission level for a specific role and category.
+   * @param {string} roleName - The name of the role to update.
+   * @param {string} category - The permission category ('Projects').
+   * @param {string} value - The new permission value ('Full', 'Edit').
+   */
   const handlePermissionChange = (roleName, category, value) => {
-    setRoles((prev) =>
-      prev.map((r) =>
-        r.name === roleName
-          ? {
-              ...r,
-              permissions: {
-                ...r.permissions,
-                [category]: value
-              }
-            }
-          : r
-      )
-    );
+    setRoles(roles.map(role => 
+      role.name === roleName
+        ? { 
+            ...role, 
+            permissions: { 
+              ...role.permissions, 
+              [category]: value 
+            } 
+          }
+        : role
+    ));
   };
-
-  const handleSave = async () => {
-    setLoading(true);
-    try {
-      await service.savePermissions(roles);
-      alert('Permissions saved successfully!');
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
+  
+  /**
+   * This is where we will send data to the backend.
+   */
+  const handleSave = () => {
+    alert('Permissions saved successfully!');
+    // This is where we will call an API, such as savePermissions(roles) from our database
   };
 
   return {
     roles,
     selectedRole,
-    setSelected,
-    loading,
-    error,
+    setSelectedRole,
+    permissionLevels,
     handlePermissionChange,
-    handleSave
+    handleSave,
   };
-}
+};

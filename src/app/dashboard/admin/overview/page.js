@@ -1,4 +1,5 @@
-// The presentation component wiring together Material UI, our hook, the store, and both global & feature styles
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
 import React from 'react';

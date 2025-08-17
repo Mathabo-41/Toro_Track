@@ -1,42 +1,124 @@
-import { colors } from '@mui/material'
+// Contains the inline styles and sx overrides for the compliance & alerting screen
 
-export const complianceContainerStyles = {
-  py: 4
-}
+import { Height } from "@mui/icons-material";  // Helps with Adjusting search bar height
 
-export const complianceTitleStyles = {
-  fontWeight: 600,
-  mb: 1
-}
+export const fullScreenContainerStyles = {
+  display: 'flex',
+  minHeight: '100vh',
+  backgroundColor: '#f5f7fa',
+};
 
-export const complianceSubtitleStyles = {
-  color: colors.grey[700],
-  mb: 3
-}
+export const drawerStyles = {
+  width: 240,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: 240,
+    boxSizing: 'border-box',
+    backgroundColor: '#fff',
+    color: '#333',
+    boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
+  },
+};
+
+export const drawerHeaderStyles = {
+  p: 2,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderBottom: '2px solid #525252',
+};
+
+export const mainContentBoxStyles = {
+  flexGrow: 1,
+  p: 3,
+  ml: '240px',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+export const headerBoxStyles = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  mb: 4,
+  pb: 2,
+  borderBottom: '1px solid #ddd',
+};
+
+export const pageTitleStyles = {
+  fontfamily: 'Disek, monospace',
+  color: '#525252',
+};
+
+export const headerRightSectionStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 2,
+};
+
+export const searchFieldStyles = {
+  width: '300px',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '5px',
+    backgroundColor: '#fefaf0',
+    fontSize: '0.9rem',
+    height: '40px',
+    '& fieldset': {
+      borderColor: '#525252',
+    },
+    '&:hover fieldset': {
+      borderColor: '#525252',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#283618',
+      borderWidth: '2px',
+    },
+  },
+};
+
+export const userProfileStyles = {
+  display: 'flex',
+  color: '#525252',
+  alignItems: 'center',
+  gap: 1,
+};
+
+export const userInfoStyles = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+};
+
+export const auditorTextStyles = {
+  color: '#888',
+};
 
 export const compliancePaperStyles = {
   p: 3,
-  backgroundColor: colors.common.white
-}
-
-export const complianceListItemStyles = {
-  alignItems: 'flex-start',
-  mb: 2,
-  '&:last-of-type': {
-    mb: 0
-  },
-  '& .MuiSvgIcon-root': {
-    mt: 0.5,
-    mr: 2,
-    color: colors.success.main
-  }
-}
+  backgroundColor: '#ccd5ae',
+  border:'2px #525252',
+};
 
 export const complianceFeatureTitleStyles = {
-  fontWeight: 500,
-  mb: 0.5
-}
+  fontWeight: 'bold',
+  fontfamily: 'Disek, monospace',
+  color: '#283618',
+};
 
 export const complianceFeatureDescriptionStyles = {
-  color: colors.grey[800]
-}
+  color: '#606c38',
+};
+
+export const complianceListItemStyles = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 2,
+  mb: 2,
+  p: 2,
+  backgroundColor: '#e9edc9',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  '&:hover': {
+    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+  },
+};

@@ -1,338 +1,557 @@
-'use client'
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
+import React from 'react';
+import Link from 'next/link';
 import {
-  Box, Typography, Card, CardContent, Stack, Button,
-  Drawer, List, ListItem, ListItemButton, ListItemText,
-  Divider, TextField, Avatar, Switch, FormControlLabel,
-  Tabs, Tab, Grid, MenuItem, Paper
-} from '@mui/material'
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    Stack,
+    Button,
+    Drawer,
+    ListItemButton,
+    List,
+    MenuItem,
+    ListItem,
+    ListItemText,
+    Divider,
+    TextField,
+    Avatar,
+    Switch,
+    FormControlLabel,
+    Tabs,
+    Tab,
+    Paper,
+    Grid,
+    CircularProgress
+} from '@mui/material';
 import {
-  Settings as SettingsIcon,
-  Person as ProfileIcon,
-  Security as SecurityIcon,
-  Notifications as NotificationsIcon,
-  Language as LanguageIcon,
-  Edit as EditIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Save as SaveIcon,
-  Logout as LogoutIcon
-} from '@mui/icons-material'
+    Settings as SettingsIcon,
+    Person as ProfileIcon,
+    Notifications as NotificationsIcon,
+    Security as SecurityIcon,
+    Language as LanguageIcon,
+    Logout as LogoutIcon,
+    Save as SaveIcon,
+    Edit as EditIcon,
+    Check as CheckIcon,
+    Close as CloseIcon
+} from '@mui/icons-material';
+import { useSettings } from './useSettings/page';
+import { rootBox, drawerPaper, drawerHeader, listItemButton, activeListItemButton } from '../common/styles';
+import { clientSettingsStyles } from './styles';
 
-import { useClientStore } from '../common/clientStore'
-import * as g from '../common/styles'
-import * as s from './styles'
-import {
-  useProfile,
-  useSaveProfile,
-  useSavePassword,
-  useSaveNotifications,
-  useSavePreferences
-} from './useClientSettings'
+// Import global styles for layout and navigation
+import * as globalStyles from '../common/styles';
+import { useClientStore } from '../common/clientStore';
+import { clientMenu } from '../common/clientStore';
 
-export default function ClientSettingsPage() {
-  const { clientMenu, currentPath, setCurrentPath } = useClientStore()
-  const [tab, setTab] = useState(0)
-  const [editMode, setEditMode] = useState(false)
-  const { data: profile, isLoading } = useProfile()
-  const saveProfile = useSaveProfile()
-  const savePassword = useSavePassword()
-  const saveNotifications = useSaveNotifications()
-  const savePreferences = useSavePreferences()
+export default function ClientSettings() {
+    const {
+        activeTab,
+        editMode,
+        darkMode,
+        formData,
+        isLoading,
+        isError,
+        setEditMode,
+        setDarkMode,
+        handleChange,
+        handleSubmit,
+        handleCancelEdit,
+        handleTabChange,
+    } = useSettings();
 
-  const [form, setForm] = useState({
-    name: '', email: '', company: '', position: '', phone: '',
-    currentPassword: '', newPassword: '', confirmPassword: '',
-    notifications: false, newsletter: false,
-    darkMode: false, language: 'en'
-  })
-
-  // Load form from API
-  useEffect(() => {
-    if (profile) {
-      setForm({
-        name: profile.name,
-        email: profile.email,
-        company: profile.company,
-        position: profile.position,
-        phone: profile.phone,
-        notifications: profile.notifications,
-        newsletter: profile.newsletter,
-        darkMode: profile.preferences.darkMode,
-        language: profile.preferences.language,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      })
+    // Handle loading and error states from React Query
+    if (isLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
     }
-  }, [profile])
 
-  // Sidebar highlight
-  useEffect(() => {
-    setCurrentPath('/dashboard/client/settings')
-  }, [setCurrentPath])
+    if (isError) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Typography color="error">
+                    Failed to load settings. Please try again.
+                </Typography>
+            </Box>
+        );
+    }
 
-  const handleChange = (e) => {
-    const { name, value, checked, type } = e.target
-    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
-  }
-
-  const handleSubmitProfile = (e) => {
-    e.preventDefault()
-    saveProfile.mutate({
-      name: form.name,
-      email: form.email,
-      company: form.company,
-      position: form.position,
-      phone: form.phone
-    }, { onSuccess: () => setEditMode(false) })
-  }
-
-  const handleSubmitPassword = (e) => {
-    e.preventDefault()
-    savePassword.mutate({
-      currentPassword: form.currentPassword,
-      newPassword: form.newPassword,
-      confirmPassword: form.confirmPassword
-    }, {
-      onSuccess: () => alert('Password updated!')
-    })
-  }
-
-  const handleSubmitNotifications = (e) => {
-    e.preventDefault()
-    saveNotifications.mutate({
-      notifications: form.notifications,
-      newsletter: form.newsletter
-    })
-  }
-
-  const handleSubmitPreferences = (e) => {
-    e.preventDefault()
-    savePreferences.mutate({
-      darkMode: form.darkMode,
-      language: form.language
-    })
-  }
-
-  return (
-    <Box sx={s.mainBox}>
-      <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': s.drawerPaper }}>
-        <Box sx={s.drawerHeader}>
-          <Typography variant="h5">Client Portal</Typography>
-        </Box>
-        <List>
-          {clientMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={item.path === currentPath}
-                sx={{
-                  ...s.listItemButton,
-                  ...(item.path === currentPath && s.activeListItemButton)
-                }}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-
-      <Box component="main" sx={s.mainContentBox}>
-        <Box sx={g.headerBoxStyles}>
-          <Typography variant="h4" sx={g.headerTitleStyles}>
-            <SettingsIcon sx={g.headerIconStyles} />
-            Settings
-          </Typography>
-          <Typography variant="body1" sx={g.headerSubtitleStyles}>
-            Manage your account preferences and security settings
-          </Typography>
-        </Box>
-
-        <Tabs value={tab} onChange={(_, v) => { setTab(v); setEditMode(false) }} sx={g.tabsStyles}>
-          <Tab label="Profile"       icon={<ProfileIcon />}       iconPosition="start" sx={g.tabStyles} />
-          <Tab label="Security"      icon={<SecurityIcon />}      iconPosition="start" sx={g.tabStyles} />
-          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={g.tabStyles} />
-          <Tab label="Preferences"   icon={<LanguageIcon />}      iconPosition="start" sx={g.tabStyles} />
-        </Tabs>
-
-        <Card sx={g.cardStyles}>
-          <CardContent>
-            {/* Profile */}
-            {tab === 0 && !isLoading && (
-              <Box component="form" onSubmit={handleSubmitProfile}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                  <Typography sx={s.profileHeaderTitle}>Personal Information</Typography>
-                  {editMode ? (
-                    <Stack direction="row" spacing={1} sx={s.profileButtonsStack}>
-                      <Button type="submit" startIcon={<CheckIcon />} sx={s.saveButton}>Save</Button>
-                      <Button onClick={() => setEditMode(false)} startIcon={<CloseIcon />} sx={s.cancelButton}>Cancel</Button>
-                    </Stack>
-                  ) : (
-                    <Button onClick={() => setEditMode(true)} startIcon={<EditIcon />} sx={s.editProfileButton}>Edit Profile</Button>
-                  )}
-                </Stack>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={4}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-                      <Avatar sx={s.profileAvatar} />
-                      {editMode && <Button sx={s.changePhotoButton}>Change Photo</Button>}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} md={8}>
-                    <Grid container spacing={2}>
-                      {[
-                        ['Full Name','name'],
-                        ['Email','email'],
-                        ['Company','company'],
-                        ['Position','position'],
-                        ['Phone Number','phone']
-                      ].map(([label,name]) => (
-                        <Grid item xs={12} sm={6} key={name}>
-                          <TextField
-                            fullWidth
-                            label={label}
-                            name={name}
-                            value={form[name]}
-                            onChange={handleChange}
-                            disabled={!editMode}
-                            sx={s.profileTextField(editMode)}
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {/* Security */}
-            {tab === 1 && (
-              <Box component="form" onSubmit={handleSubmitPassword}>
-                <Typography sx={s.securityTitle}>Security Settings</Typography>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Typography sx={s.securitySubtitle}>Change Password</Typography>
-                    <Stack>
-                      {['currentPassword','newPassword','confirmPassword'].map((field) => (
-                        <TextField
-                          key={field}
-                          fullWidth
-                          type="password"
-                          label={field === 'currentPassword' ? 'Current Password' : field === 'newPassword' ? 'New Password' : 'Confirm New Password'}
-                          name={field}
-                          value={form[field]}
-                          onChange={handleChange}
-                          sx={s.passwordTextField}
-                        />
-                      ))}
-                    </Stack>
-                    <Button type="submit" startIcon={<SaveIcon />} sx={s.updatePasswordButton}>Update Password</Button>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Typography sx={s.securitySubtitle}>Two-Factor Authentication</Typography>
-                    <Paper sx={s.securityPaper}>
-                      <FormControlLabel
-                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
-                        label={<Typography sx={s.notificationLabel}>Enable 2FA</Typography>}
-                      />
-                      <Typography sx={s.securityBodyText}>Adds extra layer of security</Typography>
-                    </Paper>
-                    <Typography sx={s.securitySubtitle}>Active Sessions</Typography>
-                    <Paper sx={s.sessionPaper}>
-                      <Typography sx={s.sessionDeviceText}>Current Device (Chrome, Windows)</Typography>
-                      <Typography sx={s.sessionTimeText}>Last active: Just now</Typography>
-                      <Button size="small" sx={s.logoutDevicesButton}>Logout All</Button>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {/* Notifications */}
-            {tab === 2 && (
-              <Box component="form" onSubmit={handleSubmitNotifications}>
-                <Typography sx={s.notificationsTitle}>Notification Preferences</Typography>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={s.notificationsPaper}>
-                      <Typography sx={s.notificationsSubtitle}>Email Notifications</Typography>
-                      <FormControlLabel
-                        control={<Switch name="notifications" checked={form.notifications} onChange={handleChange} sx={s.notificationSwitch}/>}
-                        label={<Typography sx={s.notificationLabel}>Project Updates</Typography>}
-                      />
-                      <FormControlLabel
-                        control={<Switch name="newsletter" checked={form.newsletter} onChange={handleChange} sx={s.notificationSwitch}/>}
-                        label={<Typography sx={s.notificationLabel}>Newsletter</Typography>}
-                      />
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={s.notificationsPaper}>
-                      <Typography sx={s.notificationsSubtitle}>In-App Notifications</Typography>
-                      <FormControlLabel
-                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
-                        label={<Typography sx={s.notificationLabel}>Messages</Typography>}
-                      />
-                      <FormControlLabel
-                        control={<Switch checked={true} sx={s.notificationSwitch}/>}
-                        label={<Typography sx={s.notificationLabel}>Meeting Reminders</Typography>}
-                      />
-                    </Paper>
-                  </Grid>
-                </Grid>
-                <Button type="submit" startIcon={<SaveIcon />} sx={s.savePreferencesButton}>Save Preferences</Button>
-              </Box>
-            )}
-
-            {/* Preferences */}
-            {tab === 3 && (
-              <Box component="form" onSubmit={handleSubmitPreferences}>
-                <Typography sx={s.preferencesTitle}>App Preferences</Typography>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={s.preferencesPaper}>
-                      <Typography sx={s.preferencesSubtitle}>Display Settings</Typography>
-                      <FormControlLabel
-                        control={<Switch name="darkMode" checked={form.darkMode} onChange={handleChange} sx={s.darkModeSwitch}/>}
-                        label={<Typography sx={s.darkModeLabel}>Dark Mode</Typography>}
-                      />
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography sx={s.preferencesSubtitle}>Language & Region</Typography>
-                    <Paper sx={s.preferencesPaper}>
-                      <TextField
-                        select
-                        fullWidth
-                        name="language"
-                        value={form.language}
-                        onChange={handleChange}
-                        sx={s.languageSelect}
+    return (
+    <Box sx={globalStyles.rootBox}>
+          {/* --- Sidebar Navigation --- */}
+          <Drawer
+           variant="permanent"
+                  anchor="left"
+                  sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+                >
+                  <Box sx={globalStyles.drawerHeader}>
+                    <Typography variant="h5">Auditor Portal</Typography>
+                  </Box>
+                  {clientMenu.map((item) => (
+                    <ListItem key={item.path} disablePadding>
+                      <ListItemButton
+                        component={Link}
+                        href={item.path}
+                        sx={globalStyles.listItemButton}
                       >
-                        <MenuItem value="en">English</MenuItem>
-                        <MenuItem value="es">Spanish</MenuItem>
-                        <MenuItem value="fr">French</MenuItem>
-                      </TextField>
-                    </Paper>
-                  </Grid>
-                </Grid>
-                <Button type="submit" startIcon={<SaveIcon />} sx={s.savePreferencesButton}>Save Preferences</Button>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+                        <ListItemText primary={item.name} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}       
+          </Drawer>
+            {/* Main Content */}
+            <Box component="main" sx={clientSettingsStyles.mainContent}>
+                {/* Header Region */}
+                <Box sx={clientSettingsStyles.pageHeader}>
+                    <Typography variant="h4" sx={clientSettingsStyles.pageHeaderText}>
+                        <SettingsIcon sx={clientSettingsStyles.headerIcon} />
+                        Settings
+                    </Typography>
+                    <Typography variant="body1" sx={clientSettingsStyles.headerSubtext}>
+                        Manage your account preferences and security settings
+                    </Typography>
+                </Box>
 
-        <Box sx={s.logoutBox}>
-          <Button startIcon={<LogoutIcon />} sx={s.logoutButton}>Logout</Button>
+                {/* Tabs Region */}
+                <Tabs
+                    value={activeTab}
+                    onChange={handleTabChange}
+                    sx={clientSettingsStyles.tabs}
+                >
+                    <Tab label="Profile" icon={<ProfileIcon />} iconPosition="start" sx={clientSettingsStyles.tab} />
+                    <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" sx={clientSettingsStyles.tab} />
+                    <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={clientSettingsStyles.tab} />
+                    <Tab label="Preferences" icon={<LanguageIcon />} iconPosition="start" sx={clientSettingsStyles.tab} />
+                </Tabs>
+
+                {/* Tab Content Region */}
+                <Card sx={clientSettingsStyles.card}>
+                    <CardContent>
+                        {/* Profile Tab Content */}
+                        {activeTab === 0 && (
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                                    <Typography variant="h6" sx={clientSettingsStyles.profileSectionHeader}>
+                                        Personal Information
+                                    </Typography>
+                                    {editMode ? (
+                                        <Stack direction="row" spacing={1}>
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                startIcon={<CheckIcon />}
+                                                sx={clientSettingsStyles.profileEditButtons}
+                                            >
+                                                Save
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                startIcon={<CloseIcon />}
+                                                onClick={handleCancelEdit}
+                                                sx={clientSettingsStyles.profileCancelButton}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </Stack>
+                                    ) : (
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<EditIcon />}
+                                            onClick={() => setEditMode(true)}
+                                            sx={clientSettingsStyles.profileCancelButton}
+                                        >
+                                            Edit Profile
+                                        </Button>
+                                    )}
+                                </Stack>
+
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={4}>
+                                        <Box sx={clientSettingsStyles.profileAvatarContainer}>
+                                            <Avatar sx={clientSettingsStyles.profileAvatar} />
+                                            {editMode && (
+                                                <Button
+                                                    variant="outlined"
+                                                    sx={clientSettingsStyles.profileChangePhotoButton}
+                                                >
+                                                    Change Photo
+                                                </Button>
+                                            )}
+                                        </Box>
+                                    </Grid>
+                                    <Grid item xs={12} md={8}>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Full Name"
+                                                    name="name"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    disabled={!editMode}
+                                                    sx={clientSettingsStyles.profileTextField(editMode)}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Email"
+                                                    name="email"
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    disabled={!editMode}
+                                                    sx={clientSettingsStyles.profileTextField(editMode)}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Company"
+                                                    name="company"
+                                                    value={formData.company}
+                                                    onChange={handleChange}
+                                                    disabled={!editMode}
+                                                    sx={clientSettingsStyles.profileTextField(editMode)}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Position"
+                                                    name="position"
+                                                    value={formData.position}
+                                                    onChange={handleChange}
+                                                    disabled={!editMode}
+                                                    sx={clientSettingsStyles.profileTextField(editMode)}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Phone Number"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    disabled={!editMode}
+                                                    sx={clientSettingsStyles.profileTextField(editMode)}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        )}
+
+                        {/* Security Tab Content */}
+                        {activeTab === 1 && (
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Typography variant="h6" sx={clientSettingsStyles.securityHeader}>
+                                    Security Settings
+                                </Typography>
+
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                            Change Password
+                                        </Typography>
+
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                fullWidth
+                                                label="Current Password"
+                                                name="currentPassword"
+                                                type="password"
+                                                value={formData.currentPassword}
+                                                onChange={handleChange}
+                                                sx={{
+                                                    '& .MuiInputLabel-root': { color: '#525252' },
+                                                    '& .MuiOutlinedInput-root': {
+                                                        '& fieldset': {
+                                                            borderColor: '#a3a699',
+                                                        },
+                                                    },
+                                                    '& .MuiInputBase-input': { color: '#283618' }
+                                                }}
+                                            />
+                                            <TextField
+                                                fullWidth
+                                                label="New Password"
+                                                name="newPassword"
+                                                type="password"
+                                                value={formData.newPassword}
+                                                onChange={handleChange}
+                                                sx={{
+                                                    '& .MuiInputLabel-root': { color: '#525252' },
+                                                    '& .MuiOutlinedInput-root': {
+                                                        '& fieldset': {
+                                                            borderColor: '#a3a699',
+                                                        },
+                                                    },
+                                                    '& .MuiInputBase-input': { color: '#283618' }
+                                                }}
+                                            />
+                                            <TextField
+                                                fullWidth
+                                                label="Confirm New Password"
+                                                name="confirmPassword"
+                                                type="password"
+                                                value={formData.confirmPassword}
+                                                onChange={handleChange}
+                                                sx={{
+                                                    '& .MuiInputLabel-root': { color: '#525252' },
+                                                    '& .MuiOutlinedInput-root': {
+                                                        '& fieldset': {
+                                                            borderColor: '#a3a699',
+                                                        },
+                                                    },
+                                                    '& .MuiInputBase-input': { color: '#283618' }
+                                                }}
+                                            />
+                                        </Stack>
+
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            startIcon={<SaveIcon />}
+                                            sx={clientSettingsStyles.securityPasswordButton}
+                                        >
+                                            Update Password
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                            Two-Factor Authentication
+                                        </Typography>
+
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={true}
+                                                        onChange={() => { }}
+                                                        sx={clientSettingsStyles.notificationSwitch}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography sx={clientSettingsStyles.securityLabel}>
+                                                        Enable Two-Factor Authentication
+                                                    </Typography>
+                                                }
+                                                sx={{ ml: 0 }}
+                                            />
+                                            <Typography variant="body2" sx={clientSettingsStyles.securityHelperText}>
+                                                Adds an extra layer of security to your account
+                                            </Typography>
+                                        </Paper>
+
+                                        <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                            Active Sessions
+                                        </Typography>
+
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <Typography variant="body2" sx={clientSettingsStyles.securityLabel}>
+                                                Current Device (Chrome, Windows)
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(40, 54, 24, 0.5)' }}>
+                                                Last active: Just now
+                                            </Typography>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                sx={clientSettingsStyles.securityLogoutButton}
+                                            >
+                                                Logout from all devices
+                                            </Button>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        )}
+
+                        {/* Notifications Tab Content */}
+                        {activeTab === 2 && (
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Typography variant="h6" sx={clientSettingsStyles.securityHeader}>
+                                    Notification Preferences
+                                </Typography>
+
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={6}>
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                                Email Notifications
+                                            </Typography>
+                                            <Stack spacing={1}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            name="notifications"
+                                                            checked={formData.notifications}
+                                                            onChange={handleChange}
+                                                            sx={clientSettingsStyles.notificationSwitch}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography sx={clientSettingsStyles.securityLabel}>
+                                                            Project Updates
+                                                        </Typography>
+                                                    }
+                                                />
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            name="newsletter"
+                                                            checked={formData.newsletter}
+                                                            onChange={handleChange}
+                                                            sx={clientSettingsStyles.notificationSwitch}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography sx={clientSettingsStyles.securityLabel}>
+                                                            Newsletter
+                                                        </Typography>
+                                                    }
+                                                />
+                                            </Stack>
+                                        </Paper>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                                In-App Notifications
+                                            </Typography>
+                                            <Stack spacing={1}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            checked={true}
+                                                            onChange={() => { }}
+                                                            sx={clientSettingsStyles.notificationSwitch}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography sx={clientSettingsStyles.securityLabel}>
+                                                            Messages
+                                                        </Typography>
+                                                    }
+                                                />
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            checked={true}
+                                                            onChange={() => { }}
+                                                            sx={clientSettingsStyles.notificationSwitch}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography sx={clientSettingsStyles.securityLabel}>
+                                                            Meeting Reminders
+                                                        </Typography>
+                                                    }
+                                                />
+                                            </Stack>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    startIcon={<SaveIcon />}
+                                    sx={clientSettingsStyles.saveButton}
+                                >
+                                    Save Preferences
+                                </Button>
+                            </Box>
+                        )}
+
+                        {/* Preferences Tab Content */}
+                        {activeTab === 3 && (
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Typography variant="h6" sx={clientSettingsStyles.securityHeader}>
+                                    App Preferences
+                                </Typography>
+
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={6}>
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                                Display Settings
+                                            </Typography>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={darkMode}
+                                                        onChange={(e) => setDarkMode(e.target.checked)}
+                                                        sx={clientSettingsStyles.notificationSwitch}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography sx={clientSettingsStyles.securityLabel}>
+                                                        Dark Mode
+                                                    </Typography>
+                                                }
+                                            />
+                                        </Paper>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={clientSettingsStyles.securitySubheader}>
+                                            Language & Region
+                                        </Typography>
+                                        <Paper sx={clientSettingsStyles.securityPaper}>
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                label="Language"
+                                                name="language"
+                                                value={formData.language}
+                                                onChange={handleChange}
+                                                sx={clientSettingsStyles.preferencesLanguageInput}
+                                            >
+                                                <MenuItem value="en">English</MenuItem>
+                                                <MenuItem value="es">Spanish</MenuItem>
+                                                <MenuItem value="fr">French</MenuItem>
+                                            </TextField>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    startIcon={<SaveIcon />}
+                                    sx={clientSettingsStyles.saveButton}
+                                >
+                                    Save Preferences
+                                </Button>
+                            </Box>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Logout Button Region */}
+                <Box sx={clientSettingsStyles.logoutButton}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<LogoutIcon />}
+                        sx={clientSettingsStyles.logoutButton}
+                    >
+                        Logout
+                    </Button>
+                </Box>
+            </Box>
         </Box>
-      </Box>
-    </Box>
-  )
+    );
 }

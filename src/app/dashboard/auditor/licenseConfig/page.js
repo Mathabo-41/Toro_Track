@@ -1,8 +1,11 @@
-'use client'
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
+// libraries and components.
+import React from 'react';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   Grid,
   MenuItem,
@@ -20,20 +23,57 @@ import {
   Chip,
   List,
   ListItem,
+  ListItemText,
   Drawer,
   ListItemButton,
-  ListItemText,
-  Card
-} from '@mui/material'
+  Card,
+} from '@mui/material';
 import {
-  AccountCircle as AccountCircleIcon,
-  WarningAmber as WarningAmberIcon,
+  Add as AddIcon,
   Download as DownloadIcon,
   Close as CloseIcon,
-  Add as AddIcon
-} from '@mui/icons-material'
+  WarningAmber as WarningAmberIcon,
+  AccountCircle as AccountCircleIcon,
+} from '@mui/icons-material';
 
-import { useAuditorStore } from '../common/auditorStore'
+// Dynamic imports for SSR-incompatible components.
+const ResponsiveContainer = dynamic(
+  () => import('recharts').then((recharts) => recharts.ResponsiveContainer),
+  { ssr: false }
+);
+const BarChart = dynamic(
+  () => import('recharts').then((recharts) => recharts.BarChart),
+  { ssr: false }
+);
+const Bar = dynamic(() => import('recharts').then((recharts) => recharts.Bar), {
+  ssr: false,
+});
+const XAxis = dynamic(
+  () => import('recharts').then((recharts) => recharts.XAxis),
+  { ssr: false }
+);
+const YAxis = dynamic(
+  () => import('recharts').then((recharts) => recharts.YAxis),
+  { ssr: false }
+);
+const RechartsTooltip = dynamic(
+  () => import('recharts').then((recharts) => recharts.Tooltip),
+  { ssr: false }
+);
+const Legend = dynamic(
+  () => import('recharts').then((recharts) => recharts.Legend),
+  { ssr: false }
+);
+const LabelList = dynamic(
+  () => import('recharts').then((recharts) => recharts.LabelList),
+  { ssr: false }
+);
+const DataGrid = dynamic(
+  () => import('@mui/x-data-grid').then((datagrid) => datagrid.DataGrid),
+  { ssr: false }
+);
+
+// Local styles and hooks.
 import {
   fullScreenContainerStyles,
   drawerStyles,
@@ -45,116 +85,65 @@ import {
   headerRightSectionStyles,
   userProfileStyles,
   userInfoStyles,
-  auditorTextStyles
-} from '../common/styles'
-import {
+  auditorTextStyles,
   perClientLicenseRegisterStyles,
   expiryRenewalAlertsStyles,
   licenseUsageEntitlementDashboardStyles,
-  licenseUsageChartContainerStyles,
   licenseTotalsBoxStyles,
-  overUsageAlertStyles
-} from './styles'
-import { useLicenseConfig } from './useLicenseConfig'
+  overUsageAlertStyles,
+} from './styles';
 
-// Dynamically imported chart & grid components
-const ResponsiveContainer = dynamic(
-  () => import('recharts').then((m) => m.ResponsiveContainer),
-  { ssr: false }
-)
-const BarChart = dynamic(() => import('recharts').then((m) => m.BarChart), {
-  ssr: false
-})
-const Bar = dynamic(() => import('recharts').then((m) => m.Bar), { ssr: false })
-const XAxis = dynamic(() => import('recharts').then((m) => m.XAxis), {
-  ssr: false
-})
-const YAxis = dynamic(() => import('recharts').then((m) => m.YAxis), {
-  ssr: false
-})
-const TooltipChart = dynamic(() => import('recharts').then((m) => m.Tooltip), {
-  ssr: false
-})
-const Legend = dynamic(() => import('recharts').then((m) => m.Legend), {
-  ssr: false
-})
-const LabelList = dynamic(() => import('recharts').then((m) => m.LabelList), {
-  ssr: false
-})
-const DataGrid = dynamic(
-  () => import('@mui/x-data-grid').then((m) => m.DataGrid),
-  { ssr: false }
-)
+import {useAuditorStore, auditorMenu } from '../common/auditorStore';
 
+// Import global styles for layout and navigation
+import * as globalStyles from '../common/styles';
+
+import {
+  useLicenseConfig,
+  RenewalCard,
+  PerClientLicenseRegister,
+} from './useLicenseConfig/page';
+
+// Region: License Config Page
 export default function LicenseConfigPage() {
-  const { auditTrailMenu, currentPath, setCurrentPath } = useAuditorStore()
-  const [client, setClient] = useState('all')
-  const [search, setSearch] = useState('') // if needed for future filtering
-
-  // activate sidebar link
-  useEffect(() => {
-    setCurrentPath('/dashboard/auditor/licenseConfig')
-  }, [setCurrentPath])
-
-  // fetch all data
-  const { data, isLoading, isError } = useLicenseConfig(client)
-  const { licenseRows = [], renewalGroups = [], usageData = [] } = data || {}
-
-  // Dialog state
-  const [selected, setSelected] = useState(null)
-  const handleRowClick = (params) => setSelected(params.row)
-  const closeDialog = () => setSelected(null)
-
-  const exportCsv = () => {
-    const csv =
-      'data:text/csv;charset=utf-8,' +
-      ['License Name,License Key,Status']
-        .concat(
-          licenseRows.map((r) => `${r.licenseName},${r.licenseKey},${r.status}`)
-        )
-        .join('\n')
-    const link = document.createElement('a')
-    link.href = encodeURI(csv)
-    link.download = `licenses_${client}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  // Totals
-  const totals = usageData.reduce(
-    (acc, cur) => ({
-      assigned: acc.assigned + cur.assigned,
-      purchased: acc.purchased + cur.purchased
-    }),
-    { assigned: 0, purchased: 0 }
-  )
+  const {
+    isClient,
+    client,
+    handleClientChange,
+    licenseData,
+    totals,
+    sidebarMenu,
+    currentPath,
+  } = useLicenseConfig();
+  const { selectedMenu, setSelectedMenu, searchQuery, setSearchQuery } = useAuditorStore();
 
   return (
-    <Box sx={fullScreenContainerStyles}>
+    <Box sx={globalStyles.rootBox}>
       {/* Sidebar */}
-      <Drawer variant="permanent" anchor="left" sx={drawerStyles}>
-        <Box sx={drawerHeaderStyles}>
-          <Typography variant="h5">Auditor Portal</Typography>
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+      >
+        <Box sx={globalStyles.drawerHeader}>
+          <Typography variant="h5">Admin Portal</Typography>
         </Box>
-        <List>
-          {auditTrailMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                sx={listItemButtonStyles(item.path, currentPath)}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {auditorMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={globalStyles.listItemButton}
+            >
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </Drawer>
 
-      {/* Main Content */}
+      {/* Region: Main Content */}
       <Box component="main" sx={mainContentBoxStyles}>
-        {/* Header */}
+        {/* Region: Header */}
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
             License & Configuration Tracking
@@ -162,14 +151,17 @@ export default function LicenseConfigPage() {
           <Box sx={headerRightSectionStyles}>
             <Select
               value={client}
-              onChange={(e) => setClient(e.target.value)}
+              onChange={handleClientChange}
               size="small"
               sx={{
-                minWidth: 140,
+                minWidth: 120,
                 backgroundColor: '#283618',
                 borderColor: '#fefae0',
                 color: '#fefae0',
-                '&:hover': { backgroundColor: '#6b705c' }
+                '&:hover': {
+                  backgroundColor: '#6b705c',
+                  borderColor: '#fefae0',
+                },
               }}
             >
               <MenuItem value="all">All Clients</MenuItem>
@@ -181,178 +173,71 @@ export default function LicenseConfigPage() {
               fullWidth
               startIcon={<AddIcon />}
               sx={{
-                ml: 2,
                 backgroundColor: '#283618',
                 borderColor: '#fefae0',
                 color: '#fefae0',
-                '&:hover': { backgroundColor: '#6b705c' }
+                '&:hover': {
+                  backgroundColor: '#6b705c',
+                  borderColor: '#fefae0',
+                },
               }}
             >
               Add License
             </Button>
             <Box sx={userProfileStyles}>
-              <Box sx={userInfoStyles}>
-                <Typography variant="body2">Sipho Ellen</Typography>
-                <Typography variant="caption" sx={auditorTextStyles}>
-                  Auditor
-                </Typography>
-              </Box>
-              <AccountCircleIcon sx={{ fontSize: 32 }} />
             </Box>
           </Box>
         </Box>
+        {/* End Region: Header */}
 
-        {/* Grid Layout */}
-        <Grid container spacing={6} sx={{ mt: 4, px: 2, alignItems: 'stretch' }}>
-          {/* Per-Client Register */}
+        {/* Region: Main Content Grid */}
+        <Grid
+          container
+          spacing={6}
+          sx={{ mt: 4, px: 2, alignItems: 'stretch' }}
+        >
+          {/* Region: Top Sections */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ ml: 6, p: 2, width: 500 }}>
+            <Paper elevation={1} sx={perClientLicenseRegisterStyles}>
               <Typography variant="h4" gutterBottom>
-                Per-Client License Register
+                Per-Client License Register:
               </Typography>
-              <Box sx={perClientLicenseRegisterStyles}>
-                {isLoading && <Typography>Loading...</Typography>}
-                {isError && <Typography color="error">Error loading</Typography>}
-                {!isLoading && !isError && (
-                  <>
-                    <Box
-                      sx={{
-                        mb: 2,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <Typography variant="subtitle1">
-                        Showing {licenseRows.length} licenses for {client}
-                      </Typography>
-                      <Tooltip title="Export CSV">
-                        <IconButton onClick={exportCsv} size="small" color="primary">
-                          <DownloadIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <Box sx={{ flexGrow: 1, width: '100%', minHeight: 0 }}>
-                      <DataGrid
-                        rows={licenseRows}
-                        columns={[
-                          { field: 'licenseName', headerName: 'License Name', flex: 1 },
-                          { field: 'licenseKey', headerName: 'License Key', flex: 1 },
-                          { field: 'status', headerName: 'Status', flex: 1 }
-                        ]}
-                        pageSize={5}
-                        rowsPerPageOptions={[5, 10]}
-                        onRowClick={handleRowClick}
-                        sx={{ backgroundColor: '#fefae0', border: '1px solid #6b705c' }}
-                      />
-                    </Box>
-                  </>
-                )}
-              </Box>
-
-              {/* Details Dialog */}
-              <Dialog open={!!selected} onClose={closeDialog} fullWidth maxWidth="sm">
-                <DialogTitle sx={{ backgroundColor: '#fefae0', border: '1px solid #6b705c' }}>
-                  License Details
-                  <IconButton
-                    onClick={closeDialog}
-                    sx={{ position: 'absolute', right: 8, top: 8, color: 'grey.500' }}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </DialogTitle>
-                <DialogContent dividers sx={{ backgroundColor: '#fefae0' }}>
-                  {selected && (
-                    <>
-                      <Typography>
-                        <strong>License Name:</strong> {selected.licenseName}
-                      </Typography>
-                      <Typography>
-                        <strong>License Key:</strong> {selected.licenseKey}
-                      </Typography>
-                      <Typography>
-                        <strong>Status:</strong> {selected.status}
-                      </Typography>
-                    </>
-                  )}
-                </DialogContent>
-                <DialogActions sx={{ backgroundColor: '#fefae0' }}>
-                  <Button onClick={closeDialog}>Close</Button>
-                </DialogActions>
-              </Dialog>
+              {isClient && <PerClientLicenseRegister clientName="Client ABC" />}
             </Paper>
           </Grid>
-
-          {/* Renewal Card */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ ml: 2, p: 2, width: 500 }}>
+            <Paper elevation={1} sx={expiryRenewalAlertsStyles}>
               <Typography variant="h4" gutterBottom>
-                License Expiry & Renewal
+                License Expiry & Renewal:
               </Typography>
-              <Card sx={expiryRenewalAlertsStyles}>
-                {isLoading && <Typography>Loading...</Typography>}
-                {isError && <Typography color="error">Error loading</Typography>}
-                {!isLoading &&
-                  !isError &&
-                  renewalGroups.map((group) => {
-                    const preview = group.keys.slice(0, 3)
-                    const extra = group.keys.length - preview.length
-                    return (
-                      <Box key={group.label} sx={{ mb: 2 }}>
-                        <Chip label={group.label} color={group.color} variant="outlined" />
-                        <List dense disablePadding>
-                          {preview.map((k, i) => (
-                            <ListItem
-                              key={i}
-                              sx={{
-                                px: 1.5,
-                                py: 0.5,
-                                cursor: 'pointer',
-                                color: 'primary.main',
-                                '&:hover': { textDecoration: 'underline' }
-                              }}
-                            >
-                              • {k}
-                            </ListItem>
-                          ))}
-                          {extra > 0 && (
-                            <ListItem
-                              sx={{
-                                px: 1.5,
-                                py: 0.5,
-                                cursor: 'pointer',
-                                color: 'text.secondary',
-                                fontStyle: 'italic'
-                              }}
-                            >
-                              + {extra} more
-                            </ListItem>
-                          )}
-                        </List>
-                      </Box>
-                    )
-                  })}
-              </Card>
+              <RenewalCard />
             </Paper>
           </Grid>
+          {/* End Region: Top Sections */}
 
-          {/* Usage Dashboard */}
-          <Grid item xs={12} sx={{ mt: 4 }}>
+          {/* Region: Bottom Section */}
+          <Grid item xs={12} sx={{ mt: 4, color: '#525252' }}>
             <Paper elevation={1} sx={licenseUsageEntitlementDashboardStyles}>
               <Typography
                 variant="h4"
                 gutterBottom
-                textAlign="center"
-                sx={{ fontWeight: 300, color: '#525252' }}
+                textAlign={'center'}
+                sx={{
+                  color: '#525252',
+                  fontWeight: 300,
+                }}
               >
-                License Usage
+                License Usage:
               </Typography>
-              <ResponsiveContainer sx={licenseUsageChartContainerStyles}>
-                <BarChart data={usageData} margin={{ top: 16, right: 16, left: 0, bottom: 40 }}>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart
+                  data={licenseData}
+                  margin={{ top: 16, right: 16, left: 0, bottom: 40 }}
+                >
                   <XAxis dataKey="software" />
                   <YAxis />
-                  <TooltipChart />
-                  <Legend verticalAlign="bottom" />
+                  <RechartsTooltip />
+                  <Legend verticalAlign="bottom" height={36} />
                   <Bar dataKey="assigned" fill="#1976d2" name="Assigned">
                     <LabelList dataKey="assigned" position="top" />
                   </Bar>
@@ -367,23 +252,29 @@ export default function LicenseConfigPage() {
                 </BarChart>
               </ResponsiveContainer>
               <Box sx={licenseTotalsBoxStyles}>
-                <Typography>
+                <Typography variant="body1">
                   <strong>Total Assigned:</strong> {totals.assigned}
                 </Typography>
-                <Typography>
+                <Typography variant="body1">
                   <strong>Total Purchased:</strong> {totals.purchased}
                 </Typography>
                 {totals.assigned > totals.purchased && (
                   <Box sx={overUsageAlertStyles}>
                     <WarningAmberIcon />
-                    <Typography>Over Usage</Typography>
+                    <Typography variant="body1" color="#d32f2f">
+                      Over Usage
+                    </Typography>
                   </Box>
                 )}
               </Box>
             </Paper>
           </Grid>
+          {/* End Region: Bottom Section */}
         </Grid>
+        {/* End Region: Main Content Grid */}
       </Box>
+      {/* End Region: Main Content */}
     </Box>
-  )
+  );
 }
+// End Region: License Config Page

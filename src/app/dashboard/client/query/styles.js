@@ -1,105 +1,257 @@
-import { colors } from '@mui/material';
-
-export const mainBox = {
-  display: 'flex',
-  height: '100vh',
-  backgroundColor: colors.grey[50],
-};
-
-export const drawerPaper = {
-  width: 240,
-  boxSizing: 'border-box',
-};
-
-export const drawerHeader = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: 64,
-  backgroundColor: colors.primary.main,
-  color: colors.common.white,
-};
-
-export const listItemButton = {
-  justifyContent: 'flex-start',
-  px: 2,
-};
-
-export const activeListItemButton = {
-  backgroundColor: colors.primary.light,
-  fontWeight: 'bold',
-};
+// Contains the inline styles and sx overrides for the raise query screen
 
 export const mainContentBox = {
   flexGrow: 1,
-  ml: 30,
   p: 3,
-  overflow: 'auto',
+  backgroundColor: '#fefaf0',
+  color: '#525252',
+  marginLeft: 30
 };
 
-export const headerBox = {
-  mb: 3,
-};
-
-export const headerTitle = {
+export const pageHeader = {
+  mb: 4,
   display: 'flex',
-  alignItems: 'center',
-  fontWeight: 600,
+  flexDirection: 'column',
+  color: '#525252',
+  alignItems: 'flex-start'
 };
 
-export const headerIcon = {
+export const pageHeaderText = {
+  color: '#525252',
+  fontWeight: 500
+};
+
+export const pageHeaderIcon = {
   mr: 1,
+  verticalAlign: 'middle',
+  color: '#f3722c' 
 };
 
-export const headerSubtitle = {
-  color: colors.text.secondary,
+export const pageHeaderSubtitle = {
+  color: '#525252'
 };
 
-export const newQueryCard = { mb: 3 };
-export const newQueryTitle = { fontWeight: 600, mb: 2 };
-export const newQueryTextField = { mb: 2 };
-export const newQueryInputLabel = { mb: 1 };
-export const newQuerySelect = { backgroundColor: colors.common.white };
-export const newQuerySelectOutline = { borderColor: colors.grey[300] };
-export const attachFileButton = { textTransform: 'none', mb: 2 };
+export const detailCard = {
+  backgroundColor: '#e0e0e0', 
+  border: '1px solid #a3a699'
+};
+
+export const detailBackButton = {
+  color: '#f3722c',
+  mb: 2
+};
+
+export const detailTitle = {
+  color: '#283618'
+};
+
+export const detailChip = (status) => {
+  let backgroundColor, color, border;
+  if (status === 'resolved') {
+    backgroundColor = 'rgba(46, 125, 50, 0.2)';
+    color = '#81c784';
+    border = '1px solid #2e7d32';
+  } else if (status === 'in-progress') {
+    backgroundColor = 'rgba(255, 152, 0, 0.2)';
+    color = '#ffb74d';
+    border = '1px solid #ff9800';
+  } else {
+    backgroundColor = 'rgba(97, 97, 97, 0.2)';
+    color = '#bdbdbd';
+    border = '1px solid #616161';
+  }
+  return {
+    backgroundColor,
+    color,
+    border,
+    size: 'small',
+    icon: status === 'resolved' ? <ResolvedIcon /> : <PendingIcon />
+  };
+};
+
+export const detailSectionTitle = {
+  color: '#525252',
+  mb: 1
+};
+
+export const detailSectionText = {
+  color: '#283618',
+  mb: 2
+};
+
+export const attachmentsTableContainer = {
+  backgroundColor: 'transparent',
+  border: '1px solid #a3a699'
+};
+
+export const attachmentsTableFileText = {
+  color: '#283618'
+};
+
+export const attachmentsTableFileSize = {
+  color: '#283618'
+};
+
+export const attachmentsDownloadButton = {
+  color: '#f3722c',
+  borderColor: '#f3722c',
+  '&:hover': {
+    borderColor: '#e65c19'
+  }
+};
+
+export const responseBox = {
+  backgroundColor: '#a3a699', 
+  p: 3,
+  borderRadius: 1,
+  border: '1px solid #6b705c'
+};
+
+export const responseTitle = {
+  color: '#283618',
+  mb: 1
+};
+
+export const responseText = {
+  color: '#283618'
+};
+
+export const formCard = {
+  backgroundColor: '#ccd5ae',
+  border: '2px solid #606c38',
+  height: '100%'
+};
+
+export const formHeader = {
+  color: '#283618',
+  mb: 2,
+  fontWeight: 500
+};
+
+export const formTextField = {
+  '& .MuiInputLabel-root': { color: '#525252' },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: '#6b705c',
+    },
+    '&:hover fieldset': {
+      borderColor: '#283618',
+    },
+  },
+  '& .MuiInputBase-input': { color: '#283618' }
+};
+
+export const formSelect = {
+  color: '#283618',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#6b705c',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#283618',
+  },
+  '& .MuiSvgIcon-root': {
+    color: '#6b705c'
+  }
+};
+
+export const attachButton = {
+  color: '#606c38',
+  borderColor: '#606c38',
+  '&:hover': {
+    border: '#283618',
+    backgroundColor: '#283618',
+  }
+};
+
 export const attachedFileBox = {
-  display: 'flex',
-  alignItems: 'center',
   mt: 1,
-};
-export const attachedFileText = { mr: 1 };
-export const removeFileButton = {};
-export const submitButton = { textTransform: 'none' };
-
-export const previousQueriesCard = { mb: 3 };
-export const previousQueriesTitle = { fontWeight: 600, mb: 2 };
-export const previousQueriesTableContainer = { maxHeight: 400 };
-export const previousQueriesTableCellHeader = { fontWeight: 'bold' };
-export const previousQueriesTableCell = { cursor: 'pointer' };
-export const queryRow = { cursor: 'pointer' };
-export const noQueriesBox = {
   display: 'flex',
-  justifyContent: 'center',
   alignItems: 'center',
-  height: 200,
+  backgroundColor: '#a3a699',
+  p: 1,
+  borderRadius: 1
 };
-export const noQueriesText = { color: colors.text.secondary };
 
-export const queryCard = { mb: 3 };
-export const backButton = { mb: 2, textTransform: 'none' };
-export const queryDetailTitle = { fontWeight: 600 };
-export const queryStatusChip = (status) => ({
-  backgroundColor:
-    status === 'resolved' ? colors.success.main : colors.warning.main,
-  color: colors.common.white,
-  textTransform: 'capitalize',
-});
-export const queryInfoBox = { mb: 2 };
-export const queryInfoLabel = { fontWeight: 500, mt: 1 };
-export const queryInfoValue = { mb: 1 };
-export const attachmentsBox = { mt: 2, mb: 2 };
-export const attachmentsTableContainer = { mb: 2 };
-export const attachmentFileIcon = { mr: 1 };
-export const downloadButton = { textTransform: 'none' };
-export const responseBox = { mt: 2, mb: 2 };
-export const responseLabel = { fontWeight: 500, mb: 1 };
+export const attachedFileText = {
+  color: '#283618',
+  flexGrow: 1
+};
+
+export const attachedFileDeleteButton = {
+  color: '#d32f2f'
+};
+
+export const submitButton = {
+  backgroundColor: '#f3722c',
+  color: '#fefae0',
+  '&:hover': {
+    backgroundColor: '#e65c19'
+  }
+};
+
+export const queriesCard = {
+  backgroundColor: '#ccd5ae',
+  border: '2px solid #606c38',
+  height: '100%'
+};
+
+export const queriesHeader = {
+  color: '#283618',
+  mb: 2,
+  fontWeight: 500
+};
+
+export const queriesTableContainer = {
+  backgroundColor: 'transparent',
+  border: '1px solid #a3a699'
+};
+
+export const queriesTableCell = {
+  color: '#283618'
+};
+
+export const queriesTableCellHeader = {
+  color: '#283618',
+  fontWeight: 'bold'
+};
+
+export const queriesTableRow = {
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: 'rgba(40, 54, 24, 0.05)'
+  }
+};
+
+export const queriesStatusChip = (status) => {
+  let backgroundColor, color, border;
+  if (status === 'resolved') {
+    backgroundColor = 'rgba(46, 125, 50, 0.2)';
+    color = '#042c06ff';
+    border = '1px solid #2e7d32';
+  } else if (status === 'in-progress') {
+    backgroundColor = 'rgba(255, 152, 0, 0.2)';
+    color = '#f59403ff';
+    border = '1px solid #ff9800';
+  } else {
+    backgroundColor = 'rgba(97, 97, 97, 0.2)';
+    color = '#871089ff';
+    border = '1px solid #5a0657ff';
+  }
+  return {
+    backgroundColor,
+    color,
+    border,
+    size: 'small'
+  };
+};
+
+export const noQueriesBox = {
+  p: 3,
+  textAlign: 'center',
+  backgroundColor: '#a3a699',
+  borderRadius: 1
+};
+
+export const noQueriesText = {
+  color: '#283618'
+};

@@ -1,61 +1,61 @@
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
+
+'use client';
+
 import { useState, useEffect } from 'react';
 import * as service from '../profilesService/page';
 
+ //manage state and logic for this screen
 export default function useProfiles() {
-  const [clients, setClients]           = useState([]);
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState(null);
-  const [anchorEl, setAnchorEl]         = useState(null);
-  const [selectedClientId, setSelected] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
-  // Load clients on mount
+  // This is where we fetch data from the database.
   useEffect(() => {
-    setLoading(true);
-    service.fetchClients()
-      .then(setClients)
-      .catch(setError)
-      .finally(() => setLoading(false));
+    async function fetchClients() {
+      try {
+        setLoading(true);
+        const fetchedClients = await service.fetchClients();
+        setClients(fetchedClients);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchClients();
   }, []);
 
-  const handleMenuOpen = (event, id) => {
+  // This is where we will send data to the database.
+  const handleMenuOpen = (event, clientId) => {
     setAnchorEl(event.currentTarget);
-    setSelected(id);
+    setSelectedClientId(clientId);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelected(null);
+    setSelectedClientId(null);
   };
 
-  const handleDelete = async () => {
-    if (!selectedClientId) return;
-    setLoading(true);
-    try {
-      await service.deleteClient(selectedClientId);
-      setClients((prev) => prev.filter(c => c.id !== selectedClientId));
-      handleMenuClose();
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = () => {
+    setClients(clients.filter((client) => client.id !== selectedClientId));
+    handleMenuClose();
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    setLoading(true);
-    try {
-      await service.updateClientStatus(id, newStatus);
-      setClients((prev) =>
-        prev.map(c => c.id === id ? { ...c, status: newStatus } : c)
-      );
-      handleMenuClose();
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleStatusChange = (clientId, newStatus) => {
+    setClients(
+      clients.map((client) =>
+        client.id === clientId ? { ...client, status: newStatus } : client
+      )
+    );
+    handleMenuClose();
   };
 
+   // This is where we call the data that we are sending anf fetching from the database. We call it so that it can be
   return {
     clients,
     loading,
@@ -65,6 +65,6 @@ export default function useProfiles() {
     handleMenuOpen,
     handleMenuClose,
     handleDelete,
-    handleStatusChange
+    handleStatusChange,
   };
 }

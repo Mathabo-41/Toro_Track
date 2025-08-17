@@ -1,4 +1,4 @@
-// Contains the seven global style objects
+// Contains the global styles, which are the styles that when modified, automatically updates all screens under the admin folder
 
 export const rootBox = {
   display: 'flex',
@@ -14,8 +14,9 @@ export const drawerPaper = {
 
 export const drawerHeader = {
   p: 2,
-  textAlign: 'center',
   color: '#fefaf0',
+  borderBottom: '2px solid #606c38',
+  display: 'flex',
 };
 
 export const listItemButton = {
@@ -26,11 +27,16 @@ export const listItemButton = {
     },
 };
 
+export const activeListItemButton = {
+  backgroundColor: '#606c38', 
+  color: '#fefaf0',
+}
+
 export const mainContentBox = {
   flexGrow: 1,
   p: 3,
   color: '#525252',
-  marginLeft: 35, // adjusts drawer width
+  marginLeft: 30, 
 };
 
 export const pageHeader = {

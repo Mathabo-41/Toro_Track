@@ -1,129 +1,56 @@
-// The main React component: drawer, search, table, create/edit dialog.
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import {
-  Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography,
-  Stack,
-  TextField,
-  InputAdornment,
-  Button,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+  Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Card, CardContent, Stack, Avatar, List, ListItem, ListItemButton, ListItemText, Drawer,
+  TextField, InputAdornment, Chip, IconButton, Grid, Menu, Divider, MenuItem, Dialog, DialogTitle,
+  DialogContent, DialogActions, FormControl, InputLabel, Select, Checkbox,
 } from '@mui/material';
 import {
-  Person as ProfileIcon,
-  Add as AddIcon,
-  Search as SearchIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Close as CloseIcon
+  Add as AddIcon, Search as SearchIcon, Assignment as ProjectIcon, DateRange as TimelineIcon,
+  MoreVert as MoreVertIcon, CheckCircle as CompleteIcon, Pending as PendingIcon, Edit as EditIcon,
+  Delete as DeleteIcon, Close as CloseIcon
 } from '@mui/icons-material';
-import { useForm, Controller } from 'react-hook-form';
+import Link from 'next/link';
 
-import {
-  rootBox,
-  drawerPaper,
-  drawerHeader,
-  listItemButton,
-  activeListItemButton,
-  mainContentBox,
-  pageHeader,
-  pageHeaderText,
-  pageHeaderIcon
-} from '../common/styles';
-import * as styles from './styles';
-import { useProfiles } from './useProfiles/page';
+import { useProjects } from './useProjects/page';
+import { styles } from './styles';
 
+// Static sidebar navigation items for the admin portal
 const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Client Profiles',      path: '/dashboard/admin/profiles' },
-  { name: 'Projects',             path: '/dashboard/admin/projects' },
-  { name: 'Teams & Users',        path: '/dashboard/admin/users' },
-  { name: 'Permissions',          path: '/dashboard/admin/permissions' },
-  { name: 'Performance Reports',  path: '/dashboard/admin/reports' },
-  { name: 'Settings',             path: '/dashboard/admin/settings' }
+  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
+  { name: 'Projects', path: '/dashboard/admin/projects' },
+  { name: 'Teams & Users', path: '/dashboard/admin/users' },
+  { name: 'Permissions', path: '/dashboard/admin/permissions' },
+  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
+  { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 
-export default function ProfilesPage() {
-  const { profiles, isLoading, error, createProfile, updateProfile, deleteProfile } = useProfiles();
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [openDlg, setOpenDlg] = useState(false);
-  const [editing, setEditing] = useState(null);
-
-  const { control, handleSubmit, reset, formState } = useForm({
-    defaultValues: { name: '', email: '', role: 'user' }
-  });
-
-  // Filter in‐memory
-  const filtered = profiles.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const onSubmit = data => {
-    if (editing) {
-      updateProfile({ id: editing.id, ...data });
-    } else {
-      createProfile(data);
-    }
-    reset();
-    setEditing(null);
-    setOpenDlg(false);
-  };
-
-  const startEdit = profile => {
-    setEditing(profile);
-    reset({ name: profile.name, email: profile.email, role: profile.role });
-    setOpenDlg(true);
-  };
+export default function Projects() {
+  const {
+    projects, searchTerm, setSearchTerm, openCreateDialog, setOpenCreateDialog, newProject,
+    anchorEl, selectedProject, teamMembers, filteredProjects, handleMenuOpen, handleMenuClose,
+    handleDeleteProject, handleStatusChange, handleCreateProject, handleInputChange, handleTeamChange
+  } = useProjects();
 
   return (
-    <Box sx={rootBox}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ width: 240, '& .MuiDrawer-paper': drawerPaper }}
-      >
-        <Box sx={drawerHeader}>
-          <Typography variant="h6">Admin Portal</Typography>
+    <Box sx={styles.container}>
+      {/* RENDER: Sidebar Navigation */}
+      <Drawer variant="permanent" anchor="left" sx={styles.sidebar}>
+        <Box sx={styles.sidebarHeader}>
+          <Typography variant="h5">Admin Portal</Typography>
         </Box>
         <List>
-          {adminMenu.map(item => (
-            <ListItem key={item.name} disablePadding>
+          {adminMenu.map((item, index) => (
+            <ListItem key={index} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.path}
-                sx={
-                  item.path.endsWith('/profiles')
-                    ? activeListItemButton
-                    : listItemButton
-                }
+                sx={styles.sidebarListItemButton(item.name)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -132,186 +59,303 @@ export default function ProfilesPage() {
         </List>
       </Drawer>
 
-      {/* Main */}
-      <Box component="main" sx={mainContentBox}>
-        <Box sx={pageHeader}>
-          <Typography variant="h4" sx={pageHeaderText}>
-            <ProfileIcon sx={pageHeaderIcon} />
-            Client Profiles
+      {/* RENDER: Main Content */}
+      <Box component="main" sx={styles.mainContent}>
+        {/* RENDER: Header with Search and Add Button */}
+        <Box sx={styles.header}>
+          <Typography variant="h4" sx={styles.title}>
+            <ProjectIcon sx={styles.titleIcon} />
+            Projects
           </Typography>
-          <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack direction="row" spacing={2} sx={styles.searchStack}>
             <TextField
               size="small"
-              placeholder="Search profiles…"
+              placeholder="Search projects..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon sx={styles.searchIcon} />
                   </InputAdornment>
-                )
+                ),
+                sx: styles.searchField
               }}
-              sx={{ width: 300 }}
             />
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
-              onClick={() => {
-                reset();
-                setEditing(null);
-                setOpenDlg(true);
-              }}
+              onClick={() => setOpenCreateDialog(true)}
+              sx={styles.newProjectButton}
             >
-              New Profile
+              New Project
             </Button>
           </Stack>
         </Box>
 
-        <Card sx={styles.profilesCard}>
+        {/* RENDER: Projects Table */}
+        <Card sx={styles.projectsCard}>
           <CardContent>
-            <TableContainer component={Paper} sx={styles.profilesTableContainer}>
-              <Table stickyHeader>
-                <TableHead sx={styles.profilesTableHeader}>
+            <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 500 }}>
+              All Projects ({filteredProjects.length})
+            </Typography>
+            <TableContainer component={Paper} sx={styles.tableContainer}>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell sx={styles.profilesTableCell}>Name</TableCell>
-                    <TableCell sx={styles.profilesTableCell}>Email</TableCell>
-                    <TableCell sx={styles.profilesTableCell}>Role</TableCell>
-                    <TableCell sx={styles.profilesTableCell}>Actions</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Project</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Client</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Status</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Due Date</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Progress</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Team</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {isLoading && (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center">
-                        Loading…
+                  {filteredProjects.map((project) => (
+                    <TableRow key={project.id} hover sx={styles.tableRowHover}>
+                      <TableCell sx={styles.tableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <ProjectIcon sx={{ color: '#f3722c' }} />
+                          <Typography>{project.name}</Typography>
+                        </Stack>
                       </TableCell>
-                    </TableRow>
-                  )}
-                  {error && (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center">
-                        Error loading profiles
+                      <TableCell sx={styles.tableCell}>{project.client}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                          sx={styles.chip(project.status)}
+                        />
                       </TableCell>
-                    </TableRow>
-                  )}
-                  {filtered.map(profile => (
-                    <TableRow key={profile.id} sx={styles.profilesTableRow}>
-                      <TableCell sx={styles.profilesTableCell}>{profile.name}</TableCell>
-                      <TableCell sx={styles.profilesTableCell}>{profile.email}</TableCell>
-                      <TableCell sx={styles.profilesTableCell}>{profile.role}</TableCell>
-                      <TableCell sx={styles.profilesTableCell}>
-                        <IconButton
-                          size="small"
-                          sx={styles.actionIconButton}
-                          onClick={() => startEdit(profile)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          sx={styles.actionIconButton}
-                          onClick={() => deleteProfile(profile.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
+                      <TableCell sx={styles.tableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <TimelineIcon fontSize="small" sx={{ color: '#f3722c' }} />
+                          <Typography>{project.dueDate}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell sx={styles.tableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          {project.progress === 100 ? (
+                            <CompleteIcon color="success" />
+                          ) : (
+                            <PendingIcon color={project.progress > 50 ? 'warning' : 'error'} />
+                          )}
+                          <Typography>{project.progress}%</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={0.5}>
+                          {project.team.map((member, i) => (
+                            <Avatar key={i} sx={styles.teamAvatar}>
+                              {member}
+                            </Avatar>
+                          ))}
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <IconButton sx={styles.actionIconButton} onClick={(e) => handleMenuOpen(e, project.id)}>
+                          <MoreVertIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
-                  {!isLoading && filtered.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center">
-                        No profiles found
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </TableBody>
               </Table>
             </TableContainer>
           </CardContent>
         </Card>
+
+        {/* RENDER: Statistics Cards */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={styles.statsCard}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
+                      Active Projects
+                    </Typography>
+                    <Typography variant="h4" sx={styles.statsTypography('#4fc3f7')}>
+                      {projects.filter(p => p.status === 'active').length}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={styles.statsCardIcon('blue')}>
+                    <ProjectIcon color="info" />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={styles.statsCard}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
+                      Completed Projects
+                    </Typography>
+                    <Typography variant="h4" sx={styles.statsTypography('#81c784')}>
+                      {projects.filter(p => p.status === 'completed').length}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={styles.statsCardIcon('green')}>
+                    <CompleteIcon color="success" />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={styles.statsCard}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" sx={{ color: '#525252' }}>
+                      Total Projects
+                    </Typography>
+                    <Typography variant="h4" sx={styles.statsTypography('#f3722c')}>
+                      {projects.length}
+                    </Typography>
+                  </Box>
+                  <Avatar sx={styles.statsCardIcon('orange')}>
+                    <ProjectIcon color="primary" />
+                  </Avatar>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Box>
 
-      {/* Create / Edit Dialog */}
+      {/* RENDER: Create Project Dialog */}
       <Dialog
-        open={openDlg}
-        onClose={() => setOpenDlg(false)}
+        open={openCreateDialog}
+        onClose={() => setOpenCreateDialog(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: styles.dialogPaper }}
+        PaperProps={{ sx: styles.createDialogPaper }}
       >
-        <DialogTitle sx={styles.dialogTitle}>
-          <Typography variant="h6">
-            {editing ? 'Edit Profile' : 'Create Profile'}
-          </Typography>
-          <IconButton onClick={() => setOpenDlg(false)}>
+        <DialogTitle sx={styles.createDialogTitle}>
+          <Typography variant="h6">Create New Project</Typography>
+          <IconButton onClick={() => setOpenCreateDialog(false)}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
         <DialogContent sx={styles.dialogContent}>
-          <form id="profile-form" onSubmit={handleSubmit(onSubmit)}>
-            <Controller
+          <Stack spacing={3}>
+            <TextField
+              fullWidth
+              label="Project Name"
               name="name"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Name"
-                  fullWidth
-                  sx={styles.dialogTextField}
-                />
-              )}
+              value={newProject.name}
+              onChange={handleInputChange}
+              sx={styles.dialogTextField}
             />
-            <Controller
-              name="email"
-              control={control}
-              rules={{ required: true, pattern: /\S+@\S+\.\S+/ }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Email"
-                  type="email"
-                  fullWidth
-                  sx={styles.dialogTextField}
-                />
-              )}
+            <TextField
+              fullWidth
+              label="Client"
+              name="client"
+              value={newProject.client}
+              onChange={handleInputChange}
+              sx={styles.dialogTextField}
             />
-            <FormControl fullWidth sx={styles.dialogSelect}>
-              <InputLabel>Role</InputLabel>
-              <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} label="Role">
-                    <MenuItem value="user">User</MenuItem>
-                    <MenuItem value="admin">Admin</MenuItem>
-                  </Select>
-                )}
-              />
+            <TextField
+              fullWidth
+              type="date"
+              label="Due Date"
+              name="dueDate"
+              InputLabelProps={{ shrink: true }}
+              value={newProject.dueDate}
+              onChange={handleInputChange}
+              sx={styles.dialogTextField}
+            />
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: '#6b705c' }}>Status</InputLabel>
+              <Select
+                name="status"
+                value={newProject.status}
+                onChange={handleInputChange}
+                label="Status"
+                sx={styles.dialogSelect}
+              >
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
+              </Select>
             </FormControl>
-          </form>
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: '#6b705c' }}>Team Members</InputLabel>
+              <Select
+                multiple
+                value={newProject.team}
+                onChange={handleTeamChange}
+                label="Team Members"
+                renderValue={(selected) => (
+                  <Stack direction="row" spacing={0.5}>
+                    {selected.map(memberInitials => (
+                      <Avatar key={memberInitials} sx={styles.teamAvatar}>
+                        {memberInitials}
+                      </Avatar>
+                    ))}
+                  </Stack>
+                )}
+                sx={styles.dialogSelect}
+              >
+                {teamMembers.map(member => (
+                  <MenuItem key={member.id} value={member.initials}>
+                    <Checkbox checked={newProject.team.indexOf(member.initials) > -1} />
+                    <ListItemText primary={member.name} sx={{ color: '#283618' }} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
         </DialogContent>
-
         <DialogActions sx={styles.dialogActions}>
           <Button
-            onClick={() => setOpenDlg(false)}
+            onClick={() => setOpenCreateDialog(false)}
             sx={styles.dialogCancelButton}
           >
             Cancel
           </Button>
           <Button
-            form="profile-form"
-            type="submit"
+            onClick={handleCreateProject}
+            disabled={!newProject.name || !newProject.client}
             variant="contained"
-            disabled={!formState.isValid}
-            sx={styles.createProfileButton}
+            sx={styles.dialogCreateButton}
           >
-            {editing ? 'Update' : 'Create'}
+            Create Project
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* RENDER: Action Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        PaperProps={{ sx: styles.actionMenu }}
+      >
+        <MenuItem onClick={handleMenuClose} sx={styles.menuItem}>
+          <EditIcon sx={styles.menuItemIcon('#2196f3')} />
+          Edit Project
+        </MenuItem>
+        <MenuItem onClick={handleDeleteProject} sx={styles.menuItem}>
+          <DeleteIcon sx={styles.menuItemIcon('#f44336')} />
+          Delete Project
+        </MenuItem>
+        <Divider sx={{ backgroundColor: '#333' }} />
+        <MenuItem onClick={() => handleStatusChange(selectedProject, 'active')} sx={styles.menuItem}>
+          <Chip label="Active" size="small" sx={styles.statusChip('active')} />
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusChange(selectedProject, 'completed')} sx={styles.menuItem}>
+          <Chip label="Completed" size="small" sx={styles.statusChip('completed')} />
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusChange(selectedProject, 'pending')} sx={styles.menuItem}>
+          <Chip label="Pending" size="small" sx={styles.statusChip('pending')} />
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

@@ -1,221 +1,202 @@
-import { colors } from '@mui/material'
+// Contains the inline styles and sx overrides for the project details screen
 
-// Container for <Box sx={mainBox}>
-export const mainBox = {
-  display: 'flex',
-  height: '100%',
-  backgroundColor: colors.grey[50]
-}
+import { alpha } from '@mui/material';
 
-// Drawer paper override
-export const drawerPaper = {
-  boxSizing: 'border-box',
-  width: 240
-}
+// --- Main Content Styles ---
+export const mainContentStyles = {
+  mainBox: {
+    flexGrow: 1,
+    p: 3,
+    backgroundColor: '#fefaf0',
+    color: '#525252',
+    marginLeft: 30
+  },
+};
 
-// Drawer header
-export const drawerHeader = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: 64,
-  backgroundColor: colors.primary.main,
-  color: colors.common.white
-}
+// --- Header Styles ---
+export const headerStyles = {
+  headerBox: {
+    mb: 4,
+  },
+  headerTitle: {
+    color: '#525252',
+    fontWeight: 500,
+  },
+  projectIcon: {
+    mr: 1,
+    verticalAlign: 'middle',
+    color: '#f3722c', // Orange accent
+  },
+  chip: (status) => ({
+    backgroundColor: status === 'active' ? alpha('#0288d1', 0.2) : alpha('#2e7d32', 0.2),
+    color: status === 'active' ? '#4fc3f7' : '#81c784',
+    border: status === 'active' ? '1px solid #0288d1' : '1px solid #2e7d32',
+    fontWeight: 'bold',
+  }),
+  headerSubtext: {
+    color: '#525252',
+    mt: 1,
+  },
+};
 
-// Main content wrapper
-export const mainContentBox = {
-  flexGrow: 1,
-  p: 3
-}
+// --- Progress Card Styles ---
+export const progressCardStyles = {
+  card: {
+    backgroundColor: '#fefae0',
+    mb: 3,
+    border: '1px solid #222',
+  },
+  title: {
+    color: '#525252',
+    mb: 2,
+    fontWeight: 500,
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#e9e9e9',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressBar: (progress) => ({
+    width: `${progress}%`,
+    height: '100%',
+    backgroundColor: '#f3722c', // Orange progress bar
+  }),
+  progressText: {
+    color: '#525252',
+    mt: 1,
+  },
+  deadlineBox: {
+    backgroundColor: '#e0e0e0',
+    p: 2,
+    borderRadius: 1,
+    border: '1px solid #999',
+    minWidth: 120,
+  },
+  deadlineLabel: {
+    color: '#525252',
+  },
+  deadlineValue: {
+    color: '#283618',
+  },
+};
 
-// Header above project info
-export const projectHeader = {
-  mb: 3
-}
+// --- Tabs Styles ---
+export const tabsStyles = {
+  tabs: {
+    '& .MuiTabs-indicator': {
+      backgroundColor: '#f3722c', // Orange indicator
+    },
+    mb: 3,
+  },
+  tab: {
+    color: '#283618',
+  },
+};
 
-// Project title and icon
-export const projectTitle = {
-  display: 'flex',
-  alignItems: 'center',
-  fontWeight: 600
-}
+// --- Card Content Styles ---
+export const contentCardStyles = {
+  card: {
+    backgroundColor: '#fefae0',
+    border: '1px solid #222',
+    height: '100%',
+  },
+  title: {
+    color: '#525252',
+    mb: 2,
+    fontWeight: 500,
+  },
+  textLabel: {
+    color: '#525252',
+  },
+  textValue: {
+    color: '#283618',
+  },
+};
 
-export const projectIcon = {
-  mr: 1
-}
+// --- Milestones Styles ---
+export const milestoneStyles = {
+  tableContainer: {
+    backgroundColor: 'transparent',
+    border: '2px solid #525252',
+  },
+  tableHeaderCell: {
+    color: '#283618',
+    fontWeight: 'bold',
+  },
+  tableCell: {
+    color: '#283618',
+  },
+  chip: (status) => ({
+    backgroundColor: status === 'completed' ? alpha('#2e7d32', 0.2) : status === 'in-progress' ? alpha('#ff9800', 0.2) : alpha('#616161', 0.2),
+    color: status === 'completed' ? '#81c784' : status === 'in-progress' ? '#ffb74d' : '#bdbdbd',
+    border: status === 'completed' ? '1px solid #2e7d32' : status === 'in-progress' ? '1px solid #ff9800' : '1px solid #616161',
+  }),
+};
 
-// Status chip style
-export const statusChip = (status) => ({
-  backgroundColor:
-    status === 'active' ? colors.success.main : colors.grey[600],
-  color: colors.common.white
-})
+// --- Team Styles ---
+export const teamStyles = {
+  memberCard: {
+    backgroundColor: '#ccd5ae',
+    border: '2px solid #606c38',
+  },
+  memberName: {
+    color: '#283618',
+  },
+  memberRole: {
+    color: '#525252',
+  },
+};
 
-// Description under title
-export const projectDescription = {
-  mt: 1,
-  mb: 3
-}
+// --- Files Styles ---
+export const filesStyles = {
+  fileIcon: {
+    color: '#f3722c',
+  },
+  iconButton: {
+    color: '#f3722c',
+  },
+};
 
-// Progress card
-export const progressCard = {
-  mb: 3
-}
-
-export const progressCardContent = {
-  mb: 2
-}
-
-// Progress bar container
-export const progressBarContainer = {
-  backgroundColor: colors.grey[300],
-  borderRadius: 4,
-  height: 8,
-  width: '100%',
-  mb: 1
-}
-
-// Colored portion of progress bar
-export const progressBar = (value) => ({
-  width: `${value}%`,
-  height: '100%',
-  backgroundColor: colors.primary.main,
-  borderRadius: 4
-})
-
-// Deadline label
-export const deadlineBox = {
-  textAlign: 'center'
-}
-
-// Tabs wrapper
-export const tabs = {
-  borderBottom: `1px solid ${colors.grey[300]}`,
-  mb: 3
-}
-
-// Individual Tab
-export const tab = {
-  textTransform: 'none',
-  minWidth: 0
-}
-
-// Box around each tab’s content
-export const tabContentBox = {
-  width: '100%'
-}
-
-// Generic info card
-export const infoCard = {
-  mb: 3
-}
-
-export const infoCardContent = {
-  mb: 2
-}
-
-// Label inside info card
-export const infoLabel = {
-  fontWeight: 500
-}
-
-// Value inside info card
-export const infoValue = {
-  mb: 2
-}
-
-// Recent activity list item
-export const recentActivityItem = {
-  pb: 1
-}
-
-// Milestones table container
-export const milestonesTableContainer = {
-  mb: 3
-}
-
-// Table cell headers
-export const tableCellHeader = {
-  fontWeight: 600
-}
-
-export const tableCell = {}
-
-// Milestone status chips
-export const statusChipCompleted = {
-  backgroundColor: colors.success.main,
-  color: colors.common.white
-}
-
-export const statusChipInProgress = {
-  backgroundColor: colors.warning.main,
-  color: colors.common.white
-}
-
-export const statusChipPending = {
-  backgroundColor: colors.grey[500],
-  color: colors.common.white
-}
-
-// Team member card
-export const teamCard = {
-  mb: 2
-}
-
-export const memberRole = {
-  color: colors.text.secondary
-}
-
-// Files table container
-export const filesTableContainer = {
-  mb: 3
-}
-
-// File name stack + icon
-export const fileNameStack = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-export const fileNameIcon = {
-  mr: 1
-}
-
-// Discussion list + divider
-export const discussionList = {
-  maxHeight: 400,
-  overflowY: 'auto'
-}
-
-export const discussionDivider = {
-  my: 1
-}
-
-// Comment user & text
-export const commentUser = {
-  fontWeight: 500
-}
-
-export const commentText = {
-  display: 'block'
-}
-
-export const commentTime = {
-  display: 'block',
-  fontSize: '0.75rem',
-  color: colors.text.secondary
-}
-
-// Comment form
-export const commentForm = {
-  mt: 2
-}
-
-export const commentInput = {
-  flexGrow: 1
-}
-
-export const postButton = {
-  ml: 1
-}
+// --- Discussion Styles ---
+export const discussionStyles = {
+  list: {
+    mb: 3,
+    maxHeight: 400,
+    overflow: 'auto',
+  },
+  commentUser: {
+    color: '#283618',
+    fontWeight: 500,
+  },
+  commentText: {
+    color: '#525252',
+    mt: 0.5,
+  },
+  commentTime: {
+    color: alpha('#283618', 0.5),
+    fontSize: '0.75rem',
+    mt: 0.5,
+  },
+  divider: {
+    backgroundColor: '#6b705c',
+  },
+  textField: {
+    '& .MuiInputBase-input': {
+      color: '#283618',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#6b705c',
+      },
+    },
+  },
+  submitButton: {
+    backgroundColor: '#f3722c',
+    color: '#fefae0',
+    '&:hover': {
+      backgroundColor: '#e65c19',
+    },
+  },
+};

@@ -1,7 +1,10 @@
-'use client'
+/* The file that combines the logic with the styles and displays it as a screen. 
+Rendering takes place here to make the screen respond fast when it is being clicked*/
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
 import {
   Box,
   Typography,
@@ -28,359 +31,356 @@ import {
   Tabs,
   Tab,
   TextField,
-  IconButton
-} from '@mui/material'
+  IconButton,
+  CircularProgress
+} from '@mui/material';
 import {
   Assignment as ProjectIcon,
-  Pending as PendingIcon,
+  AttachFile as FilesIcon,
+  Download as DownloadIcon,
   CheckCircle as CompletedIcon,
-  Download as DownloadIcon
-} from '@mui/icons-material'
-
-import { useClientStore } from '../common/clientStore'
-import * as g from '../common/styles'
-import * as s from './styles'
+  Pending as PendingIcon
+} from '@mui/icons-material';
+import { useDetails } from './useDetails/page';
 import {
-  useProjectDetails,
-  useProjectComments
-} from './useProjectDetails'
+  pageStyles,
+  sidebarStyles,
+  mainContentStyles,
+  headerStyles,
+  progressCardStyles,
+  tabsStyles,
+  contentCardStyles,
+  milestoneStyles,
+  teamStyles,
+  filesStyles,
+  discussionStyles
+} from './styles';
 
-export default function ProjectDetailsPage() {
+// Import global styles for layout and navigation
+import * as globalStyles from '../common/styles';
+import { useClientStore } from '../common/clientStore';
+import { clientMenu } from '../common/clientStore';
+
+// #region: Main Component
+export default function ProjectDetails() {
   const {
-    currentPath,
-    clientMenu,
-    setCurrentPath
-  } = useClientStore()
+    activeTab,
+    commentText,
+    projectData,
+    isLoading,
+    error,
+    comments,
+    isCommentsLoading,
+    handleTabChange,
+    handleCommentSubmit,
+    handleCommentChange,
+  } = useDetails();
 
-  const [activeTab, setActiveTab] = useState(0)
-  const [commentText, setCommentText] = useState('')
-
-  // Hard-coded for example; replace with dynamic ID
-  const projectId = 'PRJ-2023-045'
-
-  const { data: project = {}, isLoading: projLoading } =
-    useProjectDetails(projectId)
-
-  const {
-    data: comments = [],
-    isLoading: commLoading
-  } = useProjectComments(projectId)
-
-  // Highlight sidebar on load
-  useEffect(() => {
-    setCurrentPath('/dashboard/client/details')
-  }, [setCurrentPath])
-
-  const handleTabChange = (_, newVal) => setActiveTab(newVal)
-  const handleCommentSubmit = (e) => {
-    e.preventDefault()
-    if (!commentText.trim()) return
-    // append locally
-    comments.push({
-      id: comments.length + 1,
-      user: 'You',
-      text: commentText,
-      time: 'Just now'
-    })
-    setCommentText('')
+  // --- Conditional Rendering for Loading and Error States ---
+  if (isLoading || isCommentsLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  return (
-    <Box sx={g.fullScreenContainerStyles}>
-      <Drawer variant="permanent" anchor="left" sx={g.drawerStyles}>
-        <Box sx={s.drawerHeader}>
-          <Typography variant="h5">Client Portal</Typography>
-        </Box>
-        <List>
-          {clientMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={item.path === currentPath}
-                sx={g.listItemButtonStyles(item.path, currentPath)}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h5" color="error">
+          Error loading project data.
+        </Typography>
+      </Box>
+    );
+  }
+
+  // --- Render Functions ---
+  const renderOverviewTab = () => (
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={6}>
+        <Card sx={contentCardStyles.card}>
+          <CardContent>
+            <Typography variant="h6" sx={contentCardStyles.title}>Project Details</Typography>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="body2" sx={contentCardStyles.textLabel}>Start Date</Typography>
+                <Typography variant="body1" sx={contentCardStyles.textValue}>{projectData.startDate}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" sx={contentCardStyles.textLabel}>Budget</Typography>
+                <Typography variant="body1" sx={contentCardStyles.textValue}>{projectData.budget}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" sx={contentCardStyles.textLabel}>Description</Typography>
+                <Typography variant="body1" sx={contentCardStyles.textValue}>{projectData.description}</Typography>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Card sx={contentCardStyles.card}>
+          <CardContent>
+            <Typography variant="h6" sx={contentCardStyles.title}>Recent Activity</Typography>
+            <List>
+              {['Project status updated', 'New files uploaded', 'Meeting scheduled'].map((activity, index) => (
+                <ListItem key={index} sx={contentCardStyles.textValue}>
+                  <ListItemText
+                    primary={activity}
+                    secondary={
+                      <Typography component="span" sx={contentCardStyles.textLabel}>
+                        {index === 0 ? 'Today' : index === 1 ? 'Yesterday' : '2 days ago'}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+
+  const renderMilestonesTab = () => (
+    <Card sx={contentCardStyles.card}>
+      <CardContent>
+        <Typography variant="h6" sx={contentCardStyles.title}>Project Milestones</Typography>
+        <TableContainer component={Paper} sx={milestoneStyles.tableContainer}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Milestone</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Status</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Due Date</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projectData.milestones.map((milestone) => (
+                <TableRow key={milestone.id}>
+                  <TableCell sx={milestoneStyles.tableCell}>{milestone.name}</TableCell>
+                  <TableCell>
+                    <Chip
+                      icon={milestone.status === 'completed' ? <CompletedIcon /> : <PendingIcon />}
+                      label={milestone.status === 'completed' ? 'Completed' : milestone.status === 'in-progress' ? 'In Progress' : 'Pending'}
+                      sx={milestoneStyles.chip(milestone.status)}
+                    />
+                  </TableCell>
+                  <TableCell sx={milestoneStyles.tableCell}>{milestone.dueDate}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
+  );
+
+  const renderTeamTab = () => (
+    <Card sx={contentCardStyles.card}>
+      <CardContent>
+        <Typography variant="h6" sx={contentCardStyles.title}>Team Members</Typography>
+        <Grid container spacing={2}>
+          {projectData.team.map((member) => (
+            <Grid item xs={12} sm={6} key={member.id}>
+              <Card sx={teamStyles.memberCard}>
+                <CardContent>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar src={member.avatar} sx={{ width: 56, height: 56 }} />
+                    <Box>
+                      <Typography variant="body1" sx={teamStyles.memberName}>{member.name}</Typography>
+                      <Typography variant="body2" sx={teamStyles.memberRole}>{member.role}</Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+
+  const renderFilesTab = () => (
+    <Card sx={contentCardStyles.card}>
+      <CardContent>
+        <Typography variant="h6" sx={contentCardStyles.title}>Project Files</Typography>
+        <TableContainer component={Paper} sx={milestoneStyles.tableContainer}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>File Name</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Type</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Size</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Date</TableCell>
+                <TableCell sx={milestoneStyles.tableHeaderCell}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projectData.files.map((file) => (
+                <TableRow key={file.id}>
+                  <TableCell sx={milestoneStyles.tableCell}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <FilesIcon fontSize="small" sx={filesStyles.fileIcon} />
+                      <Typography>{file.name}</Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell sx={milestoneStyles.tableCell}>{file.type.toUpperCase()}</TableCell>
+                  <TableCell sx={milestoneStyles.tableCell}>{file.size}</TableCell>
+                  <TableCell sx={milestoneStyles.tableCell}>{file.date}</TableCell>
+                  <TableCell>
+                    <IconButton sx={filesStyles.iconButton}>
+                      <DownloadIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
+  );
+
+  const renderDiscussionTab = () => (
+    <Card sx={contentCardStyles.card}>
+      <CardContent>
+        <Typography variant="h6" sx={contentCardStyles.title}>Project Discussion</Typography>
+        <List sx={discussionStyles.list}>
+          {comments?.map((comment) => (
+            <div key={comment.id}>
+              <ListItem alignItems="flex-start">
+                <ListItemText
+                  primary={<Typography sx={discussionStyles.commentUser}>{comment.user}</Typography>}
+                  secondary={
+                    <>
+                      <Typography component="span" sx={discussionStyles.commentText}>{comment.text}</Typography>
+                      <Typography component="span" sx={discussionStyles.commentTime}>{comment.time}</Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+              <Divider sx={discussionStyles.divider} />
+            </div>
           ))}
         </List>
-      </Drawer>
-
-      <Box component="main" sx={g.mainContentBoxStyles}>
-        {/* Project Header */}
-        <Box sx={s.projectHeader}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h4" sx={s.projectTitle}>
-              <ProjectIcon sx={s.projectIcon} />
-              {projLoading ? 'Loading…' : project.name}
-            </Typography>
-            {!projLoading && (
-              <Chip
-                label={project.status === 'active' ? 'In Progress' : 'Completed'}
-                sx={s.statusChip(project.status)}
-              />
-            )}
+        <Box component="form" onSubmit={handleCommentSubmit}>
+          <Stack direction="row" spacing={1}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={handleCommentChange}
+              sx={discussionStyles.textField}
+            />
+            <Button type="submit" variant="contained" sx={discussionStyles.submitButton}>Post</Button>
           </Stack>
-          {!projLoading && (
-            <Typography variant="body1" sx={s.projectDescription}>
-              Project ID: {project.id} | {project.description}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 0:
+        return renderOverviewTab();
+      case 1:
+        return renderMilestonesTab();
+      case 2:
+        return renderTeamTab();
+      case 3:
+        return renderFilesTab();
+      case 4:
+        return renderDiscussionTab();
+      default:
+        return null;
+    }
+  };
+
+  // #endregion
+
+  // #region: Render
+  return (
+  <Box sx={globalStyles.rootBox}>
+        {/* --- Sidebar Navigation --- */}
+        <Drawer
+         variant="permanent"
+                anchor="left"
+                sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+              >
+                <Box sx={globalStyles.drawerHeader}>
+                  <Typography variant="h5">Client Portal</Typography>
+                </Box>
+                {clientMenu.map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton
+                      component={Link}
+                      href={item.path}
+                      sx={globalStyles.listItemButton}
+                    >
+                      <ListItemText primary={item.name} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}       
+         </Drawer>  
+
+      {/* Main Content */}
+      <Box component="main" sx={mainContentStyles.mainBox}>
+        {/* Project Header */}
+        <Box sx={headerStyles.headerBox}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h4" sx={headerStyles.headerTitle}>
+              <ProjectIcon sx={headerStyles.projectIcon} />
+              {projectData.name}
             </Typography>
-          )}
+            <Chip
+              label={projectData.status === 'active' ? 'In Progress' : 'Completed'}
+              sx={headerStyles.chip(projectData.status)}
+            />
+          </Stack>
+          <Typography variant="body1" sx={headerStyles.headerSubtext}>
+            Project ID: {projectData.id} | {projectData.description}
+          </Typography>
         </Box>
 
-        {/* Progress */}
-        {!projLoading && (
-          <Card sx={s.progressCard}>
-            <CardContent>
-              <Typography variant="h6" sx={s.progressCardContent}>
-                Project Progress
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Box sx={{ width: '100%' }}>
-                  <Box sx={s.progressBarContainer}>
-                    <Box sx={s.progressBar(project.progress)} />
-                  </Box>
-                  <Typography variant="body2">
-                    {project.progress}% completed
-                  </Typography>
+        {/* Project Progress */}
+        <Card sx={progressCardStyles.card}>
+          <CardContent>
+            <Typography variant="h6" sx={progressCardStyles.title}>Project Progress</Typography>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box sx={{ width: '100%' }}>
+                <Box sx={progressCardStyles.progressBarContainer}>
+                  <Box sx={progressCardStyles.progressBar(projectData.progress)} />
                 </Box>
-                <Box sx={s.deadlineBox}>
-                  <Typography variant="body2">Deadline</Typography>
-                  <Typography variant="h6">{project.deadline}</Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+                <Typography variant="body2" sx={progressCardStyles.progressText}>
+                  {projectData.progress}% completed
+                </Typography>
+              </Box>
+              <Box sx={progressCardStyles.deadlineBox}>
+                <Typography variant="body2" sx={progressCardStyles.deadlineLabel}>Deadline</Typography>
+                <Typography variant="h6" sx={progressCardStyles.deadlineValue}>{projectData.deadline}</Typography>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onChange={handleTabChange} sx={s.tabs}>
-          {['Overview', 'Milestones', 'Team', 'Files', 'Discussion'].map((label) => (
-            <Tab key={label} label={label} sx={s.tab} />
-          ))}
+        {/* Project Tabs */}
+        <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
+          <Tab label="Overview" sx={tabsStyles.tab} />
+          <Tab label="Milestones" sx={tabsStyles.tab} />
+          <Tab label="Team" sx={tabsStyles.tab} />
+          <Tab label="Files" sx={tabsStyles.tab} />
+          <Tab label="Discussion" sx={tabsStyles.tab} />
         </Tabs>
 
-        <Box sx={s.tabContentBox}>
-          {/* Overview */}
-          {activeTab === 0 && !projLoading && (
-            <Grid container spacing={3}>
-              {/* Info & Activity Cards */}
-              <Grid item xs={12} md={6}>
-                <Card sx={s.infoCard}>
-                  <CardContent>
-                    <Typography variant="h6" sx={s.infoCardContent}>
-                      Project Details
-                    </Typography>
-                    <Stack spacing={2}>
-                      {[
-                        ['Start Date', project.startDate],
-                        ['Budget', project.budget],
-                        ['Description', project.description]
-                      ].map(([label, value]) => (
-                        <Box key={label}>
-                          <Typography variant="body2" sx={s.infoLabel}>
-                            {label}
-                          </Typography>
-                          <Typography variant="body1" sx={s.infoValue}>
-                            {value}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Card sx={s.infoCard}>
-                  <CardContent>
-                    <Typography variant="h6" sx={s.infoCardContent}>
-                      Recent Activity
-                    </Typography>
-                    <List>
-                      {['Status updated', 'Files uploaded', 'Meeting scheduled'].map(
-                        (act, idx) => (
-                          <ListItem key={idx} sx={s.recentActivityItem}>
-                            <ListItemText
-                              primary={act}
-                              secondary={new Date().toLocaleDateString()}
-                            />
-                          </ListItem>
-                        )
-                      )}
-                    </List>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          )}
-
-          {/* Milestones */}
-          {activeTab === 1 && !projLoading && (
-            <Card sx={s.infoCard}>
-              <CardContent>
-                <Typography variant="h6" sx={s.infoCardContent}>
-                  Project Milestones
-                </Typography>
-                <TableContainer component={Paper} sx={s.milestonesTableContainer}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={s.tableCellHeader}>Milestone</TableCell>
-                        <TableCell sx={s.tableCellHeader}>Status</TableCell>
-                        <TableCell sx={s.tableCellHeader}>Due Date</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {project.milestones.map((m) => (
-                        <TableRow key={m.id}>
-                          <TableCell sx={s.tableCell}>{m.name}</TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={
-                                m.status === 'completed' ? (
-                                  <CompletedIcon />
-                                ) : (
-                                  <PendingIcon color="warning" />
-                                )
-                              }
-                              label={
-                                m.status === 'completed' ? 'Completed' : 'In Progress'
-                              }
-                              sx={
-                                m.status === 'completed'
-                                  ? s.statusChipCompleted
-                                  : s.statusChipInProgress
-                              }
-                            />
-                          </TableCell>
-                          <TableCell sx={s.tableCell}>{m.dueDate}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Team */}
-          {activeTab === 2 && !projLoading && (
-            <Grid container spacing={2}>
-              {project.team.map((mem) => (
-                <Grid item xs={12} sm={6} key={mem.id}>
-                  <Card sx={s.teamCard}>
-                    <CardContent>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar src={mem.avatar} sx={{ width: 56, height: 56 }} />
-                        <Box>
-                          <Typography variant="body1" sx={s.infoValue}>
-                            {mem.name}
-                          </Typography>
-                          <Typography variant="body2" sx={s.memberRole}>
-                            {mem.role}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-
-          {/* Files */}
-          {activeTab === 3 && !projLoading && (
-            <Card sx={s.infoCard}>
-              <CardContent>
-                <Typography variant="h6" sx={s.infoCardContent}>
-                  Project Files
-                </Typography>
-                <TableContainer component={Paper} sx={s.filesTableContainer}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        {['File Name','Type','Size','Date','Actions'].map((hdr) => (
-                          <TableCell key={hdr} sx={s.tableCellHeader}>
-                            {hdr}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {project.files.map((f) => (
-                        <TableRow key={f.id}>
-                          <TableCell sx={s.tableCell}>
-                            <Stack sx={s.fileNameStack} direction="row" alignItems="center">
-                              <FilesIcon fontSize="small" sx={s.fileNameIcon} />
-                              <Typography>{f.name}</Typography>
-                            </Stack>
-                          </TableCell>
-                          <TableCell sx={s.tableCell}>{f.type.toUpperCase()}</TableCell>
-                          <TableCell sx={s.tableCell}>{f.size}</TableCell>
-                          <TableCell sx={s.tableCell}>{f.date}</TableCell>
-                          <TableCell>
-                            <IconButton>
-                              <DownloadIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Discussion */}
-          {activeTab === 4 && (
-            <Card sx={s.infoCard}>
-              <CardContent>
-                <Typography variant="h6" sx={s.infoCardContent}>
-                  Discussion
-                </Typography>
-                <List sx={s.discussionList}>
-                  {commLoading && <Typography>Loading…</Typography>}
-                  {!commLoading &&
-                    comments.map((c) => (
-                      <div key={c.id}>
-                        <ListItem alignItems="flex-start">
-                          <ListItemText
-                            primary={<Typography sx={s.commentUser}>{c.user}</Typography>}
-                            secondary={
-                              <>
-                                <Typography sx={s.commentText}>{c.text}</Typography>
-                                <Typography sx={s.commentTime}>{c.time}</Typography>
-                              </>
-                            }
-                          />
-                        </ListItem>
-                        <Divider sx={s.discussionDivider} />
-                      </div>
-                    ))}
-                </List>
-                <Box component="form" onSubmit={handleCommentSubmit}>
-                  <Stack direction="row" sx={s.commentForm}>
-                    <TextField
-                      fullWidth
-                      placeholder="Add a comment…"
-                      variant="outlined"
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      sx={s.commentInput}
-                    />
-                    <Button type="submit" variant="contained" sx={s.postButton}>
-                      Post
-                    </Button>
-                  </Stack>
-                </Box>
-              </CardContent>
-            </Card>
-          )}
+        {/* Tab Content */}
+        <Box sx={{ mt: 2 }}>
+          {renderTabContent()}
         </Box>
       </Box>
     </Box>
-  )
+  );
 }
+// #endregion

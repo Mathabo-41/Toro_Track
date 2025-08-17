@@ -1,117 +1,58 @@
-import { colors } from '@mui/material'
+// Contains the global styles, which are the styles that when modified, automatically updates all screens under the client folder
 
-// Full-viewport container w/ sidebar + main
-export const fullScreenContainerStyles = {
+export const rootBox = {
   display: 'flex',
-  height: '100vh',
-  backgroundColor: colors.grey[50]
-}
+  minHeight: '100vh',
+  backgroundColor:'#fefaf0',
+};
 
-// Drawer (sidebar) wrapper
-export const drawerStyles = {
+export const drawerPaper = {
   width: 240,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    width: 240,
-    boxSizing: 'border-box'
-  }
-}
+  boxSizing: 'border-box',
+  backgroundColor:'#283618'
+};
 
-// Header inside Drawer
-export const drawerHeaderStyles = {
+export const drawerHeader = {
+  p: 2,
+  color: '#fefaf0',
+  borderBottom: '2px solid #606c38',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: 64,
-  backgroundColor: colors.primary.main,
-  color: colors.common.white
+};
+
+export const listItemButton = {
+    color: '#fefaf0',
+    '&:hover': {
+      backgroundColor: '#606c38',
+      color: '#fefaf0',
+    },
+};
+
+export const activeListItemButton = {
+  backgroundColor: '#606c38', 
+  color: '#fefaf0',
 }
 
-// ListItemButton highlight logic
-export const listItemButtonStyles = (itemPath, currentPath) => ({
-  justifyContent: 'flex-start',
-  px: 2,
-  ...(itemPath === currentPath && {
-    backgroundColor: colors.primary.light,
-    fontWeight: 'bold'
-  })
-})
-
-// Main content area to the right of sidebar
-export const mainContentBoxStyles = {
+export const mainContentBox = {
   flexGrow: 1,
-  marginLeft: 240,
-  overflow: 'auto',
-  p: 3
-}
+  p: 3,
+  color: '#525252',
+  marginLeft: 30, 
+};
 
-// Header bar above page content
-export const headerBoxStyles = {
+export const pageHeader = {
+  mb: 4,
   display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  mb: 3
-}
+  flexDirection: 'column',
+  color: '#525252',
+  alignItems: 'flex-start'
+};
 
-// Page title styling
-export const pageTitleStyles = {
-  fontWeight: 600
-}
+export const pageHeaderText = {
+  color: '#525252',
+  mb: 1
+};
 
-// Right-side header (search + profile)
-export const headerRightSectionStyles = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-// Search input
-export const searchFieldStyles = {
-  width: 300,
-  mr: 2
-}
-
-// User avatar + name
-export const userProfileStyles = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-export const userInfoStyles = {
-  textAlign: 'right',
+export const pageHeaderIcon = {
+  color: '#525252',
   mr: 1
-}
-
-export const userTextStyles = {
-  color: colors.text.secondary
-}
-
-// Header above Messages page
-export const headerTitleStyles = {
-  display: 'flex',
-  alignItems: 'center',
-  fontWeight: 600
-}
-
-export const headerIconStyles = {
-  mr: 1
-}
-
-export const headerSubtitleStyles = {
-  color: colors.text.secondary
-}
-
-// Generic card wrapper
-export const cardStyles = {
-  mb: 3
-}
-
-// Shared Tabs
-export const tabsStyles = {
-  borderBottom: `1px solid ${colors.grey[300]}`, 
-  mb: 3
-}
-
-export const tabStyles = {
-  textTransform: 'none',
-  minWidth: 0
-}
+};

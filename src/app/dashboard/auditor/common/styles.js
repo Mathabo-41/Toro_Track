@@ -1,76 +1,59 @@
-import { colors } from '@mui/material'
+// Contains the global styles, which are the styles that when modified, automatically updates all screens under the auditor folder
 
-export const fullScreenContainerStyles = {
+export const rootBox = {
   display: 'flex',
-  height: '100vh',
-  backgroundColor: colors.grey[100]
-}
+  minHeight: '100vh',
+  backgroundColor:'#fefaf0',
+};
 
-export const drawerStyles = {
+export const drawerPaper = {
   width: 240,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    width: 240,
-    boxSizing: 'border-box'
-  }
-}
+  boxSizing: 'border-box',
+  backgroundColor:'#283618'
+};
 
-export const drawerHeaderStyles = {
+export const drawerHeader = {
+  p: 2,
+  color: '#fefaf0',
+  borderBottom: '2px solid #606c38',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: 64,
-  backgroundColor: colors.indigo[500],
-  color: colors.common.white
+};
+
+export const listItemButton = {
+    color: '#fefaf0',
+    '&:hover': {
+      backgroundColor: '#606c38',
+      color: '#fefaf0',
+    },
+};
+
+export const activeListItemButton = {
+  backgroundColor: '#606c38', 
+  color: '#fefaf0',
 }
 
-export const listItemButtonStyles = (itemPath, currentPath) => ({
-  justifyContent: 'flex-start',
-  px: 2,
-  ...(itemPath === currentPath && {
-    backgroundColor: colors.indigo[100],
-    fontWeight: 'bold'
-  })
-})
-
-export const mainContentBoxStyles = {
+export const mainContentBox = {
   flexGrow: 1,
-  marginLeft: 240,
-  overflow: 'auto',
-  p: 3
-}
+  p: 3,
+  color: '#525252',
+  backgroundColor: '#fefaf0',
+  marginLeft: 30, 
+};
 
-export const headerBoxStyles = {
+export const pageHeader = {
+  mb: 4,
   display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  mb: 3
-}
+  flexDirection: 'column',
+  color: '#525252',
+  alignItems: 'flex-start'
+};
 
-export const pageTitleStyles = {
-  fontWeight: 600
-}
+export const pageHeaderText = {
+  color: '#525252',
+  mb: 1
+};
 
-export const headerRightSectionStyles = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-export const searchFieldStyles = {
-  width: 300,
-  mr: 2
-}
-
-export const userProfileStyles = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-export const userInfoStyles = {
-  textAlign: 'right',
+export const pageHeaderIcon = {
+  color: '#525252',
   mr: 1
-}
-
-export const auditorTextStyles = {
-  color: colors.grey[600]
-}
+};
