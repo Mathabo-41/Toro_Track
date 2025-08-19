@@ -200,3 +200,51 @@ export const discussionStyles = {
     },
   },
 };
+
+//kanban board styling 
+export const kanbanStyles = {
+  boardContainer: {
+    marginTop: '16px',
+    overflowX: 'auto',
+    paddingBottom: '16px'
+  },
+  columnPaper: {
+    padding: '16px',
+    backgroundColor: '#f5f5f5',
+    minHeight: '500px',
+    borderRadius: '8px'
+  },
+  columnTitle: {
+    fontWeight: '600',
+    marginBottom: '16px',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  taskList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px'
+  },
+  taskPaper: {
+    padding: '12px',
+    backgroundColor: '#ffffff',
+    borderRadius: '6px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    transition: 'all 0.2s ease'
+  },
+  taskTitle: {
+    fontWeight: '500',
+    marginBottom: '8px'
+  },
+  taskDueDate: {
+    color: '#666',
+    fontSize: '0.75rem',
+    display: 'block',
+    marginBottom: '8px'
+  },
+  taskAssignee: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '8px'
+  }
+};

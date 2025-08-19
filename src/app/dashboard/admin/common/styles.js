@@ -1,4 +1,5 @@
-// Contains the global styles, which are the styles that when modified, automatically updates all screens under the admin folder
+// Contains the global styles, which are the styles that when modified,
+//  automatically updates all screens under the admin folder.
 
 export const rootBox = {
   display: 'flex',

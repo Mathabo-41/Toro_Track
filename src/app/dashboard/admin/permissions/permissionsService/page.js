@@ -1,4 +1,5 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+// This file handles all data-related tasks for this feature, 
+// such as fetching and sending information to our database.
 
 import {
   AdminPanelSettings as AdminIcon,

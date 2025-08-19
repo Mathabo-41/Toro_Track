@@ -8,7 +8,7 @@ const complianceFeaturesDummyData = [
       'Pre-define steps for software license audits, hardware disposal protocols, and data-protection reviews.',
   },
   {
-    title: 'Rule-Based Alerts',
+    title: 'Role-Based Alerts',
     description:
       'Trigger notifications when required documentation is missing or retention periods are about to expire.',
   },

@@ -5,11 +5,16 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+import React from 'react';
+
+//snack bar 
+import { Snackbar, Alert } from '@mui/material';
 
 
 export default function DashboardLayout({ children }) {
-  // Router and pathname hooks for navigation and active link detection
+  //router for redirection/navigation
   const router = useRouter();
+
   const pathname = usePathname();
 
   // State to manage the sidebar's open/closed state
@@ -56,7 +61,6 @@ export default function DashboardLayout({ children }) {
   // Function to determine the active category based on the current URL path
   const getActiveCategory = () => {
     if (pathname.includes('/admin')) return 'admin';
-    if (pathname.includes('/projectManager')) return 'projectManager';
     if (pathname.includes('/auditor')) return 'auditor';
     if (pathname.includes('/client')) return 'client';
     return null;
@@ -70,10 +74,20 @@ export default function DashboardLayout({ children }) {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
 
-  // Function to handle the logout action and redirect to the login page
-  const handleLogout = () => {
-    router.push('/login');
-  };
+ //router for redirection/navigation
+      //const router = useRouter();
+   
+      //snack-bar state 
+      const [openSnackbar, setOpenSnackbar] = React.useState(false);
+ 
+   // Function to handle the logout action  with snackbar and redirect to the login page
+   const handleLogout = () => {
+     setOpenSnackbar(true);//shows feedback for snackbar
+     setTimeout(()=> {
+        router.push('/login');
+     }, 1500); //snackbar will redirect after 1.5 seconds.
+    
+   };
 
   return (
     // Main container for the entire dashboard layout
@@ -369,6 +383,24 @@ export default function DashboardLayout({ children }) {
           {children} {/* Renders the content of the current page */}
         </div>
       </main>
+
+      {/* Snackbar with message when the user logs out of the system /their portal */}
+      
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={1500}
+              onClose={() => setOpenSnackbar(false)}
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+              <Alert severity="success" 
+              //we use SUCCESS instead of INFO so that we can have the power to switch colours
+              sx={{ width: '100%', 
+                fontWeight: 'bold',
+                fontSize: '1.2rem'
+              }}>
+                Logging out...
+              </Alert>
+            </Snackbar>
 
       {/* Global CSS for animations */}
       <style jsx global>{`

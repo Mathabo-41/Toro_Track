@@ -4,40 +4,25 @@ Rendering takes place here to make the screen respond fast when it is being clic
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Stack,
-  Avatar,
-  List,
-  ListItem,
-  ListItemText,
-  Button,
-  Drawer,
-  ListItemButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Select,
-  FormControl,
-  MenuItem
-} from '@mui/material';
-import {
-  Lock as LockIcon,
-  Save as SaveIcon,
+  Typography, Grid, Card, CardContent, Stack, Avatar,List, ListItem,
+  ListItemText,  Button,  Drawer,  ListItemButton, Paper,  Table,
+  TableBody, TableCell, TableContainer,  TableHead,  TableRow,
+  Select,  FormControl, MenuItem} from '@mui/material';
+import { Lock as LockIcon, Save as SaveIcon,
 } from '@mui/icons-material';
+
+//snack bar 
+import { Snackbar, Alert } from '@mui/material';
 
 // Import local files
 import { styles } from './styles';
 import { usePermissions } from './usePermissions/page';
 import { adminMenuData } from './permissionsService/page';
+
 
 // Main Component
 // ------------------------------------------------
@@ -52,18 +37,40 @@ export default function PermissionSettings() {
     handlePermissionChange,
     handleSave,
   } = usePermissions();
-  
+
+  // State for sidebar and user profile
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [activeCategory, setActiveCategory] = React.useState('');
+
+ //router for redirection/navigation
+      const router = useRouter();
+   
+      //snack-bar state 
+      const [openSnackbar, setOpenSnackbar] = React.useState(false);
+ 
+   // Function to handle the logout action  with snackbar and redirect to the login page
+   const handleLogout = () => {
+     setOpenSnackbar(true);//shows feedback for snackbar
+     setTimeout(()=> {
+        router.push('/login');
+     }, 1500); //snackbar will redirect after 1.5 seconds.
+    
+   };
+
   // Region: Render
   // ------------------------------------------------
   return (
     <Box sx={styles.mainContainer}>
       {/* Region: Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
+        {/* Sidebar Header */}
         <Box sx={styles.sidebarHeader}>
           <Typography variant="h5">
             Admin Portal
           </Typography>
         </Box>
+
+        {/* Navigation Menu */}
         <List>
           {adminMenuData.map((item, index) => (
             <ListItem key={index} disablePadding>
@@ -71,17 +78,107 @@ export default function PermissionSettings() {
                 component={Link}
                 href={item.path}
                 sx={styles.sidebarListItemButton(item.name)}
+                onClick={() => setActiveCategory(item.name)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
+
+        {/* Region: User Profile Section */}
+        <Box sx={{
+          padding: '1rem',
+          borderTop: '2px solid #6b705c',
+          marginTop: 'auto', // Pushes the section to the bottom
+        }}>
+          {/* User Profile Container */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            {/* Profile Picture */}
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c' // Orange accent border
+            }}>
+              <Image
+                src="/toroLogo.jpg" // Path to user profile image
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+
+            {/* User Details (shown when sidebar is open) */}
+            {sidebarOpen && (
+              <Box sx={{ minWidth: 0 }}>
+                {/* User Name */}
+                <Typography sx={{ 
+                  fontWeight: '600', 
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: '#fefae0' // Light text color
+                }}>
+                  John Doe
+                </Typography>
+                
+                {/* User Email (dynamic based on active category) */}
+                <Typography sx={{ 
+                  fontSize: '0.8rem', 
+                  opacity: 0.8, 
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: 'rgba(254, 250, 224, 0.7)' // Semi-transparent text
+                }}>
+                  {activeCategory ? `${activeCategory.replace(/([A-Z])/g, ' $1').trim()}@toro.com` : 'user@toro.com'}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          {/* Logout Button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              '&:hover': {
+                background: '#6b705c' // Darker background on hover
+              }
+            }}
+          >
+            {sidebarOpen ? 'Logout' : '→'} {/* Shows arrow when sidebar is collapsed */}
+          </Button>
+        </Box>
       </Drawer>
 
-      {/* Region: Main Content */}
+      {/* Region: Main Content Area */}
       <Box component="main" sx={styles.mainContent}>
-        {/* Page Header */}
+        {/* Page Header Section */}
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageTitle}>
             <LockIcon sx={styles.headerIcon} />
@@ -92,14 +189,17 @@ export default function PermissionSettings() {
           </Typography>
         </Box>
 
-        {/* Permissions Table */}
+        {/* Permissions Table Section */}
         <Card sx={styles.permissionsCard}>
           <CardContent>
             <Typography variant="h6" sx={styles.permissionsCardHeader}>
               Role Permissions
             </Typography>
+            
+            {/* Permissions Table */}
             <TableContainer component={Paper} sx={styles.tableContainer}>
               <Table>
+                {/* Table Header */}
                 <TableHead sx={styles.tableHead}>
                   <TableRow>
                     <TableCell sx={styles.tableHeaderCell}>Role</TableCell>
@@ -109,6 +209,8 @@ export default function PermissionSettings() {
                     <TableCell sx={styles.tableHeaderCell}>Settings</TableCell>
                   </TableRow>
                 </TableHead>
+                
+                {/* Table Body */}
                 <TableBody>
                   {roles.map((role) => (
                     <TableRow
@@ -118,12 +220,15 @@ export default function PermissionSettings() {
                       onClick={() => setSelectedRole(role.name)}
                       sx={styles.tableRow(selectedRole === role.name)}
                     >
+                      {/* Role Name Cell */}
                       <TableCell sx={styles.tableCell}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           {role.icon}
                           <Typography>{role.name}</Typography>
                         </Stack>
                       </TableCell>
+                      
+                      {/* Permission Level Cells */}
                       {['Projects', 'Clients', 'Team', 'Settings'].map((category) => {
                         const level = role.permissions[category];
                         const permission = permissionLevels.find(p => p.value === level);
@@ -172,7 +277,7 @@ export default function PermissionSettings() {
           </CardContent>
         </Card>
 
-        {/* Selected Role Details */}
+        {/* Selected Role Details Section */}
         {selectedRole && (
           <Card sx={styles.summaryCard}>
             <CardContent>
@@ -213,7 +318,7 @@ export default function PermissionSettings() {
           </Card>
         )}
 
-        {/* Save Button */}
+        {/* Save Button Section */}
         <Box sx={styles.saveButtonContainer}>
           <Button
             variant="contained"
@@ -225,6 +330,24 @@ export default function PermissionSettings() {
           </Button>
         </Box>
       </Box>
+      {/* Snackbar with message when the user logs out of the system /their portal */}
+      
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={1500}
+              onClose={() => setOpenSnackbar(false)}
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+              <Alert severity="success" 
+              //we use SUCCESS instead of INFO so that we can have the power to switch colours
+              sx={{ width: '100%', 
+                fontWeight: 'bold',
+                fontSize: '1.2rem'
+              }}>
+                Logging out...
+              </Alert>
+            </Snackbar>
+
     </Box>
   );
 }

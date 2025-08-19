@@ -4,21 +4,13 @@ Rendering takes place here to make the screen respond fast when it is being clic
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  Stack,
-  Avatar,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Drawer,
-  Grid,
-  Chip,
+  Box, Typography,  Button,  Card,
+  CardContent,  Stack,  Avatar,  List,
+  ListItem,  ListItemButton,  ListItemText,
+  Drawer,  Grid,  Chip,
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
@@ -26,8 +18,12 @@ import {
   Backup as BackupIcon,
   Cached as CachedIcon,
   RestartAlt as RestartAltIcon,
-  DeleteForever as DeleteForeverIcon
+  DeleteForever as DeleteForeverIcon,
+  Logout as LogoutIcon
 } from '@mui/icons-material';
+
+//snack bar 
+import { Snackbar, Alert } from '@mui/material';
 
 // Import local files
 import { styles } from './styles';
@@ -40,6 +36,24 @@ export default function SystemSettings() {
   // ------------------------------------------------
   const { settingsCategories, menu, handleConfigure, handleMaintenance } = useSettings();
 
+  // State for sidebar
+  const [sidebarOpen] = React.useState(true);
+
+//router for redirection/navigation
+     const router = useRouter();
+  
+     //snack-bar state 
+     const [openSnackbar, setOpenSnackbar] = React.useState(false);
+
+  // Function to handle the logout action  with snackbar and redirect to the login page
+  const handleLogout = () => {
+    setOpenSnackbar(true);//shows feedback for snackbar
+    setTimeout(()=> {
+       router.push('/login');
+    }, 1500); //snackbar will redirect after 1.5 seconds.
+   
+  };
+
   // Region: Render
   // ------------------------------------------------
   return (
@@ -48,7 +62,7 @@ export default function SystemSettings() {
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
         <Box sx={styles.sidebarHeader}>
           <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Admin Panel
+            Admin Portal
           </Typography>
         </Box>
         <List>
@@ -64,6 +78,95 @@ export default function SystemSettings() {
             </ListItem>
           ))}
         </List>
+
+        {/* Region: User Profile Section */}
+        <Box sx={{
+          padding: '1rem',
+          borderTop: '2px solid #6b705c',
+          marginTop: 'auto'
+        }}>
+          {/* User Profile Container */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '1rem',
+            overflow: 'hidden',
+            gap: '0.75rem'
+          }}>
+            {/* Profile Picture */}
+            <Box sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+              border: '2px solid #f3722c'
+            }}>
+              <Image
+                src="/toroLogo.jpg"
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
+
+            {/* User Details (shown when sidebar is open) */}
+            {sidebarOpen && (
+              <Box sx={{ minWidth: 0 }}>
+                {/* User Name */}
+                <Typography sx={{ 
+                  fontWeight: '600', 
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: '#fefae0'
+                }}>
+                 John Doe
+                </Typography>
+                
+                {/* User Email */}
+                <Typography sx={{ 
+                  fontSize: '0.8rem', 
+                  opacity: 0.8, 
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: 'rgba(254, 250, 224, 0.7)'
+                }}>
+                  user@toro.com
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          {/* Logout Button */}
+          <Button 
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              '&:hover': {
+                background: '#6b705c'
+              }
+            }}
+          >
+            {sidebarOpen ? 'Logout' : <LogoutIcon />}
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content */}
@@ -182,6 +285,25 @@ export default function SystemSettings() {
           </Grid>
         </Grid>
       </Box>
+
+{/* Snackbar with message when the user logs out of the system /their portal */}
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1500}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" 
+        //we use SUCCESS instead of INFO so that we can have the power to switch colours
+        sx={{ width: '100%', 
+          fontWeight: 'bold',
+          fontSize: '1.2rem'
+        }}>
+          Logging out...
+        </Alert>
+      </Snackbar>
+
     </Box>
   );
 }

@@ -1,4 +1,5 @@
-// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
+// Contains all the logic and instructions for this feature. 
+// We can also display error messages to the user interface from this file.
 
 import { useState } from 'react';
 import { usersData, teamsData, tasksData } from '../usersService/page';
@@ -29,6 +30,7 @@ export const useUsers = () => {
   // State to track which user's action menu is open
   const [menuUserId, setMenuUserId] = useState(null);
 
+  
   // Checks if the menu is currently open
   const isMenuOpen = Boolean(anchorEl);
 
