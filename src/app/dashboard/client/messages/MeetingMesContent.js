@@ -23,6 +23,9 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
 import { useMeetingMes } from './useMeetingMes/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
@@ -64,23 +67,35 @@ export default function MeetingMesContent({ router }) {
         anchor="left"
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={globalStyles.drawerHeader}>
-          <Typography variant="h5">Client Portal</Typography>
-        </Box>
+         <Box sx={{ 
+        p: 1,
+        borderBottom: '2px solid #6b705c',
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1 
+       }}>
+      <Link href="/login" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
+        <DashboardIcon />
+      </IconButton>
+      </Link>
+       <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Client Portal
+      </Typography>
+         </Box>
         <List>
-          {clientMenu.map((item) => (
+           {clientMenu.map((item) => (
             <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
+              <ListItemButton 
+             component={Link} 
+              href={item.path} 
                 sx={globalStyles.listItemButton}
-                onMouseEnter={() => router.prefetch(item.path)} // Prefetch for fast navigation
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+                  >
+              <ListItemText primary={item.name} />
+             </ListItemButton>
+           </ListItem>
+           ))}
+          </List>
         {/* Region: User Profile Section */}
         <Box sx={{
           padding: '1rem',

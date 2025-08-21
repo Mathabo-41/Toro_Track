@@ -10,8 +10,13 @@ import {
   Box, Typography,  Button,  Card,
   CardContent,  Stack,  Avatar,  List,
   ListItem,  ListItemButton,  ListItemText,
-  Drawer,  Grid,  Chip,
+  Drawer,  Grid,  Chip,IconButton,
 } from '@mui/material';
+
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
+
 import {
   Settings as SettingsIcon,
   Edit as EditIcon,
@@ -60,11 +65,22 @@ export default function SystemSettings() {
     <Box sx={styles.mainContainer}>
       {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box sx={styles.sidebarHeader}>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Admin Portal
-          </Typography>
-        </Box>
+        <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Admin Portal
+    </Typography>
+  </Box>
         <List>
           {menu.map((item, index) => (
             <ListItem key={index} disablePadding>

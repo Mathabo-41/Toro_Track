@@ -19,6 +19,7 @@ import {
   FormControlLabel,
   Checkbox,
   Button,
+  IconButton
 } from '@mui/material';
 import { FormProvider, Controller } from 'react-hook-form';
 import {
@@ -38,6 +39,8 @@ import {
   saveButton,
   settingsContainerStyles,
 } from './styles';
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 //snack bar 
 import { Snackbar, Alert } from '@mui/material';
@@ -90,9 +93,22 @@ export default function SettingsContent() {
         anchor="left"
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={globalStyles.drawerHeader}>
-          <Typography variant="h5">Auditor Portal</Typography>
-        </Box>
+       <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Auditor Portal
+    </Typography>
+  </Box>
         <List>
           {auditorMenu.map((item) => (
             <ListItem key={item.path} disablePadding>

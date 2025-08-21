@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import {
   Box, Typography, Grid, Card, CardContent,
   Stack, Avatar, List, ListItem, ListItemText, Tooltip,
-  Divider, Button, Drawer, ListItemButton, Snackbar, Alert
+  Divider, Button, Drawer, ListItemButton, Snackbar, Alert, IconButton
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -17,6 +17,9 @@ import {
   TrendingUp as TrendUpIcon,
   TrendingDown as TrendDownIcon
 } from '@mui/icons-material';
+
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import useOverview from './useOverview/page';
 import { useAdminStore, adminMenu } from '../common/adminStore';
@@ -72,9 +75,22 @@ export default function AdminOverviewContent() {
         anchor="left"
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={globalStyles.drawerHeader}>
-          <Typography variant="h5">Admin Portal</Typography>
-        </Box>
+    <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Admin Portal
+    </Typography>
+  </Box>
         
         {/* Menu Items */}
         {adminMenu.map((item) => (

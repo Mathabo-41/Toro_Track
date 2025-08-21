@@ -21,6 +21,9 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
 // Import Material-UI icons
 import {
   Copy as CopyIcon,
@@ -161,11 +164,16 @@ export default function TeamsAndUsers() {
     <Box sx={styles.mainContainer}>
       {/* Region: Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box sx={styles.sidebarHeader}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
-        </Box>
+       <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+      <DashboardIcon />
+    </IconButton>
+     </Link>
+       <Typography variant="h5">
+             Admin Portal
+       </Typography>
+          </Box>
         <List>
           {adminMenuData.map((item, index) => (
             <ListItem key={index} disablePadding>

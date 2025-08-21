@@ -31,6 +31,9 @@ import {
   Person as PersonIcon,
   Security as RoleIcon
 } from '@mui/icons-material';
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
 
 import { useDetails } from './useDetails/page';
 import {
@@ -171,16 +174,35 @@ export default function ProjDetailsContent({ router }) {
     <Box sx={globalStyles.rootBox}>
       {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
-        <Box sx={globalStyles.drawerHeader}><Typography variant="h5">Client Portal</Typography></Box>
-        <List>
-          {clientMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton} onMouseEnter={() => router.prefetch(item.path)}>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+     <Box sx={{ 
+           p: 1,
+           borderBottom: '2px solid #6b705c',
+           display: 'flex', 
+            alignItems: 'center', 
+            gap: 1 
+                }}>
+          <Link href="/login" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Client Portal
+    </Typography>
+  </Box>
+       <List>
+  {clientMenu.map((item) => (
+    <ListItem key={item.path} disablePadding>
+      <ListItemButton 
+        component={Link} 
+        href={item.path} 
+        sx={globalStyles.listItemButton}
+      >
+        <ListItemText primary={item.name} />
+      </ListItemButton>
+    </ListItem>
+  ))}
+</List>
         {/* User Profile Section */}
         <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>

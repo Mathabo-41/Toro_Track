@@ -461,10 +461,21 @@ const [viewMode, setViewMode] = useState('kanban');
     <Box sx={styles.mainContainer}>
       {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box sx={styles.sidebarHeader}>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Admin Portal
-          </Typography>
+        <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Admin Portal
+    </Typography>
         </Box>
         <List>
           {menu.map((item, index) => (

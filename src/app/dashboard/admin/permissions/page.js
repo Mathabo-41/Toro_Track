@@ -10,10 +10,13 @@ import {
   Box,
   Typography, Grid, Card, CardContent, Stack, Avatar,List, ListItem,
   ListItemText,  Button,  Drawer,  ListItemButton, Paper,  Table,
-  TableBody, TableCell, TableContainer,  TableHead,  TableRow,
+  TableBody, TableCell, TableContainer,  TableHead,  TableRow,IconButton,
   Select,  FormControl, MenuItem} from '@mui/material';
 import { Lock as LockIcon, Save as SaveIcon,
 } from '@mui/icons-material';
+
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 //snack bar 
 import { Snackbar, Alert } from '@mui/material';
@@ -64,11 +67,22 @@ export default function PermissionSettings() {
       {/* Region: Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
         {/* Sidebar Header */}
-        <Box sx={styles.sidebarHeader}>
-          <Typography variant="h5">
-            Admin Portal
-          </Typography>
-        </Box>
+         <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Admin Portal
+    </Typography>
+  </Box>
 
         {/* Navigation Menu */}
         <List>

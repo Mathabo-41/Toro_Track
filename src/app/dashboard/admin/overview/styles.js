@@ -78,3 +78,10 @@ export const quickActionButton = {
     border: '1px solid',
   }
 };
+// styling the sidebar
+export const sidebarHeader = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+  color: '#fefae0',
+};

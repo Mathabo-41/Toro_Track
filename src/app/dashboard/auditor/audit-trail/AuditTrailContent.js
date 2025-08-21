@@ -13,8 +13,12 @@ import {
   Drawer,  ListItemButton, Paper,
   Table, TableBody, TableHead,
   TableRow, TableCell, TextField,
-  Button
+  Button, IconButton
 } from '@mui/material';
+
+//dashboard icon import 
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
 import {
   AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon
@@ -76,9 +80,22 @@ export default function AuditTrailContent() {
         anchor="left"
         sx={{ '& .MuiDrawer-paper': commonStyles.drawerPaper }}
       >
-        <Box sx={commonStyles.drawerHeader}>
-          <Typography variant="h5">Auditor Portal</Typography>
-        </Box>
+        <Box sx={{ 
+    p: 1,
+    borderBottom: '2px solid #6b705c',
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 1 
+  }}>
+    <Link href="/dashboard" passHref>
+      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+        <DashboardIcon />
+      </IconButton>
+    </Link>
+    <Typography variant="h5" sx={{ color: '#fefae0'}}>
+      Auditor Portal
+    </Typography>
+  </Box>
         <List>
           {auditTrailMenu.map((item) => (
             <ListItem key={item.path} disablePadding>
