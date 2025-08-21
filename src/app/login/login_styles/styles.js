@@ -47,16 +47,17 @@ export const mainContentContainer = {
 };
 
 export const formContainer = {
-  width: "100%",
-  background: "rgba(255, 255, 255, 0.2)",
-  backdropFilter: 'blur(10px)',
+  backgroundColor: "rgba(253, 255, 252, 0.1)",
   padding: "2rem",
   borderRadius: "16px",
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(253, 255, 252, 0.2)",
+  boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+  width: "100%",
 };
 
 export const loginTitle = {
-  fontFamily: "'Disket Mono', monospace",
+  fontFamily: "Disekt Mono, monospace",
   color: "#283618",
   marginBottom: "1rem",
   textAlign: "center",
@@ -91,7 +92,7 @@ export const passwordField = {
 
 export const loginButton = {
   display: "inline-block",
-  background: "#283618",
+  backgroundColor: "#283618", 
   color: "#606c38",
   padding: "1rem 2.5rem",
   borderRadius: "8px",
@@ -108,10 +109,19 @@ export const loginButton = {
   fontFamily: "Disekt Mono, monospace",
 };
 
-// Global styles as a string
+export const loginButtonHover = {
+  backgroundColor: '#606c38',
+  color: '#283618',
+  borderColor: '#283618',
+  border: '1px solid',
+};
+
+// Global styles for Next.js
 export const globalStyles = `
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  @import url('https://fonts.googleapis.com/css2?family=Disekt+Mono&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Disekt Mono', monospace;
+    color: #283618;
   }
 `;

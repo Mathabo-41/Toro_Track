@@ -15,6 +15,7 @@ import {
   inputField,
   passwordField,
   loginButton,
+  loginButtonHover, // Import the new hover style object
   globalStyles, // Import the global styles string
 } from './login_styles/styles.js';
 
@@ -22,6 +23,8 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Add a new state hook to track whether the button is being hovered over
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -73,7 +76,11 @@ export default function Login() {
             />
             <button
               type="submit"
-              style={loginButton}
+              // Conditionally apply the hover styles using a ternary operator
+              style={isHovered ? { ...loginButton, ...loginButtonHover } : loginButton}
+              // Add onMouseEnter and onMouseLeave event handlers
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
             >
               Login
             </button>

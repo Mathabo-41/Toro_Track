@@ -207,12 +207,13 @@ export const kanbanStyles = {
     marginTop: '16px',
     overflowX: 'auto',
     paddingBottom: '16px'
+    
   },
   columnPaper: {
     padding: '16px',
     backgroundColor: '#f5f5f5',
     minHeight: '500px',
-    borderRadius: '8px'
+    borderRadius: '8px',
   },
   columnTitle: {
     fontWeight: '600',
