@@ -31,7 +31,7 @@ import { adminMenuData } from './permissionsService/page';
 // ------------------------------------------------
 export default function PermissionSettings() {
   // Region: Hooks and State
-  // ------------------------------------------------
+  // ----------------------------------------------
   const {
     roles,
     selectedRole,

@@ -55,6 +55,12 @@ export const styles = {
     color: '#525252',
     fontWeight: 500
   },
+
+  // Styles for the page subtitle
+  pageSubtitle: {
+    color: '#525252',
+    mb: 3,
+  },
   
   // Styles for the header icon
   headerIcon: {
@@ -171,5 +177,120 @@ export const styles = {
     '&:hover': {
       backgroundColor: '#ff5252'
     }
-  }
+  },
+
+  // Permissions section styles
+  permissionsCard: {
+    mt: 2,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    backgroundColor: '#fefae0',
+    border: '1px solid #525252',
+  },
+
+  permissionsCardHeader: {
+    fontWeight: 'bold',
+    mb: 2,
+    color: '#283618',
+  },
+
+  tableContainer: {
+    mt: 2,
+    backgroundColor: '#fefae0',
+  },
+
+  tableHead: {
+    backgroundColor: '#e9edc9',
+  },
+
+  tableHeaderCell: {
+    fontWeight: 'bold',
+    color: '#283618',
+    backgroundColor: '#e9edc9',
+  },
+
+  tableRow: (isSelected) => ({
+    cursor: 'pointer',
+    backgroundColor: isSelected ? '#e9f5db' : '#fefae0',
+    '&:hover': {
+      backgroundColor: '#f1f8e9',
+    },
+    '&:last-child td, &:last-child th': {
+      borderBottom: 0,
+    },
+  }),
+
+  tableCell: {
+    borderBottom: '1px solid #ccd5ae',
+  },
+
+  selectInput: (color) => ({
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: color,
+    },
+  }),
+
+  selectMenuItem: (level) => ({
+    '&:hover': {
+      backgroundColor: `${level.color}15`, // 15 is for ~8% opacity
+    },
+    '&.Mui-selected': {
+      backgroundColor: `${level.color}30`, // 30 is for ~18% opacity
+      '&:hover': {
+        backgroundColor: `${level.color}40`, // 40 is for ~25% opacity
+      },
+    },
+  }),
+
+  summaryCard: {
+    mt: 3,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    backgroundColor: '#fefae0',
+    border: '1px solid #525252',
+  },
+
+  summaryCardHeader: {
+    fontWeight: 'bold',
+    mb: 2,
+    color: '#283618',
+  },
+
+  summaryCardTitle: {
+    fontWeight: 'bold',
+    mb: 1,
+    color: '#283618',
+  },
+
+  permissionIconAvatar: (color) => ({
+    width: 24,
+    height: 24,
+    backgroundColor: `${color}20`, // 20 is for ~12% opacity
+    color: color,
+    fontSize: '16px',
+  }),
+
+  permissionText: (color) => ({
+    fontWeight: 'medium',
+    color: color,
+  }),
+
+  saveButtonContainer: {
+    mt: 3,
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+
+  saveButton: {
+    backgroundColor: '#283618',
+    '&:hover': {
+      backgroundColor: '#1b2712',
+    },
+    px: 4,
+    py: 1,
+    color: '#fefae0',
+    fontWeight: 'bold',
+  },
 };

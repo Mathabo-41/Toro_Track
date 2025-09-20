@@ -12,7 +12,7 @@ export const useProjects = () => {
   const [newProject, setNewProject] = useState({
     name: '',
     client: '',
-    status: 'active',
+    status: 'low priority',
     dueDate: '',
     team: []
   });
@@ -46,6 +46,14 @@ export const useProjects = () => {
     );
   });
 
+  //UPDATING THE DATA OF A PROJECT 
+  const updateProject = (updatedProject) => {
+  setProjects((prev) =>
+    prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+  );
+};
+
+
   // This is where we will send data to the database.
   const handleMenuOpen = (event, projectId) => {
     setAnchorEl(event.currentTarget);
@@ -74,13 +82,13 @@ export const useProjects = () => {
       id: projects.length + 1,
       ...newProject,
       progress: newProject.status === 'completed' ? 100 :
-        newProject.status === 'active' ? 30 : 10
+        newProject.status === 'low priority' ? 30 : 10
     };
     setProjects([...projects, project]);
     setNewProject({
       name: '',
       client: '',
-      status: 'active',
+      status: 'low priority',
       dueDate: '',
       team: []
     });
@@ -116,6 +124,7 @@ export const useProjects = () => {
     handleStatusChange,
     handleCreateProject,
     handleInputChange,
-    handleTeamChange
+    handleTeamChange,
+    updateProject
   };
 };

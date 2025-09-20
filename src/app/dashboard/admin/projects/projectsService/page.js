@@ -7,7 +7,7 @@ export const getProjects = async () => {
       id: 1,
       name: 'Website Redesign',
       client: 'Acme Corp',
-      status: 'active',
+      status: 'low priority',
       dueDate: '2023-12-15',
       progress: 75,
       team: ['JD', 'AS', 'MP']
@@ -16,7 +16,7 @@ export const getProjects = async () => {
       id: 2,
       name: 'Mobile App Development',
       client: 'Globex Inc',
-      status: 'active',
+      status: 'pending',
       dueDate: '2024-02-28',
       progress: 30,
       team: ['AS', 'TP', 'RW']

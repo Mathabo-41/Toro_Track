@@ -46,10 +46,10 @@ export default function useProfiles() {
     handleMenuClose();
   };
 
-  const handleStatusChange = (clientId, newStatus) => {
+  const handleStatusChange = (clientId, newPriority) => {
     setClients(
       clients.map((client) =>
-        client.id === clientId ? { ...client, status: newStatus } : client
+        client.id === clientId ? { ...client, priority: newPriority } : client
       )
     );
     handleMenuClose();

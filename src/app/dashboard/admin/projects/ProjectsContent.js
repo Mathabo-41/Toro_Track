@@ -27,12 +27,11 @@ import { useProjects } from './useProjects/page';
 import { styles } from './styles';
 
 // Static sidebar navigation items for the admin portal
-const adminMenu = [
+export const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
   { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
   { name: 'Projects', path: '/dashboard/admin/projects' },
   { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
@@ -59,6 +58,13 @@ export default function Projects() {
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
+  
+  // State for Edit Dialog
+   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+   const [editProject, setEditProject] = React.useState(null);
+
+   /**Hook for updating project */
+  const { project, addProject, deleteProject, updateProject } = useProjects();
 
   /**
    * Handles opening the team members popover
@@ -96,7 +102,7 @@ export default function Projects() {
     showSnackbar('Project created successfully!');
     setOpenCreateDialog(false); // Close the dialog after creation
   };
-
+     
   /**
    * Handles project deletion with confirmation notification
    */
@@ -116,6 +122,27 @@ export default function Projects() {
     showSnackbar(`Project status changed to ${status}`, 'info');
     handleMenuClose();
   };
+
+  /**
+   * Handles the saving of a project before and after it has been edited 
+   */
+const handleEditInputChange = (e) => {
+  const { name, value } = e.target;
+  setEditProject(prev => ({ ...prev, [name]: value }));
+};
+
+const handleSaveEdit = () => {
+  
+  // replace with fetch(`/api/projects/${editProject.id}`
+  if(editProject){
+    updateProject(editProject) //update the state
+ showSnackbar("Project updated successfully!", "success");
+  
+}
+ setOpenEditDialog(false);
+ setEditProject(null);
+ };  
+ 
 
   /**
    * Function to handle the logout action with snackbar and redirect to the login page
@@ -288,6 +315,81 @@ export default function Projects() {
             </Button>
           </Stack>
         </Box>
+      <Dialog
+  open={openEditDialog && Boolean(editProject)}
+  onClose={() => setOpenEditDialog(false)}
+  fullWidth
+  maxWidth="sm"
+  PaperProps={{ sx: styles.createDialogPaper }}
+>
+  <DialogTitle sx={styles.createDialogTitle}>
+    <Typography component="span" variant="h6">Edit Project</Typography>
+    <IconButton onClick={() => setOpenEditDialog(false)}>
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+  <DialogContent sx={styles.dialogContent}>
+    {editProject ? (
+      <Stack spacing={3}>
+        <TextField
+          fullWidth
+          label="Project Name"
+          name="name"
+          value={editProject.name || ""}
+          onChange={handleEditInputChange}
+          sx={styles.dialogTextField}
+        />
+        <TextField
+          fullWidth
+          label="Client"
+          name="client"
+          value={editProject.client || ""}
+          onChange={handleEditInputChange}
+          sx={styles.dialogTextField}
+        />
+        <TextField
+          fullWidth
+          type="date"
+          label="Due Date"
+          name="dueDate"
+          InputLabelProps={{ shrink: true }}
+          value={editProject.dueDate || ""}
+          onChange={handleEditInputChange}
+          sx={styles.dialogTextField}
+        />
+        <FormControl fullWidth>
+          <InputLabel>Status</InputLabel>
+          <Select
+            name="status"
+            value={editProject.status || ""}
+            onChange={handleEditInputChange}
+          >
+            <MenuItem value="not started">Not Started</MenuItem>
+            <MenuItem value="inprogress">In Progress</MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+    ) : null}
+  </DialogContent>
+  <DialogActions sx={styles.dialogActions}>
+    <Button
+      onClick={() => setOpenEditDialog(false)}
+      sx={styles.dialogCancelButton}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleSaveEdit}
+      variant="contained"
+      sx={styles.dialogCreateButton}
+    >
+      Save Changes
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
         {/* RENDER: Projects Table */}
         <Card sx={styles.projectsCard}>
@@ -382,10 +484,10 @@ export default function Projects() {
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Box>
                     <Typography variant="body2" sx={{ color: '#525252' }}>
-                      Active Projects
+                      Low Priority Projects
                     </Typography>
                     <Typography variant="h4" sx={styles.statsTypography('#4fc3f7')}>
-                      {projects.filter(p => p.status === 'active').length}
+                      {projects.filter(p => p.status === 'low priority').length}
                     </Typography>
                   </Box>
                   <Avatar sx={styles.statsCardIcon('blue')}>
@@ -456,6 +558,7 @@ export default function Projects() {
         </DialogTitle>
         <DialogContent sx={styles.dialogContent}>
           <Stack spacing={3}>
+           
             {/* Project Name Input */}
             <TextField
               fullWidth
@@ -495,9 +598,8 @@ export default function Projects() {
                 label="Status"
                 sx={styles.dialogSelect}
               >
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="not started">Not Started</MenuItem>
+                
               </Select>
             </FormControl>
             {/* Team Members Selection */}
@@ -592,10 +694,19 @@ export default function Projects() {
         PaperProps={{ sx: styles.actionMenu }}
       >
         {/* Edit Project Option */}
-        <MenuItem onClick={handleMenuClose} sx={styles.menuItem}>
-          <EditIcon sx={styles.menuItemIcon('#2196f3')} />
-          Edit Project
-        </MenuItem>
+        <MenuItem
+         onClick={() => {
+          const projectToEdit = projects.find(p => p.id === selectedProject);
+          setEditProject({ ...projectToEdit }); // make a copy to edit safely
+          setOpenEditDialog(true);
+          handleMenuClose();
+         }}
+         sx={styles.menuItem}
+        >
+       <EditIcon sx={styles.menuItemIcon('#2196f3')} />
+        Edit Project
+    </MenuItem>
+
         {/* Delete Project Option */}
         <MenuItem onClick={handleDeleteProjectWithNotification} sx={styles.menuItem}>
           <DeleteIcon sx={styles.menuItemIcon('#f44336')} />
@@ -612,6 +723,12 @@ export default function Projects() {
         <MenuItem onClick={() => handleStatusChangeWithNotification(selectedProject, 'pending')} sx={styles.menuItem}>
           <Chip label="Pending" size="small" sx={styles.statusChip('pending')} />
         </MenuItem>
+
+        <MenuItem onClick={() => handleStatusChangeWithNotification(selectedProject, 'inprogress')} sx={styles.menuItem}>
+          <Chip label="InProgress" size="small" sx={styles.statusChip('inprogress')} />
+        </MenuItem>
+       
+
       </Menu>
 
       {/* RENDER: Snackbar for showing notifications for various actions */}

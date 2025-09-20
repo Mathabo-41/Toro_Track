@@ -14,7 +14,6 @@ export const adminMenuData = [
   { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
   { name: 'Projects', path: '/dashboard/admin/projects' },
   { name: 'Teams & Users', path: '/dashboard/admin/users' },
-  { name: 'Permissions', path: '/dashboard/admin/permissions' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];

@@ -380,14 +380,16 @@ const [viewMode, setViewMode] = useState('kanban');
         }
       }
     } else {
-      // Add new task
+      // Always Add new task At the Backlog
       const newTask = {
         ...currentTask,
-        id: Math.max(0, ...project.columns.backlog.tasks.map(t => t.id), 
+        id: Math.max(0, 
+                     ...project.columns.backlog.tasks.map(t => t.id), 
                      ...project.columns.inProgress.tasks.map(t => t.id), 
-                     ...project.columns.done.tasks.map(t => t.id)) + 1
+                     ...project.columns.done.tasks.map(t => t.id)
+                    ) + 1
       };
-      project.columns[currentColumn].tasks.push(newTask);
+      project.columns.backlog.tasks.push(newTask);
     }
 
     setProjects(updatedProjects);
@@ -818,12 +820,12 @@ const [viewMode, setViewMode] = useState('kanban');
 
                       {/* Add Task (only if user has permission) */}
 
-                      {rolePermissions[currentUser.role].canAdd && (
+                      {rolePermissions[currentUser.role].canAdd && column.id === 'backlog' &&(
                         <Tooltip title="Add Task">
                           <IconButton 
                             size="small" 
                             sx={{ ml: 1 }}
-                            onClick={() => handleAddTask(column.id)}
+                            onClick={() => handleAddTask('backlog')}
                           >
                             <AddIcon fontSize="small" />
                           </IconButton>
@@ -892,44 +894,47 @@ const [viewMode, setViewMode] = useState('kanban');
                         
                         {/* Task movement controls (move left/right between columns) */}
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                          {column.id !== 'backlog' && (
-                            <Tooltip title="Move to previous column">
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (column.id === 'inProgress') {
-                                    moveTask(task.id, 'inProgress', 'backlog');
-                                  } else if (column.id === 'done') {
-                                    moveTask(task.id, 'done', 'inProgress');
-                                  }
-                                }}
-                              >
-                                <ArrowBackIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                          
-                          {column.id !== 'done' && (
-                            <Tooltip title="Move to next column">
-                              <IconButton
-                                size="small"
-                                sx={{ ml: 'auto' }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (column.id === 'backlog') {
-                                    moveTask(task.id, 'backlog', 'inProgress');
-                                  } else if (column.id === 'inProgress') {
-                                    moveTask(task.id, 'inProgress', 'done');
-                                  }
-                                }}
-                              >
-                                <ArrowForwardIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+  {/* Show back arrow only if not in backlog */}
+  {column.id !== 'backlog' && (
+    <Tooltip title="Move to previous column">
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (column.id === 'inProgress') {
+            moveTask(task.id, 'inProgress', 'backlog');
+          } else if (column.id === 'done') {
+            moveTask(task.id, 'done', 'inProgress');
+          }
+        }}
+      >
+        <ArrowBackIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+      )}
+
+      {/* Show forward arrow only if not in done */}
+      {column.id !== 'done' && (
+    <Tooltip title="Move to next column">
+      <IconButton
+        size="small"
+        sx={{ ml: 'auto' }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (column.id === 'backlog') {
+            moveTask(task.id, 'backlog', 'inProgress');
+          } else if (column.id === 'inProgress') {
+            moveTask(task.id, 'inProgress', 'done');
+          }
+        }}
+      >
+         <ArrowForwardIcon fontSize="small" />
+            </IconButton>
+            </Tooltip>
+           )}
+                    </Box>
+
                       </Box>
                     ))}
                   </Box>
@@ -1157,18 +1162,7 @@ const [viewMode, setViewMode] = useState('kanban');
                     Backlog
                   </Box>
                 </MenuItem>
-                <MenuItem value="inProgress">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <InProgressIcon sx={{ color: '#2EC4B6', mr: 1 }} />
-                    In Progress
-                  </Box>
-                </MenuItem>
-                <MenuItem value="done">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <DoneIcon sx={{ color: '#E71D36', mr: 1 }} />
-                    Done
-                  </Box>
-                </MenuItem>
+                
               </Select>
             </FormControl>
           </Box>

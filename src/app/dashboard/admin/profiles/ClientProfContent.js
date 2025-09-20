@@ -13,7 +13,9 @@ import {
   List, ListItem, ListItemButton,
   ListItemText, Card, CardContent,
   Grid, Menu, MenuItem, FormControl,
-  InputLabel, Select, Snackbar, Alert
+  InputLabel, Select, Snackbar, Alert, Dialog,
+  DialogTitle, DialogActions, DialogContent
+
 } from '@mui/material';
 
 //dashboard icon import 
@@ -52,11 +54,38 @@ export default function ClientProfContent() {
   const { selectedMenu, setSelectedMenu } = useAdminStore();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [priorityFilter, setPriorityFilter] = React.useState('all');
   const router = useRouter();
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
+
+  //state for opening a clients file/information that will be displayed with a pop up 
+
+  const [selectedClient, setSelectedClient] = React.useState(null);
+  const [openProfile, setOpenProfile] = React.useState(false);
+  
+  //use effects for fetching the client data from the database 
+  const [profileData, setProfileData] = React.useState(null);
+  const [loadingProfile, setLoadingProfile] = React.useState(false);
+
+  React.useEffect(() => {
+  if (selectedClient?.id) {
+    setLoadingProfile(true);
+    fetch(`/api/clients/${selectedClient.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProfileData(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load client profile", err);
+      })
+      .finally(() => {
+        setLoadingProfile(false);
+      });
+  }
+}, [selectedClient?.id]);
+
   
   const handleLogout = () => {
     showSnackbar('Logging out...', 'info');
@@ -65,30 +94,56 @@ export default function ClientProfContent() {
     }, 1500);
   };
 
+  //helpers for closing and opening a certain users profile 
+  const handleOpenProfile = (client) => {
+  setSelectedClient(client);
+  setOpenProfile(true);
+};
+
+const handleCloseProfile = () => {
+  setSelectedClient(null);
+  setOpenProfile(false);
+};
+
+//helper to filter priority filtering 
+const formatPriorityText = (priority) => {
+  switch ((priority || '').toLowerCase()) {
+    case 'high': return 'High Priority';
+    case 'medium': return 'Medium Priority';
+    case 'low': return 'Low Priority';
+    default: return priority || 'Not Set';
+  }
+};
+
+//snack bar 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
 
+  //handle for filtering clients 
   const filteredClients = React.useMemo(() => {
     return clients.filter(client => {
       const matchesSearch = searchTerm === '' || 
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
+      const matchesStatus = priorityFilter === 'all' || client.priority === priorityFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [clients, searchTerm, statusFilter]);
+  }, [clients, searchTerm, priorityFilter]);
 
+  //helper for searching and search change
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-
-  const handleStatusFilterChange = (e) => {
-    setStatusFilter(e.target.value);
+//helper for filtering the priorities for each Client's project
+  const handlePriorityFilterChange = (e) => {
+    setPriorityFilter(e.target.value);
   };
+
+  //handler to delete client with a success snack bar notification
 
   const handleDeleteWithNotification = () => {
     handleDelete();
@@ -96,17 +151,19 @@ export default function ClientProfContent() {
     handleMenuClose();
   };
 
+  //handler for editing clients information
   const handleEditClient = () => {
     showSnackbar('Edit client feature coming soon!', 'info');
     handleMenuClose();
   };
 
-  const handleStatusChangeWithNotification = (clientId, status) => {
-    handleStatusChange(clientId, status);
-    showSnackbar(`Client status changed to ${status}`, 'info');
+  //handles the change of a priority for a project and displays a success message via snack bar
+  const handlePriorityChangeWithNotification = (clientId, priority) => {
+    handleStatusChange(clientId, priority);
+    showSnackbar(`Client status changed to ${formatPriorityText(priority)}`, 'info');
     handleMenuClose();
   };
-
+//handler for adding a client
   const handleAddClient = () => {
     showSnackbar('Redirecting to invite client page...', 'info');
     setTimeout(() => {
@@ -129,6 +186,7 @@ export default function ClientProfContent() {
               alignItems: 'center', 
               gap: 1 
                      }}>
+ {/**Redirection for the icon to Navigate to the main Dashboard */}
          <Link href="/dashboard" passHref>
       <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
         <DashboardIcon />
@@ -266,23 +324,23 @@ export default function ClientProfContent() {
               }}
             />
             
-            {/* Status Filter Dropdown */}
+            {/* Priority Filter Dropdown */}
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>Priority</InputLabel>
               <Select
-                value={statusFilter}
-                onChange={handleStatusFilterChange}
-                label="Status"
+                value={priorityFilter}
+                onChange={handlePriorityFilterChange}
+                label="Priority"
                 startAdornment={
                   <InputAdornment position="start">
                     <FilterIcon fontSize="small" />
                   </InputAdornment>
                 }
               >
-                <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="premium">Premium</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
+                <MenuItem value="all">All Priorities</MenuItem>
+                <MenuItem value="high">High Priority</MenuItem>
+                <MenuItem value="medium">Medium Priority</MenuItem>
+                <MenuItem value="low">Low Priority</MenuItem>
               </Select>
             </FormControl>
             
@@ -299,11 +357,11 @@ export default function ClientProfContent() {
         </Box>
 
         {/* RENDER: Results Count */}
-        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-          Showing {filteredClients.length} of {clients.length} clients
-          {searchTerm && ` matching "${searchTerm}"`}
-          {statusFilter !== 'all' && ` with status "${statusFilter}"`}
-        </Typography>
+       <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+       Showing {filteredClients.length} of {clients.length} clients
+        {searchTerm && ` matching "${searchTerm}"`}
+       {priorityFilter !== 'all' && ` with priority "${formatPriorityText(priorityFilter)}"`}
+      </Typography>
 
         {/* RENDER: Error Message (if any) */}
         {error && (
@@ -322,7 +380,7 @@ export default function ClientProfContent() {
                     <TableCell sx={styles.tableHeaderCell}>Client</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Contact</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Projects</TableCell>
-                    <TableCell sx={styles.tableHeaderCell}>Status</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Priority</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -337,7 +395,7 @@ export default function ClientProfContent() {
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                         <Typography color="text.secondary">
-                          {searchTerm || statusFilter !== 'all' 
+                          {searchTerm || priorityFilter !== 'all' 
                             ? 'No clients match your search criteria' 
                             : 'No clients found'}
                         </Typography>
@@ -378,12 +436,12 @@ export default function ClientProfContent() {
                         <TableCell>
                           <Chip
                             icon={
-                              client.status === 'premium'
+                              client.priority === 'high'
                                 ? <PremiumIcon color="success" />
                                 : <PersonIcon color="info" />
                             }
-                            label={client.status}
-                            sx={styles.statusChip(client.status)}
+                            label={formatPriorityText(client.priority)}
+                            sx={styles.statusChip(client.priority)}
                           />
                         </TableCell>
                         <TableCell>
@@ -407,8 +465,8 @@ export default function ClientProfContent() {
         <Grid container spacing={3} sx={{ mt: 2 }}>
           {[
             { label: 'Total Clients', value: clients.length, icon: <PeopleIcon />, color: '#525252' },
-            { label: 'Active Clients', value: clients.filter(c => c.status === 'active').length, icon: <PersonIcon color="info" />, color: '#ffb703' },
-            { label: 'Premium Clients', value: clients.filter(c => c.status === 'premium').length, icon: <PremiumIcon color="success" />, color: '#40916c' },
+            { label: 'Low Priority Clients', value: clients.filter(c => c.priority === 'low').length, icon: <PersonIcon color="info" />, color: '#ffb703' },
+            { label: 'High Priority Clients', value: clients.filter(c => c.priority === 'high').length, icon: <PremiumIcon color="success" />, color: '#40916c' },
             { label: 'Filtered Results', value: filteredClients.length, icon: <FilterIcon color="action" />, color: '#6c757d' }
           ].map(({ label, value, icon, color }) => (
             <Grid item xs={12} sm={6} md={3} key={label}>
@@ -439,26 +497,36 @@ export default function ClientProfContent() {
         onClose={handleMenuClose}
         PaperProps={{ sx: styles.menuPaper }}
       >
-        <MenuItem onClick={handleEditClient} sx={styles.menuItem}>
-          <EditIcon fontSize="small" sx={{ mr: 1, color: 'info.main' }} />
-          Edit Client
+        {/**View Profile Button */}
+       <MenuItem
+           onClick={() => {
+           const clientData = clients.find(c => c.id === selectedClientId);
+           if (clientData) {
+           handleOpenProfile(clientData);
+           }
+           handleMenuClose();
+          }}
+        >
+        <PersonIcon sx={{ mr: 1 }} /> View Profile
         </MenuItem>
+
+
         <MenuItem onClick={handleDeleteWithNotification} sx={styles.menuItem}>
           <DeleteIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} />
           Delete Client
         </MenuItem>
         <Divider sx={styles.menuDivider} />
-        <MenuItem onClick={() => handleStatusChangeWithNotification(selectedClientId, 'premium')} sx={styles.menuItem}>
+        <MenuItem onClick={() => handlePriorityChangeWithNotification(selectedClientId, 'high')} sx={styles.menuItem}>
           <PremiumIcon fontSize="small" sx={{ mr: 1, color: 'success.main' }} />
-          Set as Premium
+          Set as High Priority
         </MenuItem>
-        <MenuItem onClick={() => handleStatusChangeWithNotification(selectedClientId, 'active')} sx={styles.menuItem}>
+        <MenuItem onClick={() => handlePriorityChangeWithNotification(selectedClientId, 'medium')} sx={styles.menuItem}>
           <PersonIcon fontSize="small" sx={{ mr: 1, color: 'info.main' }} />
-          Set as Active
+          Set as Medium Priority
         </MenuItem>
-        <MenuItem onClick={() => handleStatusChangeWithNotification(selectedClientId, 'inactive')} sx={styles.menuItem}>
+        <MenuItem onClick={() => handlePriorityChangeWithNotification(selectedClientId, 'low')} sx={styles.menuItem}>
           <PersonIcon fontSize="small" sx={{ mr: 1, color: 'warning.main' }} />
-          Set as Inactive
+          Set as Low Priority
         </MenuItem>
       </Menu>
       
@@ -480,6 +548,68 @@ export default function ClientProfContent() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* RENDER: Client Profile Modal */}
+     <Dialog open={openProfile} onClose={handleCloseProfile} fullWidth maxWidth="md">
+  <DialogTitle>
+    {selectedClient?.name}
+    {selectedClient?.priority && (
+      <Chip
+        label={formatPriorityText(selectedClient.priority)}
+        sx={{ ml: 2 }}
+      />
+    )}
+  </DialogTitle>
+
+  <DialogContent dividers>
+    {loadingProfile ? (
+      <Typography>Loading client data...</Typography>
+    ) : profileData ? (
+      <>
+        <Box mb={2}>
+          <Typography variant="h6">Overview</Typography>
+          <Typography>Email: {profileData.email}</Typography>
+          <Typography>Contact: {profileData.contact}</Typography>
+        </Box>
+
+        <Box mb={2}>
+          <Typography variant="h6">Projects</Typography>
+          {profileData.projects?.length > 0 ? (
+            profileData.projects.map((proj) => (
+              <Typography key={proj.id}>• {proj.name}</Typography>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No projects found
+            </Typography>
+          )}
+        </Box>
+
+        <Box mb={2}>
+          <Typography variant="h6">Recent Activity</Typography>
+          {profileData.activity?.length > 0 ? (
+            profileData.activity.map((a, i) => (
+              <Typography key={i}>{a}</Typography>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No activity found
+            </Typography>
+          )}
+        </Box>
+      </>
+    ) : (
+      <Typography>No data found for this client.</Typography>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={handleCloseProfile}>Close</Button>
+  </DialogActions>
+</Dialog>
+
+
+
     </Box>
   );
 }

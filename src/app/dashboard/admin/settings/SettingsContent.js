@@ -7,27 +7,35 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  Box, Typography,  Button,  Card,
-  CardContent,  Stack,  Avatar,  List,
-  ListItem,  ListItemButton,  ListItemText,
-  Drawer,  Grid,  Chip,IconButton,
+  Box, Typography, Button, Card,
+  CardContent, Stack, Avatar, List,
+  ListItem, ListItemButton, ListItemText,
+  Drawer, Grid, Chip, IconButton,
+  TableContainer, Table, TableHead, TableRow, TableCell,
+  TableBody, Paper, FormControl, Select, MenuItem
 } from '@mui/material';
 
-//dashboard icon import 
+// Dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
-
+import SaveIcon from '@mui/icons-material/Save';
 
 import {
   Settings as SettingsIcon,
-  Edit as EditIcon,
   Backup as BackupIcon,
   Cached as CachedIcon,
   RestartAlt as RestartAltIcon,
   DeleteForever as DeleteForeverIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  AdminPanelSettings as AdminIcon,
+  Person as UserIcon,
+  Engineering as EngineerIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Block as NoneIcon,
+  CheckCircle as FullIcon
 } from '@mui/icons-material';
 
-//snack bar 
+// Snack bar 
 import { Snackbar, Alert } from '@mui/material';
 
 // Import local files
@@ -44,19 +52,145 @@ export default function SystemSettings() {
   // State for sidebar
   const [sidebarOpen] = React.useState(true);
 
-//router for redirection/navigation
-     const router = useRouter();
+  // Router for redirection/navigation
+  const router = useRouter();
   
-     //snack-bar state 
-     const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  // Snack-bar states for different actions
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState('info');
 
-  // Function to handle the logout action  with snackbar and redirect to the login page
+  // Permissions state
+  const [selectedRole, setSelectedRole] = React.useState('Administrator');
+  const [roles, setRoles] = React.useState([
+    {
+      name: 'Administrator',
+      icon: <AdminIcon />,
+      permissions: {
+        Projects: 'Full',
+        Clients: 'Full',
+        Team: 'Full',
+        Settings: 'Full'
+      }
+    },
+    {
+      name: 'Auditor',
+      icon: <EngineerIcon />,
+      permissions: {
+        Projects: 'Edit',
+        Clients: 'Edit',
+        Team: 'View',
+        Settings: 'View'
+      }
+    },
+    {
+      name: 'Client',
+      icon: <UserIcon />,
+      permissions: {
+        Projects: 'View',
+        Clients: 'View',
+        Team: 'None',
+        Settings: 'None'
+      }
+    }
+  ]);
+
+  // Permission levels
+  const permissionLevels = [
+    {
+      value: 'Full',
+      label: 'Full Access',
+      icon: <FullIcon />,
+      color: '#2e7d32'
+    },
+    {
+      value: 'Edit',
+      label: 'Can Edit',
+      icon: <EditIcon />,
+      color: '#ed6c02'
+    },
+    {
+      value: 'View',
+      label: 'View Only',
+      icon: <ViewIcon />,
+      color: '#0288d1'
+    },
+    {
+      value: 'None',
+      label: 'No Access',
+      icon: <NoneIcon />,
+      color: '#d32f2f'
+    }
+  ];
+
+  // Function to show snackbar message
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  // Function to handle the logout action with snackbar and redirect to the login page
   const handleLogout = () => {
-    setOpenSnackbar(true);//shows feedback for snackbar
-    setTimeout(()=> {
-       router.push('/login');
-    }, 1500); //snackbar will redirect after 1.5 seconds.
-   
+    showSnackbar('Logging out...', 'info');
+    setTimeout(() => {
+      router.push('/login');
+    }, 1500); // Snackbar will redirect after 1.5 seconds.
+  };
+
+  // Handle permission changes
+  const handlePermissionChange = (roleName, category, newLevel) => {
+    setRoles(prevRoles => 
+      prevRoles.map(role => 
+        role.name === roleName 
+          ? { ...role, permissions: { ...role.permissions, [category]: newLevel } }
+          : role
+      )
+    );
+  };
+
+  // Handle save permissions
+  const handleSave = () => {
+    // Add your save logic here
+    console.log('Saving permissions:', roles);
+    showSnackbar('Permissions saved successfully!', 'success');
+    // Show success message or handle errors
+  };
+
+  // Handle maintenance actions with appropriate messages
+  const handleMaintenanceWithMessage = (action) => {
+    let message = '';
+    let severity = 'info';
+    
+    switch(action) {
+      case 'Backup Database':
+        message = 'Database backup initiated...';
+        severity = 'info';
+        break;
+      case 'Clear Cache':
+        message = 'Cache cleared successfully!';
+        severity = 'success';
+        break;
+      case 'Reset All Settings':
+        message = 'All settings have been reset to default.';
+        severity = 'warning';
+        break;
+      case 'Purge Test Data':
+        message = 'Test data purged successfully!';
+        severity = 'success';
+        break;
+      default:
+        message = 'Action completed.';
+    }
+    
+    showSnackbar(message, severity);
+    handleMaintenance(action); // Call the original function
+  };
+
+  // Handle configuration actions with appropriate messages
+  const handleConfigureWithMessage = (category) => {
+    showSnackbar(`Configuring ${category}...`, 'info');
+    handleConfigure(category); // Call the original function
   };
 
   // Region: Render
@@ -66,21 +200,21 @@ export default function SystemSettings() {
       {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
         <Box sx={{ 
-    p: 1,
-    borderBottom: '2px solid #6b705c',
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 1 
-  }}>
-    <Link href="/dashboard" passHref>
-      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-        <DashboardIcon />
-      </IconButton>
-    </Link>
-    <Typography variant="h5" sx={{ color: '#fefae0'}}>
-      Admin Portal
-    </Typography>
-  </Box>
+          p: 1,
+          borderBottom: '2px solid #6b705c',
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}>
+          <Link href="/dashboard" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h5" sx={{ color: '#fefae0'}}>
+            Admin Portal
+          </Typography>
+        </Box>
         <List>
           {menu.map((item, index) => (
             <ListItem key={index} disablePadding>
@@ -229,7 +363,7 @@ export default function SystemSettings() {
                     variant="outlined"
                     startIcon={<EditIcon />}
                     fullWidth
-                    onClick={() => handleConfigure(category.name)}
+                    onClick={() => handleConfigureWithMessage(category.name)}
                     sx={styles.configureButton}
                   >
                     Configure
@@ -239,6 +373,157 @@ export default function SystemSettings() {
             </Grid>
           ))}
         </Grid>
+
+        {/* Permissions Section */}
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h5" sx={styles.pageTitle}>
+            Permissions Management
+          </Typography>
+          <Typography variant="body1" sx={styles.pageSubtitle}>
+            Manage role-based access control for your organization
+          </Typography>
+        </Box>
+
+        {/* Permissions Table Section */}
+        <Card sx={styles.permissionsCard}>
+          <CardContent>
+            <Typography variant="h6" sx={styles.permissionsCardHeader}>
+              Role Permissions
+            </Typography>
+            
+            {/* Permissions Table */}
+            <TableContainer component={Paper} sx={styles.tableContainer}>
+              <Table>
+                {/* Table Header */}
+                <TableHead sx={styles.tableHead}>
+                  <TableRow>
+                    <TableCell sx={styles.tableHeaderCell}>Role</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Projects</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Clients</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Team</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Settings</TableCell>
+                  </TableRow>
+                </TableHead>
+                
+                {/* Table Body */}
+                <TableBody>
+                  {roles.map((role) => (
+                    <TableRow
+                      key={role.name}
+                      hover
+                      selected={selectedRole === role.name}
+                      onClick={() => setSelectedRole(role.name)}
+                      sx={styles.tableRow(selectedRole === role.name)}
+                    >
+                      {/* Role Name Cell */}
+                      <TableCell sx={styles.tableCell}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          {role.icon}
+                          <Typography>{role.name}</Typography>
+                        </Stack>
+                      </TableCell>
+                      
+                      {/* Permission Level Cells */}
+                      {['Projects', 'Clients', 'Team', 'Settings'].map((category) => {
+                        const level = role.permissions[category];
+                        const permission = permissionLevels.find(p => p.value === level);
+                        return (
+                          <TableCell key={category} sx={styles.tableCell}>
+                            <FormControl fullWidth size="small">
+                              <Select
+                                value={level}
+                                onChange={(e) => handlePermissionChange(role.name, category, e.target.value)}
+                                sx={styles.selectInput(permission.color)}
+                                renderValue={(selected) => (
+                                  <Stack direction="row" alignItems="center" spacing={1}>
+                                    <Box sx={{ color: permission.color }}>
+                                      {permission.icon}
+                                    </Box>
+                                    <Typography sx={{ color: permission.color }}>
+                                      {selected}
+                                    </Typography>
+                                  </Stack>
+                                )}
+                              >
+                                {permissionLevels.map((level) => (
+                                  <MenuItem
+                                    key={level.value}
+                                    value={level.value}
+                                    sx={styles.selectMenuItem(level)}
+                                  >
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                      <Box sx={{ color: level.color }}>
+                                        {level.icon}
+                                      </Box>
+                                      <Typography sx={{ color: '#283618' }}>{level.label}</Typography>
+                                    </Stack>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+
+        {/* Selected Role Details Section */}
+        {selectedRole && (
+          <Card sx={styles.summaryCard}>
+            <CardContent>
+              <Typography variant="h6" sx={styles.summaryCardHeader}>
+                {selectedRole} Permissions Summary
+              </Typography>
+              <Grid container spacing={2}>
+                {Object.entries(roles.find(r => r.name === selectedRole).permissions).map(([category, level]) => {
+                  const permission = permissionLevels.find(p => p.value === level);
+                  return (
+                    <Grid item xs={12} sm={6} md={3} key={category}>
+                      <Card sx={styles.summaryCard}>
+                        <CardContent>
+                          <Typography variant="subtitle1" sx={styles.summaryCardTitle}>
+                            {category}
+                          </Typography>
+                          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                            <Avatar sx={styles.permissionIconAvatar(permission.color)}>
+                              {permission.icon}
+                            </Avatar>
+                            <Typography sx={styles.permissionText(permission.color)}>
+                              {permission.label}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="body2" sx={{ color: '#525252' }}>
+                            {level === 'Full' && 'Can create, edit, delete, and view all content'}
+                            {level === 'Edit' && 'Can edit and view existing content'}
+                            {level === 'View' && 'Can view content only'}
+                            {level === 'None' && 'No access to this section'}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Save Button Section */}
+        <Box sx={styles.saveButtonContainer}>
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon />}
+            onClick={handleSave}
+            sx={styles.saveButton}
+          >
+            Save Permissions
+          </Button>
+        </Box>
 
         {/* System Actions with High Contrast */}
         <Grid container spacing={3} sx={{ mt: 2 }}>
@@ -253,7 +538,7 @@ export default function SystemSettings() {
                     variant="contained"
                     startIcon={<BackupIcon />}
                     fullWidth
-                    onClick={() => handleMaintenance('Backup Database')}
+                    onClick={() => handleMaintenanceWithMessage('Backup Database')}
                     sx={styles.backupButton}
                   >
                     Backup Database
@@ -262,7 +547,7 @@ export default function SystemSettings() {
                     variant="outlined"
                     startIcon={<CachedIcon />}
                     fullWidth
-                    onClick={() => handleMaintenance('Clear Cache')}
+                    onClick={() => handleMaintenanceWithMessage('Clear Cache')}
                     sx={styles.clearCacheButton}
                   >
                     Clear Cache
@@ -282,7 +567,7 @@ export default function SystemSettings() {
                     variant="outlined"
                     startIcon={<RestartAltIcon />}
                     fullWidth
-                    onClick={() => handleMaintenance('Reset All Settings')}
+                    onClick={() => handleMaintenanceWithMessage('Reset All Settings')}
                     sx={styles.resetButton}
                   >
                     Reset All Settings
@@ -291,7 +576,7 @@ export default function SystemSettings() {
                     variant="contained"
                     startIcon={<DeleteForeverIcon />}
                     fullWidth
-                    onClick={() => handleMaintenance('Purge Test Data')}
+                    onClick={() => handleMaintenanceWithMessage('Purge Test Data')}
                     sx={styles.purgeButton}
                   >
                     Purge Test Data
@@ -303,24 +588,24 @@ export default function SystemSettings() {
         </Grid>
       </Box>
 
-{/* Snackbar with message when the user logs out of the system /their portal */}
-
+      {/* Single Snackbar component to handle all messages */}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={1500}
+        autoHideDuration={3000}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert severity="success" 
-        //we use SUCCESS instead of INFO so that we can have the power to switch colours
-        sx={{ width: '100%', 
-          fontWeight: 'bold',
-          fontSize: '1.2rem'
-        }}>
-          Logging out...
+        <Alert 
+          severity={snackbarSeverity} 
+          sx={{ 
+            width: '100%', 
+            fontWeight: 'bold',
+            fontSize: '1.1rem'
+          }}
+        >
+          {snackbarMessage}
         </Alert>
       </Snackbar>
-
     </Box>
   );
 }

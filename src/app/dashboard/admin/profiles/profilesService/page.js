@@ -8,7 +8,7 @@ export async function fetchClients() {
       name: 'Acme Corporation',
       contact: 'john.doe@acme.com',
       projects: 5,
-      status: 'premium',
+      status: 'high priority',
       logo: '/toroLogo.jpg',
     },
     {
@@ -16,7 +16,7 @@ export async function fetchClients() {
       name: 'Globex Inc',
       contact: 'jane.smith@globex.com',
       projects: 3,
-      status: 'active',
+      status: 'low priority',
       logo: '/toroLogo.jpg',
     },
     {
@@ -24,7 +24,7 @@ export async function fetchClients() {
       name: 'Toro Informatics',
       contact: 'toroi@toroinfo.com',
       projects: 2,
-      status: 'active',
+      status: 'low priority',
       logo: '/toroLogo.jpg',
     },
     {
@@ -32,7 +32,7 @@ export async function fetchClients() {
       name: 'Umbrella Corp',
       contact: 'alice.wesker@umbrella.com',
       projects: 7,
-      status: 'premium',
+      status: 'high priority',
       logo: '/toroLogo.jpg',
     },
     {

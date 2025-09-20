@@ -94,7 +94,7 @@ export default function SettingsContent({ router }) {
              alignItems: 'center', 
               gap: 1 
                }}>
-           <Link href="/login" passHref>
+           <Link href="/dashboard" passHref>
           <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
         <DashboardIcon />
        </IconButton>
