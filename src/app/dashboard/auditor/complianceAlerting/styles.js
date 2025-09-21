@@ -1,6 +1,6 @@
 // Contains the inline styles and sx overrides for the compliance & alerting screen
 
-import { Height } from "@mui/icons-material";  // Helps with Adjusting search bar height
+import { Height } from "@mui/icons-material"; // Helps with Adjusting search bar height
 
 export const fullScreenContainerStyles = {
   display: 'flex',
@@ -46,7 +46,7 @@ export const headerBoxStyles = {
 };
 
 export const pageTitleStyles = {
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace',
   color: '#525252',
 };
 
@@ -96,12 +96,12 @@ export const auditorTextStyles = {
 export const compliancePaperStyles = {
   p: 3,
   backgroundColor: '#ccd5ae',
-  border:'2px #525252',
+  border: '2px #525252',
 };
 
 export const complianceFeatureTitleStyles = {
   fontWeight: 'bold',
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace',
   color: '#283618',
 };
 
@@ -121,4 +121,55 @@ export const complianceListItemStyles = {
   '&:hover': {
     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
   },
+};
+
+// --- NEW STYLES ADDED BELOW ---
+
+export const exportButtonStyles = {
+  backgroundColor: '#606c38',
+  color: '#fefae0',
+  height: '40px',
+  '&:hover': {
+    backgroundColor: '#283618',
+  },
+};
+
+export const activeAlertsTableContainerStyles = {
+  borderRadius: '8px',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+  backgroundColor: '#e9edc9',
+};
+
+export const tableHeaderCellStyles = {
+  backgroundColor: '#ccd5ae',
+  color: '#283618',
+  fontWeight: 'bold',
+  fontFamily: 'Disek, monospace',
+};
+
+export const getSeverityChipColor = (severity) => {
+  switch (severity.toLowerCase()) {
+    case 'critical': return 'error';
+    case 'high': return 'warning';
+    case 'medium': return 'info';
+    case 'low': return 'success';
+    default: return 'default';
+  }
+};
+
+export const securityComplianceSectionStyles = {
+  p: 3,
+  backgroundColor: '#ccd5ae',
+  borderRadius: '8px',
+  border: '2px solid #525252',
+};
+
+export const securityListItemStyles = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 2,
+  p: 2,
+  backgroundColor: '#e9edc9',
+  borderRadius: '8px',
+  height: '100%', // Ensure items in the same row have equal height
 };

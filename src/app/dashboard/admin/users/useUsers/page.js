@@ -1,3 +1,4 @@
+"use client";
 // Contains all the logic and instructions for this feature. 
 // We can also display error messages to the user interface from this file.
 
