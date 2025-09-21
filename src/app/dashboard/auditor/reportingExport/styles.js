@@ -20,7 +20,7 @@ export const drawerHeaderStyles = {
   padding: 2,
   textAlign: 'center',
   backgroundColor: '#fefaf0',
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace', // CORRECTED: fontfamily -> fontFamily
 };
 
 export const listItemButtonStyles = (name, currentPath) => {
@@ -56,7 +56,7 @@ export const headerBoxStyles = {
 };
 
 export const pageTitleStyles = {
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace', // CORRECTED: fontfamily -> fontFamily
   color: '#525252',
 };
 
@@ -113,7 +113,7 @@ export const reportingExportContainerStyles = {
 };
 
 export const reportingExportTitle = {
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace', // CORRECTED: fontfamily -> fontFamily
   mb: 1,
 };
 
@@ -133,7 +133,7 @@ export const reportingExportSectionTitle = {
   fontWeight: 'bold',
   mb: 1,
   color: '#525252',
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace', // CORRECTED: fontfamily -> fontFamily
 };
 
 export const reportingExportSectionDescription = {

@@ -16,11 +16,11 @@ export default function Sidebar({ pathname }) {
     admin: {
       items: [
         { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+        { name: 'Performance Reports', path: '/dashboard/admin/reports' },
         { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
         { name: 'Projects', path: '/dashboard/admin/projects' },
         { name: 'Teams & Users', path: '/dashboard/admin/users' },
         { name: 'Permissions', path: '/dashboard/admin/permissions' },
-        { name: 'Performance Reports', path: '/dashboard/admin/reports' },
         { name: 'Settings', path: '/dashboard/admin/settings' }
       ]
     },

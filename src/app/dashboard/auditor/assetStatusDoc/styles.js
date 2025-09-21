@@ -1,4 +1,4 @@
-// Contains the inline styles and sx overrides for the asset status documentation screen
+// MODIFIED: Contains the inline styles and sx overrides for the asset status documentation screen
 
 export const assetStatusContainer = {
   display: 'grid',
@@ -7,9 +7,12 @@ export const assetStatusContainer = {
   p: 2
 }
 
+// MODIFIED: Added font family for consistency
 export const assetStatusTitle = {
   mb: 1,
-  fontWeight: 600
+  fontWeight: 600,
+  fontFamily: 'Disek, monospace', // Added font
+  color: '#525252',
 }
 
 export const assetStatusSubtitle = {
@@ -21,7 +24,6 @@ export const headerRightSectionStyles = {
   display: 'flex',
   alignItems: 'center',
   gap: 2,
-  
 };
 
 export const searchFieldStyles = {
@@ -30,32 +32,37 @@ export const searchFieldStyles = {
     borderRadius: '5px',
     backgroundColor: '#fefaf0',
     fontSize: '0.9rem',
-    height: '40px', 
-    '& fieldset': {
-      borderColor: '#525252',
-    },
-    '&:hover fieldset': {
-      borderColor: '#525252',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#283618',
-      borderWidth: '2px',
-    },
+    height: '40px',
+    '& fieldset': { borderColor: '#525252' },
+    '&:hover fieldset': { borderColor: '#525252' },
+    '&.Mui-focused fieldset': { borderColor: '#283618', borderWidth: '2px' },
   },
 };
 
-// style for the table
-export const assetStatusPaper = {
-  p: 2,
-  mb: 2,
-  backgroundColor: '#fefae0',
-  border: '2px solid #525252', 
-  borderRadius: '8px', 
-  width: 'fit-content', 
-  margin: '16px auto', 
-}
+// REMOVED: assetStatusPaper style as it is replaced by more specific styles
 
+// MODIFIED: Added font family for consistency
 export const assetStatusSectionTitle = {
-  mb: 1,
-  fontWeight: 500
-}
+  mb: 2, // Added margin bottom for spacing
+  fontWeight: 500,
+  fontFamily: 'Disek, monospace', // Added font
+  color: '#283618',
+};
+
+// --- NEW STYLES ADDED BELOW for the table ---
+
+// NEW: Style for the table container, matching the 'Active Alerts' table
+export const tableContainerStyles = {
+  borderRadius: '8px',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+  backgroundColor: '#e9edc9',
+  border: '2px solid #283618', // The requested dark green border
+};
+
+// NEW: Style for the table header cells
+export const tableHeaderCellStyles = {
+  backgroundColor: '#ccd5ae',
+  color: '#283618',
+  fontWeight: 'bold',
+  fontFamily: 'Disek, monospace',
+};

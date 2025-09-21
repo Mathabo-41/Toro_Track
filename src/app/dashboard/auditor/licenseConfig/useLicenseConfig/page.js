@@ -177,7 +177,21 @@ export function PerClientLicenseRegister({ clientName = 'Client ABC' }) {
           pagination
           sortingOrder={['asc', 'desc']}
           onRowClick={handleRowClick}
-          sx={{ backgroundColor: '#fefae0', border: '1px solid #6b705c' }}
+          // MODIFIED: Targeted .MuiDataGrid-columnHeader directly for background
+          sx={{ 
+            backgroundColor: '#fefae0', 
+            border: '1px solid #6b705c',
+            '& .MuiDataGrid-columnHeader': { // Targeting individual header cells
+                backgroundColor: '#ccd5ae', // Light green background for the header
+                color: '#283618', // Darker text for better contrast
+                fontWeight: 'bold',
+            },
+            // Ensuring the column header text is bold and correct color
+            '& .MuiDataGrid-columnHeaderTitle': {
+                color: '#283618',
+                fontWeight: 'bold',
+            }
+          }}
         />
       </Box>
 

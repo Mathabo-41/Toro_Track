@@ -53,7 +53,7 @@ export const headerBoxStyles = {
 // Main page title style.
 export const pageTitleStyles = {
   color: '#525252',
-  fontfamily:'Disket, monospace',
+  fontFamily:'Disek, monospace', // CORRECTED: fontfamily -> fontFamily and Disket -> Disek
 };
 
 // Right-side section of the header.

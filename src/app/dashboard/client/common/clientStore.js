@@ -16,6 +16,6 @@ import { create } from 'zustand';
   export const clientMenu = [
     { name: 'Project Details',        path: '/dashboard/client/details' },
     { name: 'Raise Query',            path: '/dashboard/client/query' },
-    { name: 'Meetings & Messages',    path: '/dashboard/client/messages' },
+    { name: 'Agenda',    path: '/dashboard/client/messages' },
     { name: 'Settings',               path: '/dashboard/client/settings' }
   ];

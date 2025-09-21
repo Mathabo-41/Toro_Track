@@ -44,8 +44,15 @@ export const headerBoxStyles = {
 };
 
 export const pageTitleStyles = {
-  fontfamily: 'Disek, monospace',
+  fontFamily: 'Disek, monospace', // CORRECTED: fontfamily -> fontFamily
   color: '#525252',
+};
+
+// NEW: Style for section headers for consistency
+export const sectionTitleStyles = {
+    fontFamily: 'Disek, monospace',
+    color: '#283618',
+    fontWeight: 'bold',
 };
 
 export const headerRightSectionStyles = {

@@ -1,4 +1,4 @@
-// ./auditor/assetStaDoc/AssetStatusContent.js
+// MODIFIED: ./auditor/assetStaDoc/AssetStatusContent.js
 'use client';
 
 import React from 'react';
@@ -8,32 +8,27 @@ import { useRouter } from 'next/navigation';
 import {
   Box, Typography, List, ListItem,
   ListItemText, Drawer, ListItemButton,
-  Paper, TextField, Button, IconButton
+  Paper, TextField, Button, IconButton,
+  // NEW: Import Table components
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 
 //dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
-
-
-import {
-  AccountCircle as AccountCircleIcon,
-  Logout as LogoutIcon
-} from '@mui/icons-material';
-
-//snack bar 
+import { Logout as LogoutIcon } from '@mui/icons-material';
 import { Snackbar, Alert } from '@mui/material';
 
 import useAssetStatusDoc from './useAssetStaDoc/page';
 // Import global styles for layout and navigation
 import * as globalStyles from '../common/styles';
-import { useAuditorStore } from '../common/auditorStore';
-import { auditorMenu } from '../common/auditorStore';
+// NEW: Import local styles for the new table
+import * as styles from './styles';
+import { useAuditorStore, auditorMenu } from '../common/auditorStore';
 
-// Component for the sidebar
-const Sidebar = ({ currentPath, handleLogout }) => {
-  const { selectedMenu, setSelectedMenu } = useAuditorStore();
+// Sidebar component (unchanged)
+const Sidebar = ({ handleLogout }) => {
   const [sidebarOpen] = React.useState(true);
-  const router = useRouter(); // Initialize router for prefetching
+  const router = useRouter();
 
   return (
     <Drawer
@@ -41,124 +36,42 @@ const Sidebar = ({ currentPath, handleLogout }) => {
       anchor="left"
       sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
     >
-      <Box sx={{ 
-    p: 1,
-    borderBottom: '2px solid #6b705c',
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 1 
-  }}>
-    <Link href="/dashboard" passHref>
-      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-        <DashboardIcon />
-      </IconButton>
-    </Link>
-    <Typography variant="h5" sx={{ color: '#fefae0'}}>
-      Auditor Portal
-    </Typography>
-  </Box>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard" passHref>
+          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>
+          Auditor Portal
+        </Typography>
+      </Box>
       <List>
         {auditorMenu.map((item) => (
           <ListItem key={item.path} disablePadding>
-            <ListItemButton
-              component={Link}
-              href={item.path}
-              sx={globalStyles.listItemButton}
-              onClick={() => setSelectedMenu(item.path)}
-              // Add the prefetching logic here
-              onMouseEnter={() => router.prefetch(item.path)} 
-            >
+            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton} onMouseEnter={() => router.prefetch(item.path)}>
               <ListItemText primary={item.name} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-
-      {/* Region: User Profile Section */}
-      <Box sx={{
-        padding: '1rem',
-        borderTop: '2px solid #6b705c',
-        marginTop: 'auto'
-      }}>
-        {/* User Profile Container */}
-        <Box sx={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          overflow: 'hidden',
-          gap: '0.75rem'
-        }}>
-          {/* Profile Picture */}
-          <Box sx={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            position: 'relative',
-            flexShrink: 0,
-            border: '2px solid #f3722c'
-          }}>
-            <Image
-              src="/toroLogo.jpg"
-              alt="User Profile"
-              fill
-              style={{ objectFit: 'cover' }}
-            />
+      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+            <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
           </Box>
-
-          {/* User Details (shown when sidebar is open) */}
           {sidebarOpen && (
             <Box sx={{ minWidth: 0 }}>
-              {/* User Name */}
-              <Typography sx={{
-                fontWeight: '600',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: '#fefae0'
-              }}>
+              <Typography sx={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
                 John Doe
               </Typography>
-
-              {/* User Email */}
-              <Typography sx={{
-                fontSize: '0.8rem',
-                opacity: 0.8,
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'rgba(254, 250, 224, 0.7)'
-              }}>
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
                 user@toro.com
               </Typography>
             </Box>
           )}
         </Box>
-
-        {/* Logout Button */}
-        <Button
-          onClick={handleLogout}
-          fullWidth
-          sx={{
-            padding: '0.75rem',
-            background: 'transparent',
-            border: '1px solid #fefae0',
-            borderRadius: '8px',
-            color: '#fefae0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            '&:hover': {
-              background: '#6b705c'
-            }
-          }}
-        >
+        <Button onClick={handleLogout} fullWidth sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}>
           {sidebarOpen ? 'Logout' : <LogoutIcon />}
         </Button>
       </Box>
@@ -166,120 +79,140 @@ const Sidebar = ({ currentPath, handleLogout }) => {
   );
 };
 
-// Component for the header
-const Header = () => {
+// Header component with updated styles
+const Header = ({ search, handleSearchChange }) => {
   return (
     <Box sx={globalStyles.pageHeader}>
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h4" sx={globalStyles.pageHeaderText}>
+        <Typography variant="h4" sx={styles.assetStatusTitle}>
           Asset Status & Documentation
         </Typography>
-        <Typography variant="subtitle1" sx={globalStyles.pageHeaderText}>
-          Gives auditors a clear view of each asset's lifecycle and associated paperwork.
+        <Typography variant="subtitle1" sx={styles.assetStatusSubtitle}>
+          A clear view of each asset's lifecycle and associated paperwork.
         </Typography>
+      </Box>
+      <Box sx={styles.headerRightSectionStyles}>
+        <TextField
+          variant="outlined"
+          placeholder="Search records..."
+          value={search}
+          onChange={handleSearchChange}
+          sx={styles.searchFieldStyles}
+        />
       </Box>
     </Box>
   );
 };
 
-// Component for a section with a list
-const DataSection = ({ title, data, primaryKey, secondaryKey }) => (
-  <Paper elevation={2} sx={globalStyles.assetStatusPaper}>
-    <Typography variant="h6" sx={globalStyles.pageHeaderText}>
-      {title}
-    </Typography>
-    <List>
-      {data.map((item, idx) => (
-        <ListItem key={idx} divider>
-          <ListItemText
-            primary={item[primaryKey]}
-            secondary={secondaryKey ? `Current Status: ${item[secondaryKey]}` : null}
-          />
-        </ListItem>
-      ))}
-    </List>
-  </Paper>
-);
+// REMOVED: Generic DataSection component
 
 // Main page component
 export default function AssetStatusContent() {
-  //router for redirection/navigation
   const router = useRouter();
-
-  //snack-bar state
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
-  // Function to handle the logout action  with snackbar and redirect to the login page
   const handleLogout = () => {
-    setOpenSnackbar(true);//shows feedback for snackbar
-    setTimeout(() => {
-      router.push('/login');
-    }, 1500); //snackbar will redirect after 1.5 seconds.
-
+    setOpenSnackbar(true);
+    setTimeout(() => { router.push('/login'); }, 1500);
   };
 
-  const {
-    state,
-    handlers,
-    data
-  } = useAssetStatusDoc();
+  const { state, handlers } = useAssetStatusDoc();
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation */}
-      <Sidebar currentPath={state.currentPath}
-        handleLogout={handleLogout}
-        auditorMenu={data.auditorMenu} />
+      <Sidebar handleLogout={handleLogout} />
 
-      {/* Main Content */}
       <Box component="main" sx={globalStyles.mainContentBox}>
-        {/* Header */}
-        <Header />
+        <Header search={state.search} handleSearchChange={handlers.handleSearchChange} />
 
-        {/* Content Section */}
-        <Box sx={globalStyles.assetStatusPaper}>
-          <DataSection
-            title="Status Dashboard"
-            data={state.filteredStatusData}
-            primaryKey="asset"
-            secondaryKey="status"
-          />
-          <DataSection
-            title="Document Attachment Support"
-            data={state.filteredDocumentsData.map(doc => ({ primaryKey: doc }))}
-            primaryKey="primaryKey"
-          />
-          <DataSection
-            title="Digital Signature Capture"
-            data={state.filteredSignatures.map(sig => ({
-              primaryKey: `${sig.client} - ${sig.date}`,
-              secondaryKey: sig.status
-            }))}
-            primaryKey="primaryKey"
-            secondaryKey="secondaryKey"
-          />
+        {/* MODIFIED: Replaced DataSection with specific, styled tables */}
+        <Box sx={{ display: 'grid', gap: 4 }}>
+          {/* Status Dashboard Table */}
+          <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fefae0' }}>
+            <Typography variant="h6" sx={styles.assetStatusSectionTitle}>
+              Status Dashboard
+            </Typography>
+            <TableContainer component={Paper} sx={styles.tableContainerStyles}>
+              <Table aria-label="status dashboard table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Asset</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Current Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {state.filteredStatusData.map((item, idx) => (
+                    <TableRow key={idx} hover>
+                      <TableCell>{item.asset}</TableCell>
+                      <TableCell>{item.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          {/* Document Attachment Table */}
+          <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fefae0' }}>
+            <Typography variant="h6" sx={styles.assetStatusSectionTitle}>
+              Document Attachment Support
+            </Typography>
+            <TableContainer component={Paper} sx={styles.tableContainerStyles}>
+              <Table aria-label="document attachment table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Document Name</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {state.filteredDocumentsData.map((doc, idx) => (
+                    <TableRow key={idx} hover>
+                      <TableCell>{doc}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          {/* Digital Signature Table */}
+          <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fefae0' }}>
+            <Typography variant="h6" sx={styles.assetStatusSectionTitle}>
+              Digital Signature Capture
+            </Typography>
+            <TableContainer component={Paper} sx={styles.tableContainerStyles}>
+              <Table aria-label="digital signature table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Client - Date</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {state.filteredSignatures.map((sig, idx) => (
+                    <TableRow key={idx} hover>
+                      <TableCell>{`${sig.client} - ${sig.date}`}</TableCell>
+                      <TableCell>{sig.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </Box>
       </Box>
 
-      {/* Snackbar with message when the user logs out of the system /their portal */}
-
+      {/* Snackbar (unchanged) */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert severity="success"
-          //we use SUCCESS instead of INFO so that we can have the power to switch colours
-          sx={{
-            width: '100%',
-            fontWeight: 'bold',
-            fontSize: '1.2rem'
-          }}>
+        <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           Logging out...
         </Alert>
       </Snackbar>
-
     </Box>
   );
 }
