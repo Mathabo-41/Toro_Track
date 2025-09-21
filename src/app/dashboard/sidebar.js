@@ -20,7 +20,7 @@ export default function Sidebar({ pathname }) {
         { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
         { name: 'Projects', path: '/dashboard/admin/projects' },
         { name: 'Teams & Users', path: '/dashboard/admin/users' },
-        { name: 'Permissions', path: '/dashboard/admin/permissions' },
+       //{ name: 'Permissions', path: '/dashboard/admin/permissions' },
         { name: 'Settings', path: '/dashboard/admin/settings' }
       ]
     },
