@@ -183,17 +183,30 @@ export const styles = {
   },
   dialogContent: {
     py: 3,
-    backgroundColor: '#fefae0'
+    px: 3,
+    overflow: 'visible',
   },
   dialogTextField: {
-    '& .MuiInputBase-input': { color: '#283618' },
-    '& .MuiInputLabel-root': { color: '#6b705c' },
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: '#6b705c' },
-      '&:hover fieldset': { borderColor: '#283618' },
-      '&.Mui-focused fieldset': { borderColor: '#283618' },
+  '& .MuiInputBase-input': { color: '#283618' },
+  '& .MuiInputLabel-root': { 
+    color: '#6b705c',
+    //  prevent cutting off
+    '&.MuiInputLabel-shrink': {
+      transform: 'translate(14px, -6px) scale(0.75)',
+      padding: '0 4px',
+      borderRadius: '4px'
     }
   },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#6b705c' },
+    '&:hover fieldset': { borderColor: '#283618' },
+    '&.Mui-focused fieldset': { borderColor: '#283618' },
+    // Ensure the label has proper z-index
+    '& .MuiInputLabel-outlined': {
+      zIndex: 1
+    }
+  }
+},
   dialogSelect: {
     color: '#283618'
   },

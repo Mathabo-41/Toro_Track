@@ -38,7 +38,7 @@ export default function Sidebar({ pathname }) {
       items: [
         { name: 'Project Details', path: '/dashboard/client/details' },
         { name: 'Raise Query', path: '/dashboard/client/query' },
-        { name: 'Messages & Notifications', path: '/dashboard/client/messages' },
+        { name: 'Agenda', path: '/dashboard/client/messages' },
         { name: 'Settings', path: '/dashboard/client/settings' }
       ]
     },

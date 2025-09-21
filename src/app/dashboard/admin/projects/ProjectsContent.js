@@ -328,51 +328,150 @@ const handleSaveEdit = () => {
       <CloseIcon />
     </IconButton>
   </DialogTitle>
-  <DialogContent sx={styles.dialogContent}>
-    {editProject ? (
-      <Stack spacing={3}>
-        <TextField
-          fullWidth
-          label="Project Name"
-          name="name"
-          value={editProject.name || ""}
+  <DialogContent
+  sx={{
+    ...styles.dialogContent,
+    mt: 3,
+    px: 3, // Add horizontal padding
+    overflow: 'visible'
+  }}
+>
+  {editProject ? (
+    <Stack spacing={3}>
+      {/* Project Name */}
+      <TextField
+        fullWidth
+        label="Project Name"
+        name="name"
+        value={editProject.name || ""}
+        onChange={handleEditInputChange}
+        sx={styles.dialogTextField}
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            backgroundColor: '#fefae0',
+            padding: '0 4px',
+            borderRadius: '4px',
+            ml: -0.5,
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -6px) scale(0.75)'
+            }
+          }
+        }}
+      />
+      
+      {/* Client */}
+      <TextField
+        fullWidth
+        label="Client"
+        name="client"
+        value={editProject.client || ""}
+        onChange={handleEditInputChange}
+        sx={styles.dialogTextField}
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            backgroundColor: '#fefae0',
+            padding: '0 4px',
+            borderRadius: '4px',
+            ml: -0.5,
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -6px) scale(0.75)'
+            }
+          }
+        }}
+      />
+      
+      {/* Due Date */}
+      <TextField
+        fullWidth
+        type="date"
+        label="Due Date"
+        name="dueDate"
+        InputLabelProps={{ 
+          shrink: true,
+          sx: {
+            backgroundColor: '#fefae0',
+            padding: '0 4px',
+            borderRadius: '4px',
+            ml: -0.5,
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -6px) scale(0.75)'
+            }
+          }
+        }}
+        value={editProject.dueDate || ""}
+        onChange={handleEditInputChange}
+        sx={styles.dialogTextField}
+      />
+      
+      {/* Status */}
+      <FormControl fullWidth>
+        <InputLabel sx={{ 
+          color: '#6b705c',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -6px) scale(0.75)',
+            backgroundColor: '#fefae0',
+            padding: '0 4px',
+            borderRadius: '4px'
+          }
+        }}>
+          Status
+        </InputLabel>
+        <Select
+          name="status"
+          value={editProject.status || ""}
           onChange={handleEditInputChange}
-          sx={styles.dialogTextField}
-        />
-        <TextField
-          fullWidth
-          label="Client"
-          name="client"
-          value={editProject.client || ""}
-          onChange={handleEditInputChange}
-          sx={styles.dialogTextField}
-        />
-        <TextField
-          fullWidth
-          type="date"
-          label="Due Date"
-          name="dueDate"
-          InputLabelProps={{ shrink: true }}
-          value={editProject.dueDate || ""}
-          onChange={handleEditInputChange}
-          sx={styles.dialogTextField}
-        />
-        <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
-          <Select
-            name="status"
-            value={editProject.status || ""}
-            onChange={handleEditInputChange}
-          >
-            <MenuItem value="not started">Not Started</MenuItem>
-            <MenuItem value="inprogress">In Progress</MenuItem>
-            <MenuItem value="pending">Pending</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
-    ) : null}
-  </DialogContent>
+          sx={styles.dialogSelect}
+        >
+          <MenuItem value="not started">Not Started</MenuItem>
+          <MenuItem value="inprogress">In Progress</MenuItem>
+          <MenuItem value="pending">Pending</MenuItem>
+          <MenuItem value="completed">Completed</MenuItem>
+        </Select>
+      </FormControl>
+
+      {/* Team Members Selection */}
+      <FormControl fullWidth>
+        <InputLabel sx={{ 
+          color: '#6b705c',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -6px) scale(0.75)',
+            backgroundColor: '#fefae0',
+            padding: '0 4px',
+            borderRadius: '4px'
+          }
+        }}>
+          Team Members
+        </InputLabel>
+        <Select
+          multiple
+          name="team" // Add name attribute for handleEditInputChange
+          value={editProject.team || []} // Use editProject.team 
+          onChange={handleEditInputChange} // Use the same handler
+          label="Team Members"
+          renderValue={(selected) => (
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
+              {selected.map(memberInitials => (
+                <Avatar key={memberInitials} sx={styles.teamAvatar}>
+                  {memberInitials}
+                </Avatar>
+              ))}
+            </Stack>
+          )}
+          sx={styles.dialogSelect}
+        >
+          {teamMembers.map(member => (
+            <MenuItem key={member.id} value={member.initials}>
+              <Checkbox checked={editProject.team?.includes(member.initials) || false} />
+              <ListItemText primary={member.name} sx={{ color: '#283618' }} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Stack>
+  ) : null}
+</DialogContent>
   <DialogActions sx={styles.dialogActions}>
     <Button
       onClick={() => setOpenEditDialog(false)}
@@ -556,7 +655,12 @@ const handleSaveEdit = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={styles.dialogContent}>
+        <DialogContent
+   sx={{
+     ...styles.dialogContent,
+          mt: 2, // moves the whole content block down
+      }}
+     >
           <Stack spacing={3}>
            
             {/* Project Name Input */}
