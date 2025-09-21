@@ -627,7 +627,7 @@ const [viewMode, setViewMode] = useState('kanban');
         </Grid>
 
         {/* Kanban Board Section */}
-        <Card sx={{ mb: 4, boxShadow: 3, bgcolor:'khaki' }}>
+        <Card sx={{ mb: 4, boxShadow: 3, bgcolor:'#BDB76B' }}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, fontWeight: 'bold' }}>
               <Typography variant="h6"  sx={styles.chartTitle}>
@@ -670,7 +670,7 @@ const [viewMode, setViewMode] = useState('kanban');
                     transform: projectMenuAnchor ? 'rotate(90deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s'
                   }} />}
-                  sx={{ minWidth: '200px', justifyContent: 'space-between' }}
+                  sx={{ minWidth: '250px', justifyContent: 'space-between' , color: '#990c0cff', fontSize: "15px", fontFamily: "bold" , fontFamily: "sans-serif" }}
                 >
                   {/**display the current project  */}
                   <Box sx={{ 
@@ -693,7 +693,7 @@ const [viewMode, setViewMode] = useState('kanban');
                   PaperProps={{
                     style: {
                       maxHeight: 300,
-                      width: '250px',
+                      width: '350px',
                     },
                   }}
                 >
@@ -794,7 +794,7 @@ const [viewMode, setViewMode] = useState('kanban');
                 display: 'flex', 
                 overflowX: 'auto',
                 padding: '1rem 0',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#F0E68C',
                 borderRadius: '8px',
                 mt: 2
               }}>
