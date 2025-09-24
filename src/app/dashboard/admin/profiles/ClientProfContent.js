@@ -48,7 +48,9 @@ export default function ClientProfContent() {
     clients, loading, error,
     anchorEl, selectedClientId,
     handleMenuOpen, handleMenuClose,
-    handleDelete, handleStatusChange
+    handleDelete, handleStatusChange,
+    profileData, loadingProfile,
+    loadClientProfile
   } = useProfiles();
 
   const { selectedMenu, setSelectedMenu } = useAdminStore();
@@ -61,31 +63,8 @@ export default function ClientProfContent() {
   const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
 
   //state for opening a clients file/information that will be displayed with a pop up 
-
   const [selectedClient, setSelectedClient] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(false);
-  
-  //use effects for fetching the client data from the database 
-  const [profileData, setProfileData] = React.useState(null);
-  const [loadingProfile, setLoadingProfile] = React.useState(false);
-
-  React.useEffect(() => {
-  if (selectedClient?.id) {
-    setLoadingProfile(true);
-    fetch(`/api/clients/${selectedClient.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProfileData(data);
-      })
-      .catch((err) => {
-        console.error("Failed to load client profile", err);
-      })
-      .finally(() => {
-        setLoadingProfile(false);
-      });
-  }
-}, [selectedClient?.id]);
-
   
   const handleLogout = () => {
     showSnackbar('Logging out...', 'info');
@@ -96,14 +75,15 @@ export default function ClientProfContent() {
 
   //helpers for closing and opening a certain users profile 
   const handleOpenProfile = (client) => {
-  setSelectedClient(client);
-  setOpenProfile(true);
-};
+    setSelectedClient(client);
+    loadClientProfile(client.id);
+    setOpenProfile(true);
+  };
 
-const handleCloseProfile = () => {
-  setSelectedClient(null);
-  setOpenProfile(false);
-};
+  const handleCloseProfile = () => {
+    setSelectedClient(null);
+    setOpenProfile(false);
+  };
 
 //helper to filter priority filtering 
 const formatPriorityText = (priority) => {

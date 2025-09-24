@@ -13,9 +13,14 @@ export default function useProfiles() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedClientId, setSelectedClientId] = useState(null);
 
+  // State for the client profile modal
+  const [profileData, setProfileData] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [errorProfile, setErrorProfile] = useState(null);
+
   // This is where we fetch data from the database.
   useEffect(() => {
-    async function fetchClients() {
+    async function loadClients() {
       try {
         setLoading(true);
         const fetchedClients = await service.fetchClients();
@@ -26,11 +31,24 @@ export default function useProfiles() {
         setLoading(false);
       }
     }
-
-    fetchClients();
+    loadClients();
   }, []);
+  
+  // Fetches detailed data for the profile modal.
+  const loadClientProfile = async (clientId) => {
+    try {
+        setLoadingProfile(true);
+        setErrorProfile(null);
+        const data = await service.fetchClientProfile(clientId);
+        setProfileData(data);
+    } catch (err) {
+        setErrorProfile(err.message);
+    } finally {
+        setLoadingProfile(false);
+    }
+  };
 
-  // This is where we will send data to the database.
+  // This is where we send data to the database.
   const handleMenuOpen = (event, clientId) => {
     setAnchorEl(event.currentTarget);
     setSelectedClientId(clientId);
@@ -41,21 +59,34 @@ export default function useProfiles() {
     setSelectedClientId(null);
   };
 
-  const handleDelete = () => {
-    setClients(clients.filter((client) => client.id !== selectedClientId));
-    handleMenuClose();
+  const handleDelete = async () => {
+    try {
+        await service.deleteClient(selectedClientId);
+        setClients(clients.filter((client) => client.id !== selectedClientId));
+    } catch (err) {
+        // The frontend can display this error via a snackbar
+        console.error(err);
+    } finally {
+        handleMenuClose();
+    }
   };
 
-  const handleStatusChange = (clientId, newPriority) => {
-    setClients(
-      clients.map((client) =>
-        client.id === clientId ? { ...client, priority: newPriority } : client
-      )
-    );
-    handleMenuClose();
+  const handleStatusChange = async (clientId, newPriority) => {
+    try {
+        await service.updateClientStatus(clientId, newPriority);
+        setClients(
+          clients.map((client) =>
+            client.id === clientId ? { ...client, priority: newPriority } : client
+          )
+        );
+    } catch(err) {
+        console.error(err);
+    } finally {
+        handleMenuClose();
+    }
   };
 
-   // This is where we call the data that we are sending anf fetching from the database. We call it so that it can be
+   // This is where we call the data that we are sending anf fetching from the database.
   return {
     clients,
     loading,
@@ -66,5 +97,10 @@ export default function useProfiles() {
     handleMenuClose,
     handleDelete,
     handleStatusChange,
+    // Expose modal-related state and functions
+    profileData,
+    loadingProfile,
+    errorProfile,
+    loadClientProfile,
   };
 }

@@ -1,7 +1,11 @@
+// This file configures path aliases for cleaner imports.
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/lib/*": ["src/lib/*"],
+      "@/app/*": ["src/app/*"],
+      "@/components/*": ["src/components/*"]
     }
   }
 }

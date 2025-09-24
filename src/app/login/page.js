@@ -1,10 +1,9 @@
+// This file contains the client-side logic for the login page.
 'use client';
-//supabase import 
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image"; // Image import is necessary
+import { supabase } from '@/lib/supabaseClient'; 
 import {
   mainContainer,
   videoBackground,
@@ -16,26 +15,68 @@ import {
   inputField,
   passwordField,
   loginButton,
-  loginButtonHover, // Import the new hover style object
-  globalStyles, // Import the global styles string
+  loginButtonHover,
+  globalStyles,
 } from './login_styles/styles.js';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // Add a new state hook to track whether the button is being hovered over
   const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  /*
+  Handles the standard email and password login process.
+  It authenticates the user, fetches their role from the database,
+  and redirects them to the appropriate dashboard.
+  */
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in:", email, password);
-    router.push("/dashboard");
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error;
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Redirect based on the user's role
+      switch (profile.role) {
+        case 'admin':
+          router.push('/dashboard/admin/overview');
+          break;
+        case 'client':
+          router.push('/dashboard/client/details');
+          break;
+        case 'auditor':
+          router.push('/dashboard/auditor/audit-trail');
+          break;
+        default:
+          router.push('/login');
+      }
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main style={mainContainer}>
-      {/* Video Background */}
       <video
         autoPlay
         loop
@@ -47,18 +88,14 @@ export default function Login() {
         Your browser does not support the video tag.
       </video>
 
-      {/* Subtle overlay for better text readability */}
       <div style={subtleOverlay}></div>
 
-      {/* Main content container */}
       <div style={mainContentContainer}>
-        {/* Form Container */}
         <div style={formContainer}>
-          {/* Login Text */}
           <h2 style={loginTitle}>
             Login
           </h2>
-          <form onSubmit={handleSubmit} style={formStyle}>
+          <form onSubmit={handleLogin} style={formStyle}>
             <input
               type="email"
               placeholder="Email"
@@ -77,19 +114,18 @@ export default function Login() {
             />
             <button
               type="submit"
-              // Conditionally apply the hover styles using a ternary operator
               style={isHovered ? { ...loginButton, ...loginButtonHover } : loginButton}
-              // Add onMouseEnter and onMouseLeave event handlers
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              disabled={loading}
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </button>
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
           </form>
         </div>
       </div>
 
-      {/* Animation styles */}
       <style jsx global>{globalStyles}</style>
     </main>
   );
