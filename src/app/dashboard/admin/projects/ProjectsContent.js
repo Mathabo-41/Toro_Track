@@ -1,8 +1,11 @@
 // This file contains the content and UI for the admin's project management screen.
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabaseClient';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Card, CardContent, Stack, Avatar, List, ListItem, ListItemButton, ListItemText, Drawer,
@@ -15,19 +18,12 @@ import {
   Delete as DeleteIcon, Close as CloseIcon, AdminPanelSettings as AdminIcon,
   VerifiedUser as AuditorIcon, Person as ClientIcon, Logout as LogoutIcon, People as PeopleIcon
 } from '@mui/icons-material';
-import Link from 'next/link';
-import Image from 'next/image';
-
-//dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
-
-// Snackbar for notifications
 import { Snackbar, Alert } from '@mui/material';
 
 import { useProjects } from './useProjects/page';
 import { styles } from './styles';
 
-// Static sidebar navigation items for the admin portal
 export const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
@@ -37,18 +33,10 @@ export const adminMenu = [
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 
-// A centralized list of project statuses to ensure consistency across the UI.
 const PROJECT_STATUSES = [
-  'not started',
-  'pending',
-  'active',
-  'inprogress',
-  'on_hold',
-  'completed',
-  'cancelled'
+  'not started', 'pending', 'active', 'inprogress', 'on_hold', 'completed', 'cancelled'
 ];
 
-// Helper to format status strings for display (e.g., "not started" -> "Not Started")
 const formatStatus = (status) => {
   if (!status) return '';
   return status.split(/[\s_]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -61,16 +49,29 @@ export default function ProjectsContent() {
     handleDeleteProject, handleStatusChange, handleCreateProject, handleInputChange, handleTeamChange,
     updateProject
   } = useProjects();
-
-  const [activeCategory, setActiveCategory] = React.useState('Projects');
-  const [teamAnchorEl, setTeamAnchorEl] = React.useState(null);
-  const [selectedTeam, setSelectedTeam] = React.useState([]);
+  
   const router = useRouter();
-  const [openSnackbar, setOpenSnackbar] = React.useState(false);
-  const [snackbarMessage, setSnackbarMessage] = React.useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
-  const [openEditDialog, setOpenEditDialog] = React.useState(false);
-  const [editProject, setEditProject] = React.useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [teamAnchorEl, setTeamAnchorEl] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editProject, setEditProject] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const handleTeamClick = (event, team) => {
     setTeamAnchorEl(event.currentTarget);
@@ -121,17 +122,9 @@ export default function ProjectsContent() {
     setOpenEditDialog(false);
     setEditProject(null);
   };  
- 
-  const handleLogout = () => {
-    showSnackbar('Logging out...', 'info');
-    setTimeout(() => {
-      router.push('/login');
-    }, 1500);
-  };
 
   return (
     <Box sx={styles.container}>
-      {/* RENDER: Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebar}>
          <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
             <Link href="/dashboard" passHref>
@@ -139,52 +132,34 @@ export default function ProjectsContent() {
                 <DashboardIcon />
               </IconButton>
             </Link>
-            <Typography variant="h5" sx={{ color: '#fefae0'}}>
-              Admin Portal
-            </Typography>
+            <Typography variant="h5" sx={{ color: '#fefae0'}}>Admin Portal</Typography>
         </Box>
         <List>
           {adminMenu.map((item, index) => (
             <ListItem key={index} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                sx={styles.sidebarListItemButton(item.name)}
-                onClick={() => setActiveCategory(item.name)}
-                onMouseEnter={() => router.prefetch(item.path)}
-              >
+              <ListItemButton component={Link} href={item.path} sx={styles.sidebarListItemButton(item.name)}>
                 <ListItemText primary={item.name} />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-                <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-                    <Image src="/toroLogo.jpg" alt="User Profile" layout="fill" objectFit="cover" />
-                </Box>
+        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+                <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
                 <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: '600', color: '#fefae0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        John Doe
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.8rem', color: 'rgba(254, 250, 224, 0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {activeCategory ? `${activeCategory.replace(/([A-Z])/g, ' $1').trim()}@toro.com` : 'user@toro.com'}
-                    </Typography>
+                    <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+                    <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Admin</Typography>
                 </Box>
             </Box>
-            <Button onClick={handleLogout} fullWidth sx={styles.logoutButton}>
-                <LogoutIcon /> <span style={{ marginLeft: '8px' }}>Logout</span>
+            <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+                Logout
             </Button>
         </Box>
       </Drawer>
 
-      {/* RENDER: Main Content */}
       <Box component="main" sx={styles.mainContent}>
         <Box sx={styles.header}>
-          <Typography variant="h4" sx={styles.title}>
-            <ProjectIcon sx={styles.titleIcon} />
-            Projects
-          </Typography>
+          <Typography variant="h4" sx={styles.title}><ProjectIcon sx={styles.titleIcon} />Projects</Typography>
           <Stack direction="row" spacing={2} sx={styles.searchStack}>
             <TextField
               size="small"
@@ -193,13 +168,10 @@ export default function ProjectsContent() {
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon sx={styles.searchIcon} /></InputAdornment>), sx: styles.searchField }}
             />
-            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)} sx={styles.newProjectButton}>
-              New Project
-            </Button>
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)} sx={styles.newProjectButton}>New Project</Button>
           </Stack>
         </Box>
 
-        {/* RENDER: Edit Project Dialog */}
         <Dialog open={openEditDialog && Boolean(editProject)} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: styles.createDialogPaper }}>
             <DialogTitle sx={styles.createDialogTitle}>
                 <Typography component="span" variant="h6">Edit Project</Typography>
@@ -214,9 +186,7 @@ export default function ProjectsContent() {
                         <FormControl fullWidth>
                             <InputLabel sx={styles.dialogInputLabel}>Status</InputLabel>
                             <Select name="status" value={editProject.status || ""} onChange={handleEditInputChange} sx={styles.dialogSelect}>
-                                {PROJECT_STATUSES.map(status => (
-                                    <MenuItem key={status} value={status}>{formatStatus(status)}</MenuItem>
-                                ))}
+                                {PROJECT_STATUSES.map(status => (<MenuItem key={status} value={status}>{formatStatus(status)}</MenuItem>))}
                             </Select>
                         </FormControl>
                         <FormControl fullWidth>
@@ -246,12 +216,9 @@ export default function ProjectsContent() {
             </DialogActions>
         </Dialog>
 
-        {/* RENDER: Projects Table */}
         <Card sx={styles.projectsCard}>
           <CardContent>
-            <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 500 }}>
-              All Projects ({filteredProjects.length})
-            </Typography>
+            <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 500 }}>All Projects ({filteredProjects.length})</Typography>
             <TableContainer component={Paper} sx={styles.tableContainer}>
               <Table>
                   <TableHead>
@@ -268,38 +235,13 @@ export default function ProjectsContent() {
                   <TableBody>
                       {filteredProjects.map((project) => (
                           <TableRow key={project.id} hover sx={styles.tableRowHover}>
-                              <TableCell sx={styles.tableCell}>
-                                  <Stack direction="row" alignItems="center" spacing={1}>
-                                      <ProjectIcon sx={{ color: '#f3722c' }} />
-                                      <Typography>{project.name}</Typography>
-                                  </Stack>
-                              </TableCell>
+                              <TableCell sx={styles.tableCell}><Stack direction="row" alignItems="center" spacing={1}><ProjectIcon sx={{ color: '#f3722c' }} /><Typography>{project.name}</Typography></Stack></TableCell>
                               <TableCell sx={styles.tableCell}>{project.client}</TableCell>
-                              <TableCell>
-                                  <Chip label={formatStatus(project.status)} sx={styles.chip(project.status)} />
-                              </TableCell>
-                              <TableCell sx={styles.tableCell}>
-                                  <Stack direction="row" alignItems="center" spacing={1}>
-                                      <TimelineIcon fontSize="small" sx={{ color: '#f3722c' }} />
-                                      <Typography>{project.dueDate}</Typography>
-                                  </Stack>
-                              </TableCell>
-                              <TableCell sx={styles.tableCell}>
-                                  <Stack direction="row" alignItems="center" spacing={1}>
-                                      {project.progress === 100 ? <CompleteIcon color="success" /> : <PendingIcon color={project.progress > 50 ? 'warning' : 'error'} />}
-                                      <Typography>{project.progress}%</Typography>
-                                  </Stack>
-                              </TableCell>
-                              <TableCell>
-                                  <Stack direction="row" spacing={0.5} onClick={(e) => handleTeamClick(e, project.team)} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
-                                      {project.team.map((member, i) => (<Avatar key={i} sx={styles.teamAvatar}>{member}</Avatar>))}
-                                  </Stack>
-                              </TableCell>
-                              <TableCell>
-                                  <IconButton sx={styles.actionIconButton} onClick={(e) => handleMenuOpen(e, project.id)}>
-                                      <MoreVertIcon />
-                                  </IconButton>
-                              </TableCell>
+                              <TableCell><Chip label={formatStatus(project.status)} sx={styles.chip(project.status)} /></TableCell>
+                              <TableCell sx={styles.tableCell}><Stack direction="row" alignItems="center" spacing={1}><TimelineIcon fontSize="small" sx={{ color: '#f3722c' }} /><Typography>{project.dueDate}</Typography></Stack></TableCell>
+                              <TableCell sx={styles.tableCell}><Stack direction="row" alignItems="center" spacing={1}>{project.progress === 100 ? <CompleteIcon color="success" /> : <PendingIcon color={project.progress > 50 ? 'warning' : 'error'} />}<Typography>{project.progress}%</Typography></Stack></TableCell>
+                              <TableCell><Stack direction="row" spacing={0.5} onClick={(e) => handleTeamClick(e, project.team)} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>{project.team.map((member, i) => (<Avatar key={i} sx={styles.teamAvatar}>{member}</Avatar>))}</Stack></TableCell>
+                              <TableCell><IconButton sx={styles.actionIconButton} onClick={(e) => handleMenuOpen(e, project.id)}><MoreVertIcon /></IconButton></TableCell>
                           </TableRow>
                       ))}
                   </TableBody>
@@ -309,27 +251,15 @@ export default function ProjectsContent() {
         </Card>
       </Box>
 
-        {/* RENDER: Action Menu for project operations */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} PaperProps={{ sx: styles.actionMenu }}>
-            <MenuItem onClick={() => { const projectToEdit = projects.find(p => p.id === selectedProject); setEditProject({ ...projectToEdit }); setOpenEditDialog(true); handleMenuClose(); }} sx={styles.menuItem}>
-                <EditIcon sx={styles.menuItemIcon('#2196f3')} /> Edit Project
-            </MenuItem>
-            <MenuItem onClick={handleDeleteProjectWithNotification} sx={styles.menuItem}>
-                <DeleteIcon sx={styles.menuItemIcon('#f44336')} /> Delete Project
-            </MenuItem>
+            <MenuItem onClick={() => { const projectToEdit = projects.find(p => p.id === selectedProject); setEditProject({ ...projectToEdit }); setOpenEditDialog(true); handleMenuClose(); }} sx={styles.menuItem}><EditIcon sx={styles.menuItemIcon('#2196f3')} /> Edit Project</MenuItem>
+            <MenuItem onClick={handleDeleteProjectWithNotification} sx={styles.menuItem}><DeleteIcon sx={styles.menuItemIcon('#f44336')} /> Delete Project</MenuItem>
             <Divider sx={{ backgroundColor: '#333' }} />
-            {PROJECT_STATUSES.map(status => (
-                <MenuItem key={status} onClick={() => handleStatusChangeWithNotification(selectedProject, status)} sx={styles.menuItem}>
-                    <Chip label={formatStatus(status)} size="small" sx={styles.statusChip(status)} />
-                </MenuItem>
-            ))}
+            {PROJECT_STATUSES.map(status => (<MenuItem key={status} onClick={() => handleStatusChangeWithNotification(selectedProject, status)} sx={styles.menuItem}><Chip label={formatStatus(status)} size="small" sx={styles.statusChip(status)} /></MenuItem>))}
         </Menu>
 
-      {/* RENDER: Snackbar for showing notifications */}
       <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-          <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1rem' }}>
-              {snackbarMessage}
-          </Alert>
+          <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1rem' }}>{snackbarMessage}</Alert>
       </Snackbar>
     </Box>
   );

@@ -1,19 +1,103 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+// This file handles all data-related tasks for this feature.
+import { supabase } from '@/lib/supabaseClient';
 
-// hardcode for the users list
-export const usersData = [
-  { id: 1, name: 'Mandla Mbele', email: 'mbelemandla@example.com', role: 'Admin', team: 'Management', tasks: ['Review projects'] },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Project Manager', team: 'Development', tasks: ['Lead team A'] },
-  { id: 3, name: 'Mike Johnson', email: 'mike@example.com', role: 'Developer', team: 'Frontend', tasks: ['Implement UI'] },
-];
+/*
+* Fetches all user, team, and task data from our secure API route.
+*/
+export const fetchAllData = async () => {
+  try {
+    const response = await fetch('/api/admin/users');
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching all data:', error);
+    return { users: [], teams: [], tasks: [] };
+  }
+};
 
-// hardcode for available teams
-export const teamsData = ['Management', 'Development', 'Frontend', 'Backend', 'Design'];
+/*
+* Invites a new user via our secure API route.
+*/
+export const inviteUser = async (email, role, password) => {
+  try {
+    const response = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, role, password }),
+    });
 
-// hardcode for common tasks
-export const tasksData = ['Review projects', 'Lead team A', 'Implement UI', 'API development', 'Design mockups'];
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+    return { user: result.user };
+  } catch (error) {
+    console.error('Error inviting user:', error);
+    return { error };
+  }
+};
 
-// hardcode for the sidebar navigation menu
+/*
+* Removes a user from the system.
+*/
+export const removeUser = async (userId) => {
+    // Note: This requires an API route for DELETE for full security.
+    // For now, this is a placeholder as the setup for DELETE is more involved.
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) {
+        console.error('Error removing user:', error);
+    }
+    return { error };
+};
+
+
+/*
+* Updates a user's role in the database.
+*/
+export const updateUserRole = async (userId, newRole) => {
+  const { error } = await supabase.rpc('update_user_role', {
+    p_user_id: userId,
+    p_new_role: newRole.toLowerCase(),
+  });
+  if (error) {
+    console.error('Error updating role:', error);
+  }
+  return { error };
+};
+
+/*
+* Updates a user's team assignment in the database.
+*/
+export const updateUserTeam = async (userId, newTeam) => {
+  const { error } = await supabase.rpc('update_user_team', {
+    p_user_id: userId,
+    p_team_name: newTeam,
+  });
+  if (error) {
+    console.error('Error updating team:', error);
+  }
+  return { error };
+};
+
+/*
+* Assigns a new task to a user.
+*/
+export const assignTask = async (userId, taskDescription) => {
+    const { error } = await supabase.rpc('assign_task_to_user', {
+        p_user_id: userId,
+        p_task_description: taskDescription,
+    });
+
+    if (error) {
+        console.error('Error assigning task:', error);
+    }
+    return { error };
+};
+
+
+// Static data for the sidebar navigation menu
 export const adminMenuData = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },

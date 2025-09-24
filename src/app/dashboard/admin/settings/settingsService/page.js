@@ -1,12 +1,5 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-
-import {
-  Notifications as NotificationsIcon,
-  Palette as PaletteIcon,
-  Security as SecurityIcon,
-  Link as LinkIcon,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+// This file handles all data-related tasks for this feature.
+import { supabase } from '@/lib/supabaseClient';
 
 // Static data for the sidebar navigation menu
 export const adminMenuData = [
@@ -18,42 +11,40 @@ export const adminMenuData = [
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 
-// Sample data for settings categories
-export const settingsCategoriesData = [
-  {
-    name: 'Notifications',
-    description: 'Configure email and in-app notifications',
-    icon: <NotificationsIcon color="primary" />,
-    status: 'active'
-  },
-  {
-    name: 'Theme',
-    description: 'Change color scheme and appearance',
-    icon: <PaletteIcon color="secondary" />,
-    status: 'active'
-  },
-  {
-    name: 'Security',
-    description: 'Password policies and authentication',
-    icon: <SecurityIcon color="success" />,
-    status: 'active'
-  },
-  {
-    name: 'Integrations',
-    description: 'Connect with other tools',
-    icon: <LinkIcon color="warning" />,
-    status: 'pending'
-  },
-  {
-    name: 'Data Management',
-    description: 'Backup and restore system data',
-    icon: <SettingsIcon color="info" />,
-    status: 'active'
-  },
-  {
-    name: 'API Configuration',
-    description: 'Manage API keys and endpoints',
-    icon: <SettingsIcon color="error" />,
-    status: 'inactive'
-  }
-];
+/*
+* Fetches the settings categories from the database.
+*/
+export const fetchSettingsCategories = async () => {
+    const { data, error } = await supabase.rpc('get_settings_categories');
+    if (error) {
+        console.error("Error fetching settings categories:", error);
+        return [];
+    }
+    return data;
+};
+
+/*
+* Fetches role permissions from the database.
+*/
+export const fetchRolePermissions = async () => {
+    const { data, error } = await supabase.rpc('get_role_permissions');
+    if (error) {
+        console.error("Error fetching role permissions:", error);
+        return [];
+    }
+    return data;
+};
+
+/*
+* Saves the updated role permissions to the database.
+*/
+export const saveRolePermissions = async (permissions) => {
+    const { error } = await supabase.rpc('update_role_permissions', {
+        p_permissions: permissions
+    });
+
+    if (error) {
+        console.error("Error saving permissions:", error);
+    }
+    return { error };
+};

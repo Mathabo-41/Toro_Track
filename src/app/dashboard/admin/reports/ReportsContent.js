@@ -1,65 +1,56 @@
-/* The file that combines the logic with the styles and displays it as a screen. Rendering takes place here to make the screen respond fast when it is being clicked*/
-
+// This file combines logic and styles for the reports screen.
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
-  Box, Typography, Button, Card,
-  CardContent, Stack, Avatar, List, ListItem,
-  ListItemButton, ListItemText, Drawer,
-  Grid, Paper, Table, TableBody,
-  TableCell, TableContainer, TableHead,
-  TableRow, Chip, IconButton, TextField,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Tooltip, Select, MenuItem, FormControl, InputLabel,
-  Menu, Tabs, Tab, CircularProgress
+  Box, Typography, Button, Card, CardContent, Stack, Avatar, List, ListItem,
+  ListItemButton, ListItemText, Drawer, Grid, Paper, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, TextField,
+  Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Select, MenuItem,
+  FormControl, InputLabel, Menu, Tabs, Tab, CircularProgress
 } from '@mui/material';
 import {
-  Assessment as ReportsIcon,
-  Download as DownloadIcon,
-  Timeline as TimelineIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Logout as LogoutIcon,
-  CheckCircle as DoneIcon,
-  Build as InProgressIcon,
-  PlaylistAdd as BacklogIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
-  ArrowForward as ArrowForwardIcon,
-  Folder as ProjectIcon,
-  Person as PersonIcon,
-  Security as RoleIcon,
-  ViewList as ProjectListIcon,
-  Dashboard as DashboardIcon
+  Assessment as ReportsIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon,
+  Logout as LogoutIcon, Add as AddIcon, ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon,
+  Folder as ProjectIcon, Person as PersonIcon, ViewList as ProjectListIcon, Dashboard as DashboardIcon
 } from '@mui/icons-material';
-
-// Import snackbar components
 import { Snackbar, Alert } from '@mui/material';
 
-// Import local files
 import { styles } from './styles';
 import { useReports } from './useReports/page';
 
-/**
- * Main Performance Reports Component with Kanban Board
- */
 export default function PerformanceReports() {
   const { 
-    reports, activities, projects, teamMembers, loading, error, menu,
-    currentUser, rolePermissions,
+    reports, projects, teamMembers, loading, error, menu,
+    rolePermissions,
     openSnackbar, snackbarMessage, snackbarSeverity, setOpenSnackbar,
     currentProjectIndex, currentProject,
     openTaskDialog, setOpenTaskDialog, currentTask, setCurrentTask, isEditing,
     projectMenuAnchor, viewMode, setViewMode,
-    handleLogout, handleExport, handleProjectMenuOpen, handleProjectMenuClose,
+    handleExport, handleProjectMenuOpen, handleProjectMenuClose,
     handleProjectSelect, handleAddTask, handleEditTask, handleDeleteTask,
     handleSaveTask, moveTask, handleProjectChange
   } = useReports();
+  
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
   
   const getAssigneeColor = (assigneeId) => {
     const member = teamMembers.find(m => m.id === assigneeId);
@@ -86,14 +77,9 @@ export default function PerformanceReports() {
 
   return (
     <Box sx={styles.mainContainer}>
-      {/* Sidebar Navigation */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
           <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Link href="/dashboard" passHref>
-                  <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-                      <DashboardIcon />
-                  </IconButton>
-              </Link>
+              <Link href="/dashboard" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
               <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
           </Box>
           <List>
@@ -105,30 +91,26 @@ export default function PerformanceReports() {
                   </ListItem>
               ))}
           </List>
-          <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-                  <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-                      <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>{currentUser.name || 'Admin User'}</Typography>
-                      <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>user@toro.com</Typography>
-                  </Box>
-              </Box>
-              <Button onClick={handleLogout} fullWidth sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}>
-                  Logout
-              </Button>
+          <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+                <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+                <Box sx={{ minWidth: 0 }}>
+                    <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+                    <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Admin</Typography>
+                </Box>
+            </Box>
+            <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+                Logout
+            </Button>
           </Box>
       </Drawer>
 
-      {/* Main Content */}
       <Box component="main" sx={styles.mainContent}>
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageTitle}><ReportsIcon sx={styles.headerIcon} />Performance Reports</Typography>
           <Typography variant="body1" sx={styles.pageSubtitle}>Analytics and insights for your CRM system</Typography>
         </Box>
 
-        {/* Key Metrics Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reports).map(([key, metric]) => (
             <Grid item xs={12} sm={6} md={4} lg={2} key={key}>
@@ -151,11 +133,9 @@ export default function PerformanceReports() {
           ))}
         </Grid>
 
-        {/* Kanban Board Section */}
         {currentProject && (
             <Card sx={{ mb: 4, boxShadow: 3, bgcolor:'#BDB76B' }}>
             <CardContent>
-              {/* Kanban Header */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, fontWeight: 'bold' }}>
                   <Typography variant="h6" sx={styles.chartTitle}><ProjectIcon sx={styles.headerIcon} />Project Task Board</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -187,7 +167,6 @@ export default function PerformanceReports() {
                   </Box>
               </Box>
 
-              {/* Kanban View */}
               {viewMode === 'kanban' ? (
                 <Box sx={{ display: 'flex', overflowX: 'auto', padding: '1rem 0', backgroundColor: '#F0E68C', borderRadius: '8px', mt: 2 }}>
                   {Object.entries(currentProject.columns).map(([columnId, column]) => (
@@ -195,7 +174,7 @@ export default function PerformanceReports() {
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{column.title}</Typography>
                         <Chip label={column.tasks?.length || 0} size="small" sx={{ ml: 'auto', backgroundColor: '#FF9F1C', color: 'white', fontWeight: 'bold' }} />
-                        {rolePermissions[currentUser.role].canAdd && column.id === 'backlog' && (
+                        {rolePermissions[currentUser?.role]?.canAdd && column.id === 'backlog' && (
                           <Tooltip title="Add Task">
                             <IconButton size="small" sx={{ ml: 1 }} onClick={() => handleAddTask(columnId)}><AddIcon fontSize="small" /></IconButton>
                           </Tooltip>
@@ -218,14 +197,13 @@ export default function PerformanceReports() {
                   ))}
                 </Box>
               ) : (
-                <p>List view goes here</p> // Placeholder for list view
+                <p>List view goes here</p>
               )}
             </CardContent>
           </Card>
         )}
       </Box>
 
-      {/* Task Dialog */}
       <Dialog open={openTaskDialog} onClose={() => setOpenTaskDialog(false)} fullWidth maxWidth="sm">
           <DialogTitle>{isEditing ? 'Edit Task' : 'Add New Task'}</DialogTitle>
           <DialogContent>
@@ -247,7 +225,6 @@ export default function PerformanceReports() {
           </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
       <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
           <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1rem' }}>{snackbarMessage}</Alert>
       </Snackbar>

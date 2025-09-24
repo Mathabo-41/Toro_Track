@@ -1,36 +1,89 @@
+// Contains all the logic and instructions for this feature.
 "use client";
-// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 
-import { useState } from 'react';
-import { settingsCategoriesData, adminMenuData } from '../settingsService/page';
+import { useState, useEffect } from 'react';
+import {
+  Notifications as NotificationsIcon,
+  Palette as PaletteIcon,
+  Security as SecurityIcon,
+  Link as LinkIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
+import { 
+    adminMenuData,
+    fetchSettingsCategories,
+    fetchRolePermissions,
+    saveRolePermissions
+} from '../settingsService/page';
 
-//manage state and logic for this screen
+// Defines a mapping from category name to its corresponding icon component.
+const iconMap = {
+    'Notifications': <NotificationsIcon color="primary" />,
+    'Theme': <PaletteIcon color="secondary" />,
+    'Security': <SecurityIcon color="success" />,
+    'Integrations': <LinkIcon color="warning" />,
+    'Data Management': <SettingsIcon color="info" />,
+    'API Configuration': <SettingsIcon color="error" />,
+};
+
+/*
+* Manages state and logic for the settings screen.
+*/
 export const useSettings = () => {
-// Where we will use React Query to fetch data
-  const settingsCategories = settingsCategoriesData;
-  const menu = adminMenuData;
+    const [settingsCategories, setSettingsCategories] = useState([]);
+    const [roles, setRoles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true); // Manages loading state.
+    const menu = adminMenuData;
 
-  /**
-   * Handles the 'Configure' action for a specific setting category.
-   * @param {string} categoryName - The name of the settings category.
-   */
-  const handleConfigure = (categoryName) => {
-    alert(`Configuring ${categoryName} settings...`);
-  };
+    /*
+    * Loads initial data for categories and permissions from the database.
+    */
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoading(true);
+            const categoriesData = await fetchSettingsCategories();
+            const permissionsData = await fetchRolePermissions();
 
-  /**
-   * Handles a system maintenance action.
-   * @param {string} action - The maintenance action to perform ( 'Backup', 'Clear Cache').
-   */
-  const handleMaintenance = (action) => {
-    alert(`Initiating system action: ${action}`);
-  };
+            const categoriesWithIcons = categoriesData.map(cat => ({
+                ...cat,
+                icon: iconMap[cat.name] || <SettingsIcon />
+            }));
 
-  // This is where we call the data that we are sending anf fetching from the database. We call it so that it can be displayed
-  return {
-    settingsCategories,
-    menu,
-    handleConfigure,
-    handleMaintenance,
-  };
+            setSettingsCategories(categoriesWithIcons);
+            setRoles(permissionsData || []); // Add fallback for null response.
+            setIsLoading(false);
+        };
+
+        loadData();
+    }, []);
+
+    const handleConfigure = (categoryName) => {
+        alert(`Configuring ${categoryName} settings...`);
+    };
+
+    const handleMaintenance = (action) => {
+        alert(`Initiating system action: ${action}`);
+    };
+
+    /*
+    * Handles saving the permissions and provides feedback.
+    */
+    const handleSavePermissions = async () => {
+        const { error } = await saveRolePermissions(roles);
+        if (error) {
+            return { success: false, message: 'Failed to save permissions.' };
+        }
+        return { success: true, message: 'Permissions saved successfully!' };
+    };
+
+    return {
+        settingsCategories,
+        menu,
+        roles,
+        setRoles,
+        isLoading,
+        handleConfigure,
+        handleMaintenance,
+        handleSavePermissions,
+    };
 };
