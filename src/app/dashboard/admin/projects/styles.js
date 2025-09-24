@@ -27,6 +27,23 @@ export const styles = {
     backgroundColor: name === 'Projects' ? '#6b705c' : 'transparent',
     '&:hover': { backgroundColor: '#6b705c' }
   }),
+  logoutButton: {
+    padding: '0.75rem',
+    background: 'transparent',
+    border: '1px solid #fefae0',
+    borderRadius: '8px',
+    color: '#fefae0',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    fontWeight: '600',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    '&:hover': {
+      background: '#6b705c'
+    }
+  },
   mainContent: {
     flexGrow: 1,
     p: 3,
@@ -92,51 +109,50 @@ export const styles = {
   tableCell: {
     color: '#525252'
   },
-  chip: (status) => ({
-    backgroundColor:
-      status === 'completed'
-        ? 'rgba(46, 125, 50, 0.2)'
-        : status === 'active'
-        ? 'rgba(2, 136, 209, 0.2)'
-        : 'rgba(97, 97, 97, 0.2)',
-    color:
-      status === 'completed'
-        ? '#81c784'
-        : status === 'active'
-        ? '#4fc3f7'
-        : '#bdbdbd',
-    border:
-      status === 'completed'
-        ? '1px solid #2e7d32'
-        : status === 'active'
-        ? '1px solid #0288d1'
-        : '1px solid #616161',
-    fontWeight: 'bold'
-  }),
+  chip: (status) => {
+    const statusStyles = {
+        'completed': {
+            backgroundColor: 'rgba(46, 125, 50, 0.2)',
+            color: '#81c784',
+            border: '1px solid #2e7d32'
+        },
+        'active': {
+            backgroundColor: 'rgba(2, 136, 209, 0.2)',
+            color: '#4fc3f7',
+            border: '1px solid #0288d1'
+        },
+        'pending': {
+            backgroundColor: 'rgba(244, 193, 15, 0.2)',
+            color: '#f3722c',
+            border: '1px solid #f3722c'
+        },
+        'inprogress': {
+            backgroundColor: 'rgba(100, 100, 255, 0.2)',
+            color: '#6464ff',
+            border: '1px solid #6464ff'
+        },
+        'on_hold': {
+            backgroundColor: 'rgba(255, 87, 34, 0.2)',
+            color: '#ff5722',
+            border: '1px solid #d84315'
+        },
+        'cancelled': {
+            backgroundColor: 'rgba(244, 67, 54, 0.2)',
+            color: '#f44336',
+            border: '1px solid #c62828'
+        },
+        'not started': {
+            backgroundColor: 'rgba(97, 97, 97, 0.2)',
+            color: '#bdbdbd',
+            border: '1px solid #616161'
+        }
+    };
+    return { ...statusStyles[status], fontWeight: 'bold' };
+  },
   statusChip: (status) => ({
-    backgroundColor:
-      status === 'active'
-        ? 'rgba(2, 136, 209, 0.2)'
-        : status === 'completed'
-        ? 'rgba(46, 125, 50, 0.2)'
-        : 'rgba(244, 193, 15, 0.1)',
-    color:
-      status === 'active'
-        ? '#4fc3f7'
-        : status === 'completed'
-        ? '#81c784'
-        : '#f3722c',
-    border:
-      status === 'active'
-        ? '1px solid #0288d1'
-        : status === 'completed'
-        ? '1px solid #2e7d32'
-        : '1px solid #f3722c',
+    ...styles.chip(status),
     mr: 1,
     whiteSpace: 'nowrap'
-  }),
-  progressIcon: (progress) => ({
-    color: progress > 50 ? 'warning.main' : 'error.main'
   }),
   teamAvatar: {
     width: 32,
@@ -149,25 +165,6 @@ export const styles = {
   actionIconButton: {
     color: '#525252'
   },
-  statsCard: {
-    backgroundColor: '#fefae0',
-    border: '1px solid #525252',
-    height: '100%'
-  },
-  statsCardIcon: (color) => ({
-    bgcolor: color === 'blue' ? 'rgba(2, 136, 209, 0.1)' :
-      color === 'green' ? 'rgba(46, 125, 50, 0.1)' :
-      'rgba(244, 193, 15, 0.1)',
-    width: 56,
-    height: 56,
-    border: color === 'blue' ? '1px solid #0288d1' :
-      color === 'green' ? '1px solid #2e7d32' :
-      '1px solid #f3722c'
-  }),
-  statsTypography: (color) => ({
-    color: color,
-    fontWeight: 500
-  }),
   createDialogPaper: {
     backgroundColor: '#fefae0',
     color: '#283618',
@@ -187,26 +184,23 @@ export const styles = {
     overflow: 'visible',
   },
   dialogTextField: {
-  '& .MuiInputBase-input': { color: '#283618' },
-  '& .MuiInputLabel-root': { 
-    color: '#6b705c',
-    //  prevent cutting off
-    '&.MuiInputLabel-shrink': {
-      transform: 'translate(14px, -6px) scale(0.75)',
-      padding: '0 4px',
-      borderRadius: '4px'
+    '& .MuiInputBase-input': { color: '#283618' },
+    '& .MuiInputLabel-root': { color: '#6b705c' },
+    '& .MuiOutlinedInput-root': {
+        '& fieldset': { borderColor: '#6b705c' },
+        '&:hover fieldset': { borderColor: '#283618' },
+        '&.Mui-focused fieldset': { borderColor: '#283618' },
     }
   },
-  '& .MuiOutlinedInput-root': {
-    '& fieldset': { borderColor: '#6b705c' },
-    '&:hover fieldset': { borderColor: '#283618' },
-    '&.Mui-focused fieldset': { borderColor: '#283618' },
-    // Ensure the label has proper z-index
-    '& .MuiInputLabel-outlined': {
-      zIndex: 1
+  dialogInputLabel: {
+    color: '#6b705c',
+    '&.MuiInputLabel-shrink': {
+        transform: 'translate(14px, -6px) scale(0.75)',
+        backgroundColor: '#fefae0',
+        padding: '0 4px',
+        borderRadius: '4px'
     }
-  }
-},
+  },
   dialogSelect: {
     color: '#283618'
   },
