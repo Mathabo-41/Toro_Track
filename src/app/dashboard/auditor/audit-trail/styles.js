@@ -30,13 +30,14 @@ export const pageTitleStyles = {
 export const headerRightSectionStyles = {
   display: 'flex',
   alignItems: 'center',
-  gap: '10px',
+  gap: '16px',
 };
 
 export const searchFieldStyles = {
-  Height: '10px',
-  width: '410px',
+  height: '40px',
+  width: '350px',
   '& .MuiOutlinedInput-root': {
+    height: '100%',
     borderRadius: '20px',
     backgroundColor: '#fefaf0',
     '& fieldset': {
@@ -49,6 +50,17 @@ export const searchFieldStyles = {
       borderColor: '#283618',
     },
   },
+};
+
+export const addButtonStyles = {
+    backgroundColor: '#6b705c',
+    color: '#fefae0',
+    fontWeight: 'bold',
+    borderRadius: '20px',
+    height: '40px',
+    '&:hover': {
+        backgroundColor: '#525252',
+    },
 };
 
 export const userProfileStyles = {
@@ -85,4 +97,17 @@ export const tableCellHeaderStyles = {
 
 export const tableCellBodyStyles = {
   borderBottom: '1px solid #525252',
+};
+
+export const modalStyles = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: '#fefaf0',
+    border: '2px solid #525252',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: '8px',
 };

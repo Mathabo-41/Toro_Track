@@ -1,48 +1,43 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+import { supabase } from '@/lib/supabaseClient';
 
+/*
+* Fetches all data required for the Asset Status & Documentation screen.
+*/
 export const getAssetStatusDocData = async () => {
-  // Simulate an API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const auditTrailMenu = [
-    { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-    { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-    { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-    { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-    { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
-    { name: 'Settings', path: '/dashboard/auditor/settings' }
-  ];
-
-  // hardcode
-  const statusData = [
-    { id: 1, asset: "Laptop - Dell XPS 13", status: "Deployed" },
-    { id: 2, asset: "Router - Cisco 2901", status: "In Transit" },
-    { id: 3, asset: "Software - Adobe CC", status: "Under Maintenance" },
-    { id: 4, asset: "Printer - HP LaserJet", status: "Retired" },
-  ];
-
-  const documentsData = [
-    "Delivery Note #12345.pdf",
-    "Client Sign-off Form - Project Alpha.pdf",
-    "Warranty Certificate - Dell XPS 13.pdf",
-    "Disposal Form - HP Printer.pdf",
-  ];
-
-  const digitalSignatures = [
-    { client: "Acme Corp", date: "2025-07-30", status: "Accepted" },
-    { client: "Globex Inc", date: "2025-07-28", status: "Pending" },
-  ];
+  if (!user) {
+    return { statusData: [], documentsData: [], clientInfo: [], userInfo: { name: 'Guest', role: '' } };
+  }
   
-  const userInfo = {
-    name: "Sipho Ellen",
-    role: "Auditor"
+  const promises = {
+    statusData: supabase.rpc('get_asset_status_docs'),
+    documentsData: supabase.rpc('get_all_asset_documents'),
+    clientInfo: supabase.rpc('get_client_info'),
+    userInfo: supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
   };
 
-  return {
-    auditTrailMenu,
-    statusData,
-    documentsData,
-    digitalSignatures,
-    userInfo,
-  };
+  const [
+    statusResponse,
+    documentsResponse,
+    clientInfoResponse,
+    userInfoResponse
+  ] = await Promise.all(Object.values(promises));
+
+  if (statusResponse.error) console.error("Error fetching status data:", statusResponse.error);
+  if (documentsResponse.error) console.error("Error fetching documents data:", documentsResponse.error);
+  if (clientInfoResponse.error) console.error("Error fetching client info:", clientInfoResponse.error);
+  if (userInfoResponse.error) console.error("Error fetching user info:", userInfoResponse.error);
+
+  const statusData = statusResponse.data || [];
+  const documentsData = documentsResponse.data || []; // Now expects { name, type }
+  const clientInfo = clientInfoResponse.data || [];
+  
+  const userInfo = userInfoResponse.data ? {
+      name: userInfoResponse.data.full_name,
+      role: userInfoResponse.data.role
+  } : { name: 'Auditor', role: 'auditor' };
+
+  return { statusData, documentsData, clientInfo, userInfo };
 };

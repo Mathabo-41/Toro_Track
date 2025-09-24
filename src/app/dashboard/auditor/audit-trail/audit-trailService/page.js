@@ -1,4 +1,5 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+// This file handles all data-related tasks for this feature by calling database functions.
+import { supabase } from '@/lib/supabaseClient';
 
 export const auditTrailMenu = [
   { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
@@ -9,51 +10,111 @@ export const auditTrailMenu = [
   { name: 'Settings', path: '/dashboard/auditor/settings' }
 ];
 
-// hardcode
-export const auditTrailData = [
-  {
-    orderId: "#ORD8864",
-    signOff: "Themba Ngozo (Asset Manager)",
-    timestamp: "2023-10-01 10:00",
-    status: "Delivered",
-    receiver: "Dean Edwards",
-    type: "Hardware",
-    serial: "SN123456",
-  },
-  {
-    orderId: "#ORD4931",
-    signOff: "Musa Mokoena (Storage Manager)",
-    timestamp: "2023-10-02 11:00",
-    status: "Delivered",
-    receiver: "Mandla Zulu",
-    type: "Hardware",
-    serial: "SN123457",
-  },
-  {
-    orderId: "#ORD2211",
-    signOff: "Themba Ngozo (Asset Manager)",
-    timestamp: "2023-10-03 12:00",
-    status: "In transit",
-    receiver: "Pieter Cole",
-    type: "Hardware",
-    serial: "SN123458",
-  },
-  {
-    orderId: "#ORD7700",
-    signOff: "Themba Ngozo (Asset Manager)",
-    timestamp: "2023-10-04 13:00",
-    status: "Processing",
-    receiver: "Lesedi Mofokeng",
-    type: "Software",
-    serial: "SN123459",
-  },
-  {
-    orderId: "#ORD3231",
-    signOff: "Musa Mokoena (Storage Manager)",
-    timestamp: "2023-10-05 14:00",
-    status: "Processing",
-    receiver: "Mthuthuzi Langa",
-    type: "Software",
-    serial: "SN123460",
-  },
-];
+/*
+* Fetches audit trail data by calling the 'get_audit_trail_data' RPC function.
+*/
+export const getAuditTrailData = async () => {
+    const { data, error } = await supabase.rpc('get_audit_trail_data');
+
+    if (error) {
+        console.error('Error fetching audit trail data:', error);
+        return [];
+    }
+    
+    return data.map(log => ({
+        ...log,
+        timestamp: new Date(log.timestamp).toLocaleString()
+    }));
+};
+
+/*
+* Creates a new asset and audit log entry by calling the 'add_asset_and_log' RPC function.
+*/
+export const createAuditLogEntry = async (newLog) => {
+    const { data, error } = await supabase.rpc('add_asset_and_log', {
+        p_order_sign_off: newLog.signOff,
+        p_delivery_status: newLog.status,
+        p_order_receiver: newLog.receiver,
+        p_asset_serial_number: newLog.serial,
+        p_asset_type: newLog.type
+    });
+
+    if (error) {
+        console.error('Error creating audit log entry:', error);
+        return null;
+    }
+
+    return data;
+};
+
+/*
+* Updates an existing audit log entry by calling the 'update_audit_log' RPC function.
+*/
+export const updateAuditLogEntry = async (updatedLog) => {
+    const { data, error } = await supabase.rpc('update_audit_log', {
+        p_log_id: updatedLog.id,
+        p_sign_off: updatedLog.signOff,
+        p_receiver: updatedLog.receiver,
+        p_status: updatedLog.status,
+        p_serial_number: updatedLog.serial
+    });
+
+    if (error) {
+        console.error('Error updating audit log entry:', error);
+        return null;
+    }
+
+    return data;
+};
+
+/*
+* Deletes an audit log entry by calling the 'delete_audit_log' RPC function.
+*/
+export const deleteAuditLogEntry = async (logId) => {
+    const { data, error } = await supabase.rpc('delete_audit_log', {
+        p_log_id: logId
+    });
+
+    if (error) {
+        console.error('Error deleting audit log entry:', error);
+        return null;
+    }
+
+    return data;
+};
+
+/*
+* Uploads a document to the 'asset_documents' storage bucket.
+*/
+export const uploadDocument = async (file) => {
+    const filePath = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+        .from('asset_documents')
+        .upload(filePath, file);
+
+    if (error) {
+        console.error('Error uploading document:', error);
+        return null;
+    }
+
+    return data.path;
+};
+
+/*
+* Creates a database record for an uploaded document.
+*/
+export const addDocumentRecord = async (logId, docData) => {
+    const { data, error } = await supabase.rpc('add_asset_document', {
+        p_log_id: logId,
+        p_doc_name: docData.name,
+        p_doc_url: docData.url,
+        p_doc_type: docData.type
+    });
+
+    if (error) {
+        console.error('Error adding document record:', error);
+        return null;
+    }
+
+    return data;
+};

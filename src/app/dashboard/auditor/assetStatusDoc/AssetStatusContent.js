@@ -9,27 +9,20 @@ import {
   Box, Typography, List, ListItem,
   ListItemText, Drawer, ListItemButton,
   Paper, TextField, Button, IconButton,
-  // NEW: Import Table components
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 
-//dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import { Snackbar, Alert } from '@mui/material';
 
 import useAssetStatusDoc from './useAssetStaDoc/page';
-// Import global styles for layout and navigation
 import * as globalStyles from '../common/styles';
-// NEW: Import local styles for the new table
 import * as styles from './styles';
-import { useAuditorStore, auditorMenu } from '../common/auditorStore';
+import { auditorMenu } from '../common/auditorStore';
 
-// Sidebar component (unchanged)
 const Sidebar = ({ handleLogout }) => {
-  const [sidebarOpen] = React.useState(true);
   const router = useRouter();
-
   return (
     <Drawer
       variant="permanent"
@@ -60,26 +53,23 @@ const Sidebar = ({ handleLogout }) => {
           <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
             <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
           </Box>
-          {sidebarOpen && (
-            <Box sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
                 John Doe
               </Typography>
               <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
                 user@toro.com
               </Typography>
-            </Box>
-          )}
+          </Box>
         </Box>
         <Button onClick={handleLogout} fullWidth sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}>
-          {sidebarOpen ? 'Logout' : <LogoutIcon />}
+          <LogoutIcon /> Logout
         </Button>
       </Box>
     </Drawer>
   );
 };
 
-// Header component with updated styles
 const Header = ({ search, handleSearchChange }) => {
   return (
     <Box sx={globalStyles.pageHeader}>
@@ -104,9 +94,6 @@ const Header = ({ search, handleSearchChange }) => {
   );
 };
 
-// REMOVED: Generic DataSection component
-
-// Main page component
 export default function AssetStatusContent() {
   const router = useRouter();
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
@@ -125,7 +112,6 @@ export default function AssetStatusContent() {
       <Box component="main" sx={globalStyles.mainContentBox}>
         <Header search={state.search} handleSearchChange={handlers.handleSearchChange} />
 
-        {/* MODIFIED: Replaced DataSection with specific, styled tables */}
         <Box sx={{ display: 'grid', gap: 4 }}>
           {/* Status Dashboard Table */}
           <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fefae0' }}>
@@ -136,13 +122,15 @@ export default function AssetStatusContent() {
               <Table aria-label="status dashboard table">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={styles.tableHeaderCellStyles}>Asset</TableCell>
-                    <TableCell sx={styles.tableHeaderCellStyles}>Current Status</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Order ID</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Asset Type & Serial Number</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Delivery Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {state.filteredStatusData.map((item, idx) => (
                     <TableRow key={idx} hover>
+                      <TableCell>{item.orderId}</TableCell>
                       <TableCell>{item.asset}</TableCell>
                       <TableCell>{item.status}</TableCell>
                     </TableRow>
@@ -162,12 +150,14 @@ export default function AssetStatusContent() {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={styles.tableHeaderCellStyles}>Document Name</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Document Type</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {state.filteredDocumentsData.map((doc, idx) => (
                     <TableRow key={idx} hover>
-                      <TableCell>{doc}</TableCell>
+                      <TableCell>{doc.name}</TableCell>
+                      <TableCell>{doc.type}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -175,24 +165,26 @@ export default function AssetStatusContent() {
             </TableContainer>
           </Paper>
 
-          {/* Digital Signature Table */}
+          {/* Client Information Table */}
           <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fefae0' }}>
             <Typography variant="h6" sx={styles.assetStatusSectionTitle}>
-              Digital Signature Capture
+              Client Information
             </Typography>
             <TableContainer component={Paper} sx={styles.tableContainerStyles}>
-              <Table aria-label="digital signature table">
+              <Table aria-label="client information table">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={styles.tableHeaderCellStyles}>Client - Date</TableCell>
-                    <TableCell sx={styles.tableHeaderCellStyles}>Status</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Order ID</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Date & Time</TableCell>
+                    <TableCell sx={styles.tableHeaderCellStyles}>Receiver Full Name</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {state.filteredSignatures.map((sig, idx) => (
+                  {state.filteredClientInfo.map((info, idx) => (
                     <TableRow key={idx} hover>
-                      <TableCell>{`${sig.client} - ${sig.date}`}</TableCell>
-                      <TableCell>{sig.status}</TableCell>
+                      <TableCell>{info.orderId}</TableCell>
+                      <TableCell>{new Date(info.timestamp).toLocaleString()}</TableCell>
+                      <TableCell>{info.receiver}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

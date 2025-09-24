@@ -1,5 +1,4 @@
 // Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
-
 'use client';
 
 import { useMemo } from 'react';
@@ -7,48 +6,47 @@ import { useQuery } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { getAssetStatusDocData } from '../assetStatusDocService/page';
 
-// Zustand Store for search state
 const useAssetStatusDocStore = create((set) => ({
   search: "",
   setSearch: (value) => set({ search: value }),
 }));
 
 const useAssetStatusDoc = () => {
-  // Use zustand store for search state
   const { search, setSearch } = useAssetStatusDocStore();
-  const currentPath = '/dashboard/auditor/assetStatusDoc';
 
-  // Use React Query to fetch data
   const { data, isLoading, error } = useQuery({
     queryKey: ['assetStatusDocData'],
     queryFn: getAssetStatusDocData,
   });
 
-  // Memoized filtered data
   const filteredStatusData = useMemo(() => {
-    if (isLoading || error) return [];
+    if (!data || !data.statusData) return [];
+    const lowercasedSearch = search.toLowerCase();
     return data.statusData.filter(item =>
-      item.asset.toLowerCase().includes(search.toLowerCase()) ||
-      item.status.toLowerCase().includes(search.toLowerCase())
+      (item.asset && item.asset.toLowerCase().includes(lowercasedSearch)) ||
+      (item.status && item.status.toLowerCase().includes(lowercasedSearch)) ||
+      (item.orderId && item.orderId.toLowerCase().includes(lowercasedSearch))
     );
-  }, [search, data, isLoading, error]);
+  }, [search, data]);
 
   const filteredDocumentsData = useMemo(() => {
-    if (isLoading || error) return [];
+    if (!data || !data.documentsData) return [];
+    const lowercasedSearch = search.toLowerCase();
     return data.documentsData.filter(doc =>
-      doc.toLowerCase().includes(search.toLowerCase())
+      (doc.name && doc.name.toLowerCase().includes(lowercasedSearch)) ||
+      (doc.type && doc.type.toLowerCase().includes(lowercasedSearch))
     );
-  }, [search, data, isLoading, error]);
+  }, [search, data]);
 
-  const filteredSignatures = useMemo(() => {
-    if (isLoading || error) return [];
-    return data.digitalSignatures.filter(sig =>
-      sig.client.toLowerCase().includes(search.toLowerCase()) ||
-      sig.status.toLowerCase().includes(search.toLowerCase())
+  const filteredClientInfo = useMemo(() => {
+    if (!data || !data.clientInfo) return [];
+    const lowercasedSearch = search.toLowerCase();
+    return data.clientInfo.filter(info =>
+      (info.orderId && info.orderId.toLowerCase().includes(lowercasedSearch)) ||
+      (info.receiver && info.receiver.toLowerCase().includes(lowercasedSearch))
     );
-  }, [search, data, isLoading, error]);
+  }, [search, data]);
 
-  // Handler for search input
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
   };
@@ -56,22 +54,15 @@ const useAssetStatusDoc = () => {
   return {
     state: {
       search,
-      currentPath,
       isLoading,
       error,
       filteredStatusData,
       filteredDocumentsData,
-      filteredSignatures,
+      filteredClientInfo,
     },
-    handlers: {
-      handleSearchChange,
-    },
-    data: data ? {
-      auditTrailMenu: data.auditTrailMenu,
-      userInfo: data.userInfo,
-    } : { auditTrailMenu: [], userInfo: { name: '', role: '' } },
+    handlers: { handleSearchChange },
+    data: data ? { userInfo: data.userInfo } : { userInfo: { name: '', role: '' } },
   };
 };
 
-// manage state and logic for this screen
 export default useAssetStatusDoc;
