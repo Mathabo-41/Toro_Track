@@ -1,46 +1,39 @@
-// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
+// Contains all the logic and state management for the client settings screen.
+'use client';
 
 import { useState, useEffect } from 'react';
 import { create } from 'zustand';
-import { useGetSettingsQuery, useUpdateSettingsMutation } from '../settingsService/page';
+import { useGetSettingsQuery, useUpdateSettingsMutation, uploadAvatar } from '../settingsService/page';
 
 // Zustand store for managing local form state
 const useFormStore = create((set) => ({
     formData: {
-        name: '',
-        email: '',
-        company: '',
-        position: '',
-        phone: '',
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-        notifications: true,
-        newsletter: false,
-        language: 'en',
+        name: '', email: '', company: '', position: '', phone: '',
+        avatar_url: '', notifications: true, newsletter: false, language: 'en',
     },
-    setFormData: (key, value) => set((state) => ({
-        formData: { ...state.formData, [key]: value }
-    })),
+    avatarFile: null,
+    avatarPreview: null,
+    setFormData: (key, value) => set((state) => ({ formData: { ...state.formData, [key]: value } })),
     setFullFormData: (data) => set({ formData: data }),
+    setAvatarFile: (file) => set({ avatarFile: file }),
+    setAvatarPreview: (url) => set({ avatarPreview: url }),
 }));
 
 /**
- * manage state and logic of this screen. Manages local form state, edit mode, active tabs, and server state synchronization.
+ * Manages state and logic for the Settings screen.
  */
 export const useSettings = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [editMode, setEditMode] = useState(false);
-    const [darkMode, setDarkMode] = useState(false);
 
-    // Get formData and setter from Zustand store
-    const { formData, setFormData, setFullFormData } = useFormStore();
+    // Get state and setters from Zustand store
+    const { formData, setFormData, setFullFormData, avatarFile, setAvatarFile, avatarPreview, setAvatarPreview } = useFormStore();
 
-    // React Query hooks for fetching and updating data
+    // React Query hooks
     const { data: serverData, isLoading, isError } = useGetSettingsQuery();
     const { mutate: updateSettings } = useUpdateSettingsMutation();
 
-    // Synchronize server data with local form state when data is loaded
+    // Sync server data to local form state
     useEffect(() => {
         if (serverData) {
             setFullFormData(serverData);
@@ -52,16 +45,30 @@ export const useSettings = () => {
         setFormData(name, type === 'checkbox' ? checked : value);
     };
 
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFile(file);
+            setAvatarPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (avatarFile) {
+            await uploadAvatar({ avatarFile, userId: formData.id });
+        }
         updateSettings(formData);
         setEditMode(false);
+        setAvatarFile(null);
+        setAvatarPreview(null);
         alert('Settings saved successfully!');
     };
 
     const handleCancelEdit = () => {
         setEditMode(false);
-        // Reset form data to server data on cancel
+        setAvatarFile(null);
+        setAvatarPreview(null);
         if (serverData) {
             setFullFormData(serverData);
         }
@@ -74,13 +81,13 @@ export const useSettings = () => {
     return {
         activeTab,
         editMode,
-        darkMode,
         formData,
+        avatarPreview,
         isLoading,
         isError,
         setEditMode,
-        setDarkMode,
         handleChange,
+        handleAvatarChange,
         handleSubmit,
         handleCancelEdit,
         handleTabChange,

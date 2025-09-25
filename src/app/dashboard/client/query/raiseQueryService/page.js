@@ -1,58 +1,70 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+import { supabase } from '@/lib/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-// hardcode query data
-const DUMMY_QUERIES = [
-  {
-    id: 'QRY-001',
-    title: 'Checkout Page Issue',
-    status: 'resolved',
-    date: '2023-11-15',
-    category: 'Technical',
-    description: 'The checkout page is not loading properly on mobile devices. The payment button disappears when scrolling.',
-    response: 'This has been fixed in the latest update. Please clear your cache and try again.',
-    attachments: []
-  },
-  {
-    id: 'QRY-002',
-    title: 'Design Revision Request',
-    status: 'in-progress',
-    date: '2023-12-03',
-    category: 'Design',
-    description: 'Can we make the product images larger on the category pages? They seem too small compared to the mockups.',
-    response: 'Our design team is reviewing this request. We\'ll get back to you by Friday.',
-    attachments: [
-      { name: 'mockup-v1.pdf', size: '2.4 MB' }
-    ]
-  },
-  {
-    id: 'QRY-003',
-    title: 'API Documentation',
-    status: 'pending',
-    date: '2023-12-10',
-    category: 'Documentation',
-    description: 'Where can I find the updated API documentation for the new endpoints?',
-    response: '',
-    attachments: []
+/**
+ * Fetches all queries for the currently authenticated client.
+ * @returns {Promise<Array>} A promise that resolves with the list of queries.
+ */
+export async function fetchQueries() {
+  const { data, error } = await supabase.rpc('get_client_queries_with_details');
+  if (error) {
+    console.error('Error fetching queries:', error);
+    throw error;
   }
-];
+  return data;
+}
 
-// Asynchronous function to simulate fetching queries
-export const fetchQueries = async () => {
-  return new Promise(resolve => setTimeout(() => resolve(DUMMY_QUERIES), 500));
-};
+/**
+ * Submits a new query, handles an optional file upload, and links the file to the query.
+ * @param {Object} queryData - The query data from the form.
+ * @param {File} fileToUpload - The file to be uploaded.
+ * @returns {Promise<Object>} A promise that resolves with the newly created query data.
+ */
+export async function submitQuery(queryData, fileToUpload) {
+  // Step 1: Submit the text-based query data to get a query ID.
+  const { data: newQueryId, error: queryError } = await supabase.rpc('submit_new_query', {
+    p_title: queryData.title,
+    p_description: queryData.description,
+    p_category: queryData.category,
+  });
 
-// Asynchronous function to simulate submitting a new query
-export const submitQuery = async (newQuery) => {
-  console.log('Submitting new query:', newQuery);
-  // Simulate a network request
-  return new Promise(resolve => setTimeout(() => {
-    // where we send query to database, so that admin can fetch it and read the query, then respond to the client
-    const submittedQuery = {
-      ...newQuery,
-      id: `QRY-${DUMMY_QUERIES.length + 1}`,
-    };
-    console.log('Query submitted successfully:', submittedQuery);
-    DUMMY_QUERIES.push(submittedQuery); // Add to hardcode data for demonstration
-    resolve(submittedQuery);
-  }, 500));
-};
+  if (queryError) {
+    console.error('Error submitting query:', queryError);
+    throw queryError;
+  }
+
+  // Step 2: If a file is attached, upload it to Supabase Storage.
+  if (fileToUpload) {
+    const clientResponse = await supabase.rpc('get_my_client_id');
+    if (clientResponse.error) throw clientResponse.error;
+    const clientId = clientResponse.data;
+    
+    const uniqueFileName = `${uuidv4()}-${fileToUpload.name}`;
+    const filePath = `${clientId}/${uniqueFileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('query-attachments')
+      .upload(filePath, fileToUpload);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      throw uploadError;
+    }
+
+    // Step 3: Link the uploaded file to the query in the database.
+    const { error: attachmentError } = await supabase.rpc('add_query_attachment', {
+      p_query_id: newQueryId,
+      p_file_name: fileToUpload.name,
+      p_file_url: filePath,
+      p_file_size_kb: Math.round(fileToUpload.size / 1024),
+    });
+    
+    if (attachmentError) {
+      console.error('Error linking attachment:', attachmentError);
+      throw attachmentError;
+    }
+  }
+
+  return { id: newQueryId, ...queryData };
+}

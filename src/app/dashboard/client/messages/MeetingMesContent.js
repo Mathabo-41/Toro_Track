@@ -1,6 +1,7 @@
-// MODIFIED: MeetingMesContent.js
+// This is the main UI component for the Agenda screen.
+'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -9,23 +10,18 @@ import {
   List, ListItem, ListItemText, Divider,
   Tabs, Tab, IconButton, Chip, Snackbar, Alert
 } from '@mui/material';
-
-// MODIFIED: Removed icons related to chat
 import {
   Notifications as NotificationsIcon,
   Schedule as MeetingsIcon,
   Add as NewMeetingIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
-
-//dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import { useMeetingMes } from './useMeetingMes/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
-import { useClientStore } from '../common/clientStore';
-import { clientMenu } from '../common/clientStore';
+import { useClientStore, clientMenu } from '../common/clientStore';
 
 export default function MeetingMesContent({ router }) {
   const {
@@ -33,10 +29,17 @@ export default function MeetingMesContent({ router }) {
     setActiveTab,
     meetings,
     notifications,
-  } = useMeetingMes(); // REMOVED: Unused conversation/message state
+  } = useMeetingMes();
 
+  const { profile, fetchProfile } = useClientStore();
   const [sidebarOpen] = React.useState(true);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
+
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, [profile, fetchProfile]);
 
   const handleLogout = () => {
     setOpenSnackbar(true);
@@ -45,7 +48,6 @@ export default function MeetingMesContent({ router }) {
     }, 1500);
   };
 
-  // --- Sidebar is unchanged ---
   return (
     <Box sx={globalStyles.rootBox}>
       <Drawer
@@ -75,15 +77,15 @@ export default function MeetingMesContent({ router }) {
         <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
             <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-              <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
+              <Image src={profile?.avatar_url || "/toroLogo.jpg"} alt="User Profile" fill style={{ objectFit: 'cover' }} />
             </Box>
             {sidebarOpen && (
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: '600', color: '#fefae0' }}>
-                  John Doe
+                  {profile?.name || 'Client Name'}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, color: 'rgba(254, 250, 224, 0.7)' }}>
-                  user@toro.com
+                  {profile?.email || 'client@email.com'}
                 </Typography>
               </Box>
             )}
@@ -95,7 +97,6 @@ export default function MeetingMesContent({ router }) {
       </Drawer>
 
       <Box component="main" sx={styles.mainContentBox}>
-        {/* MODIFIED: Header text and icon */}
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageHeaderText}>
             <MeetingsIcon sx={styles.pageHeaderIcon} />
@@ -106,7 +107,6 @@ export default function MeetingMesContent({ router }) {
           </Typography>
         </Box>
 
-        {/* MODIFIED: Tabs component, removed Messages tab */}
         <Tabs
           value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
@@ -116,9 +116,6 @@ export default function MeetingMesContent({ router }) {
           <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" sx={styles.tab} />
         </Tabs>
 
-        {/* REMOVED: Entire "Messages" tab content (activeTab === 0) */}
-
-        {/* MODIFIED: Changed tab index from 1 to 0 for Meetings */}
         {activeTab === 0 && (
           <Card sx={styles.card}>
             <CardContent>
@@ -166,7 +163,6 @@ export default function MeetingMesContent({ router }) {
           </Card>
         )}
 
-        {/* MODIFIED: Changed tab index from 2 to 1 for Notifications */}
         {activeTab === 1 && (
           <Card sx={styles.card}>
             <CardContent>
@@ -203,7 +199,6 @@ export default function MeetingMesContent({ router }) {
         )}
       </Box>
 
-      {/* Snackbar for logout (unchanged) */}
       <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           Logging out...

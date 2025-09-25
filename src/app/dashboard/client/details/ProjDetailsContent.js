@@ -1,4 +1,4 @@
-// This is the main UI component, now simplified to only render data from the useDetails hook.
+// This is the main UI component for the Project Details screen.
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -9,20 +9,15 @@ import { supabase } from '@/lib/supabaseClient';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   Box, Typography, Grid, Card, CardContent,
-  Stack, Avatar, List, ListItem, ListItemText,
-  Divider, Button, Drawer, ListItemButton,
-  Chip, Paper, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow,
+  Stack, List, ListItem, ListItemText,
+  Button, Drawer, ListItemButton,
+  Chip, Paper,
   Tabs, Tab, TextField, IconButton, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  FormControl, InputLabel, Select, MenuItem, Snackbar, Alert
+  Snackbar, Alert
 } from '@mui/material';
 import {
   Assignment as ProjectIcon,
-  AttachFile as FilesIcon,
-  Download as DownloadIcon,
-  CheckCircle as CompletedIcon,
-  Pending as PendingIcon,
   Logout as LogoutIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -33,9 +28,9 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import { useDetails } from './useDetails/page';
-import { mainContentStyles, headerStyles, progressCardStyles, tabsStyles, contentCardStyles, milestoneStyles, teamStyles, filesStyles, discussionStyles } from './styles';
+import { mainContentStyles, headerStyles, tabsStyles } from './styles';
 import * as globalStyles from '../common/styles';
-import { clientMenu } from '../common/clientStore';
+import { useClientStore, clientMenu } from '../common/clientStore';
 
 const COLUMN_COLORS = {
   backlog: '#E71D36',
@@ -45,16 +40,15 @@ const COLUMN_COLORS = {
 
 export default function ProjDetailsContent() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { profile, fetchProfile } = useClientStore();
+  
   const [projects, setProjects] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
   const [kanbanColumns, setKanbanColumns] = useState(null);
-
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [currentColumnId, setCurrentColumnId] = useState('backlog');
@@ -62,21 +56,20 @@ export default function ProjDetailsContent() {
   
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
-  // This hook now handles all data fetching for the currently selected project.
   const {
-    activeTab, commentText, projectData, isLoading, error,
-    comments, isCommentsLoading, handleTabChange,
-    handleCommentSubmit, handleCommentChange,
+    activeTab,
+    handleTabChange,
   } = useDetails(currentProject?.id);
 
   /*
-  Fetches the list of projects assigned to the client on initial load.
+  Fetches initial data: the user's profile and their list of projects.
   */
   useEffect(() => {
-    const fetchInitialData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+    if (!profile) {
+      fetchProfile();
+    }
 
+    const fetchPageData = async () => {
       const { data: projectList, error: projectError } = await supabase.from('projects').select('id, project_name, description, status');
       
       if (projectError) {
@@ -94,8 +87,8 @@ export default function ProjDetailsContent() {
       if (teamData) setTeamMembers(teamData);
     };
 
-    fetchInitialData();
-  }, []);
+    fetchPageData();
+  }, [profile, fetchProfile]);
 
   const fetchTasksForProject = async (projectId) => {
     const { data: tasks, error } = await supabase.from('project_tasks').select('*').eq('project_id', projectId);
@@ -245,7 +238,7 @@ export default function ProjDetailsContent() {
     );
   };
   
-  const renderTabContent = () => { /* ... existing render functions using projectData ... */ };
+  const renderTabContent = () => { /* ... existing render functions ... */ };
 
   return (
     <Box sx={globalStyles.rootBox}>
@@ -263,10 +256,12 @@ export default function ProjDetailsContent() {
         </List>
         <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-            <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+                <Image src={profile?.avatar_url || "/toroLogo.jpg"} alt="User Profile" fill style={{ objectFit: 'cover' }}/>
+            </Box>
             <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
-                <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Client</Typography>
+                <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{profile?.name || 'Client Name'}</Typography>
+                <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>{profile?.email || 'client@email.com'}</Typography>
             </Box>
           </Box>
           <Button onClick={handleLogout} fullWidth variant="outlined" sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>Logout</Button>

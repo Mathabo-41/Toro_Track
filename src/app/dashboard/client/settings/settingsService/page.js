@@ -1,39 +1,81 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-
+// This file handles all data-related tasks for this feature, using TanStack Query to fetch and send information to our database.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 
-// hardcodde data to simulate server-side state
-const DUMMY_SETTINGS_DATA = {
-    id: 'user1',
-    name: 'toro track',
-    email: 'trtrack@yahoo.com',
-    company: 'Law Firm Inc',
-    position: 'Marketing Director',
-    phone: '+27 45 847 8389',
-    notifications: true,
-    newsletter: false,
-    language: 'en'
+/**
+ * Fetches the current client's settings from the database.
+ */
+export const getSettings = async () => {
+    const { data, error } = await supabase.rpc('get_client_settings_data');
+
+    if (error) {
+        console.error("Error fetching settings:", error);
+        throw new Error(error.message);
+    }
+
+    return data;
 };
 
-// Mock API call to get user settings
-export const getSettings = () => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(DUMMY_SETTINGS_DATA);
-        }, 500); // Simulate network delay
+/**
+ * Updates the client's settings in the database.
+ * @param {object} updatedData - The form data containing the new settings.
+ */
+export const updateSettings = async (updatedData) => {
+    const { error } = await supabase.rpc('update_client_settings_data', {
+        p_name: updatedData.name,
+        p_company: updatedData.company,
+        p_position: updatedData.position,
+        p_phone: updatedData.phone,
+        p_notifications: updatedData.notifications,
+        p_newsletter: updatedData.newsletter,
+        p_language: updatedData.language,
     });
+
+    if (error) {
+        console.error("Error updating settings:", error);
+        throw new Error(error.message);
+    }
+
+    return { success: true, message: 'Settings saved successfully!' };
 };
 
-// Mock API call to update user settings
-export const updateSettings = (updatedData) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log('Updating settings with:', updatedData);
-            resolve({ success: true, message: 'Settings saved successfully!' });
-        }, 500); // Simulate network delay
+/**
+ * Uploads a new avatar, gets the public URL, and saves it to the user's profile.
+ * @param {File} avatarFile - The file to upload.
+ * @param {string} userId - The ID of the user.
+ */
+export const uploadAvatar = async ({ avatarFile, userId }) => {
+    if (!avatarFile || !userId) return;
+
+    const fileExtension = avatarFile.name.split('.').pop();
+    const filePath = `${userId}/profile.${fileExtension}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, avatarFile, { upsert: true });
+
+    if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
+        throw new Error(uploadError.message);
+    }
+
+    const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+    const { error: updateError } = await supabase.rpc('update_avatar_url', {
+        p_avatar_url: urlData.publicUrl,
     });
+    
+    if (updateError) {
+        console.error('Error updating avatar URL:', updateError);
+        throw new Error(updateError.message);
+    }
 };
 
+/**
+ * A TanStack Query hook for fetching user settings.
+ */
 export const useGetSettingsQuery = () => {
     return useQuery({
         queryKey: ['userSettings'],
@@ -41,6 +83,9 @@ export const useGetSettingsQuery = () => {
     });
 };
 
+/**
+ * A TanStack Query mutation hook for updating user settings.
+ */
 export const useUpdateSettingsMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

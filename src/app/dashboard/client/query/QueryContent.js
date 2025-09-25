@@ -1,4 +1,7 @@
-import React from 'react';
+// This is the main UI component for the Raise Query screen.
+'use client';
+
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -9,30 +12,22 @@ import {
   FormControl, InputLabel, Chip,
   Paper, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow,
-  IconButton, Avatar, Badge, Snackbar, Alert
+  IconButton, Snackbar, Alert
 } from '@mui/material';
 import {
   Help as QueryIcon,
   Send as SendIcon,
-  CheckCircle as ResolvedIcon,
-  Pending as PendingIcon,
   ArrowBack as BackIcon,
   AttachFile as AttachIcon,
   Delete as DeleteIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
-
-
-//dashboard icon import 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import { useRaiseQuery } from './useRaiseQuery/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
-import { useClientStore } from '../common/clientStore';
-import { clientMenu } from '../common/clientStore';
-
-
+import { useClientStore, clientMenu } from '../common/clientStore';
 
 export default function QueryContent({ router }) {
   const {
@@ -45,13 +40,17 @@ export default function QueryContent({ router }) {
     handleRemoveFile,
     handleSubmitQuery,
     queries,
-    auditorMenu,
-    isLoadingQueries
   } = useRaiseQuery();
 
-  
+  const { profile, fetchProfile } = useClientStore();
   const [sidebarOpen] = React.useState(true);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
+
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, [profile, fetchProfile]);
 
   const handleLogout = () => {
     setOpenSnackbar(true);
@@ -68,59 +67,30 @@ export default function QueryContent({ router }) {
         anchor="left"
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={{ 
-    p: 1,
-    borderBottom: '2px solid #6b705c',
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 1 
-  }}>
-    <Link href="/login" passHref>
-      <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
-        <DashboardIcon />
-      </IconButton>
-    </Link>
-    <Typography variant="h5" sx={{ color: '#fefae0'}}>
-      Client Portal
-    </Typography>
-  </Box>
+        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Link href="/login" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
+        </Box>
         <List>
-  {clientMenu.map((item) => (
-    <ListItem key={item.path} disablePadding>
-      <ListItemButton 
-        component={Link} 
-        href={item.path} 
-        sx={globalStyles.listItemButton}
-      >
-        <ListItemText primary={item.name} />
-      </ListItemButton>
-    </ListItem>
-  ))}
-</List>
+          {clientMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
+              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        
         {/* Profile Section */}
-        <Box sx={{
-          padding: '1rem',
-          borderTop: '2px solid #6b705c',
-          marginTop: 'auto'
-        }}>
-          <Box sx={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
+        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
               <Image
-                src="/toroLogo.jpg"
+                src={profile?.avatar_url || "/toroLogo.jpg"}
                 alt="User Profile"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -128,26 +98,11 @@ export default function QueryContent({ router }) {
             </Box>
             {sidebarOpen && (
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{
-                  fontWeight: '600',
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: '#fefae0'
-                }}>
-                  John Doe
+                <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                  {profile?.name || 'Client Name'}
                 </Typography>
-                <Typography sx={{
-                  fontSize: '0.8rem',
-                  opacity: 0.8,
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: 'rgba(254, 250, 224, 0.7)'
-                }}>
-                  user@toro.com
+                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                  {profile?.email || 'client@email.com'}
                 </Typography>
               </Box>
             )}
@@ -155,23 +110,7 @@ export default function QueryContent({ router }) {
           <Button
             onClick={handleLogout}
             fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
+            sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}
           >
             {sidebarOpen ? 'Logout' : <LogoutIcon />}
           </Button>
@@ -193,22 +132,12 @@ export default function QueryContent({ router }) {
           /* Query Detail View */
           <Card sx={styles.detailCard}>
             <CardContent>
-              <Button
-                startIcon={<BackIcon />}
-                onClick={() => setActiveQuery(null)}
-                sx={styles.detailBackButton}
-              >
+              <Button startIcon={<BackIcon />} onClick={() => setActiveQuery(null)} sx={styles.detailBackButton}>
                 Back to queries
               </Button>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Typography variant="h5" sx={styles.detailTitle}>
-                  {activeQuery.title}
-                </Typography>
-                <Chip
-                  label={activeQuery.status === 'resolved' ? 'Resolved' :
-                    activeQuery.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                  sx={styles.detailChip(activeQuery.status).sx}
-                />
+                <Typography variant="h5" sx={styles.detailTitle}>{activeQuery.title}</Typography>
+                <Chip label={activeQuery.status} sx={styles.detailChip(activeQuery.status).sx} />
               </Stack>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="body2" sx={styles.detailSectionTitle}>Category</Typography>
@@ -218,7 +147,7 @@ export default function QueryContent({ router }) {
                 <Typography variant="body2" sx={styles.detailSectionTitle}>Description</Typography>
                 <Typography variant="body1" sx={styles.detailSectionText}>{activeQuery.description}</Typography>
               </Box>
-              {activeQuery.attachments.length > 0 && (
+              {activeQuery.attachments && activeQuery.attachments.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" sx={styles.detailSectionTitle}>Attachments</Typography>
                   <TableContainer component={Paper} sx={styles.attachmentsTableContainer}>
@@ -234,13 +163,7 @@ export default function QueryContent({ router }) {
                             </TableCell>
                             <TableCell sx={styles.attachmentsTableFileSize}>{file.size}</TableCell>
                             <TableCell>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                sx={styles.attachmentsDownloadButton}
-                              >
-                                Download
-                              </Button>
+                              <Button variant="outlined" size="small" sx={styles.attachmentsDownloadButton}>Download</Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -267,24 +190,10 @@ export default function QueryContent({ router }) {
                   <Typography variant="h6" sx={styles.formHeader}>Submit New Query</Typography>
                   <Box component="form" onSubmit={handleSubmitQuery}>
                     <Stack spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="Query Title"
-                        variant="outlined"
-                        value={newQuery.title}
-                        onChange={(e) => setNewQuery({ ...newQuery, title: e.target.value })}
-                        required
-                        sx={styles.formTextField}
-                      />
+                      <TextField fullWidth label="Query Title" variant="outlined" value={newQuery.title} onChange={(e) => setNewQuery({ ...newQuery, title: e.target.value })} required sx={styles.formTextField}/>
                       <FormControl fullWidth>
                         <InputLabel sx={{ color: '#525252' }}>Category</InputLabel>
-                        <Select
-                          value={newQuery.category}
-                          onChange={(e) => setNewQuery({ ...newQuery, category: e.target.value })}
-                          label="Category"
-                          required
-                          sx={styles.formSelect}
-                        >
+                        <Select value={newQuery.category} onChange={(e) => setNewQuery({ ...newQuery, category: e.target.value })} label="Category" required sx={styles.formSelect}>
                           <MenuItem value="Technical">Technical</MenuItem>
                           <MenuItem value="Design">Design</MenuItem>
                           <MenuItem value="Billing">Billing</MenuItem>
@@ -292,55 +201,20 @@ export default function QueryContent({ router }) {
                           <MenuItem value="Other">Other</MenuItem>
                         </Select>
                       </FormControl>
-                      <TextField
-                        fullWidth
-                        label="Description"
-                        variant="outlined"
-                        multiline
-                        rows={4}
-                        value={newQuery.description}
-                        onChange={(e) => setNewQuery({ ...newQuery, description: e.target.value })}
-                        required
-                        sx={styles.formTextField}
-                      />
+                      <TextField fullWidth label="Description" variant="outlined" multiline rows={4} value={newQuery.description} onChange={(e) => setNewQuery({ ...newQuery, description: e.target.value })} required sx={styles.formTextField}/>
                       <Box>
-                        <Button
-                          component="label"
-                          variant="outlined"
-                          startIcon={<AttachIcon />}
-                          sx={styles.attachButton}
-                        >
+                        <Button component="label" variant="outlined" startIcon={<AttachIcon />} sx={styles.attachButton}>
                           Attach File
-                          <input
-                            type="file"
-                            hidden
-                            onChange={handleFileChange}
-                          />
+                          <input type="file" hidden onChange={handleFileChange}/>
                         </Button>
                         {fileToUpload && (
                           <Box sx={styles.attachedFileBox}>
-                            <Typography variant="body2" sx={styles.attachedFileText}>
-                              {fileToUpload.name} ({fileToUpload.size})
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={handleRemoveFile}
-                              sx={styles.attachedFileDeleteButton}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
+                            <Typography variant="body2" sx={styles.attachedFileText}>{fileToUpload.name} ({Math.round(fileToUpload.size / 1024)} KB)</Typography>
+                            <IconButton size="small" onClick={handleRemoveFile} sx={styles.attachedFileDeleteButton}><DeleteIcon fontSize="small" /></IconButton>
                           </Box>
                         )}
                       </Box>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        startIcon={<SendIcon />}
-                        fullWidth
-                        sx={styles.submitButton}
-                      >
-                        Submit Query
-                      </Button>
+                      <Button type="submit" variant="contained" startIcon={<SendIcon />} fullWidth sx={styles.submitButton}>Submit Query</Button>
                     </Stack>
                   </Box>
                 </CardContent>
@@ -364,21 +238,10 @@ export default function QueryContent({ router }) {
                         </TableHead>
                         <TableBody>
                           {queries.map((query) => (
-                            <TableRow
-                              key={query.id}
-                              hover
-                              onClick={() => setActiveQuery(query)}
-                              sx={styles.queriesTableRow}
-                            >
+                            <TableRow key={query.id} hover onClick={() => setActiveQuery(query)} sx={styles.queriesTableRow}>
                               <TableCell sx={styles.queriesTableCell}>{query.title}</TableCell>
                               <TableCell sx={styles.queriesTableCell}>{query.category}</TableCell>
-                              <TableCell>
-                                <Chip
-                                  label={query.status === 'resolved' ? 'Resolved' :
-                                    query.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                                  sx={styles.queriesStatusChip(query.status).sx}
-                                />
-                              </TableCell>
+                              <TableCell><Chip label={query.status} sx={styles.queriesStatusChip(query.status).sx}/></TableCell>
                               <TableCell sx={styles.queriesTableCell}>{query.date}</TableCell>
                             </TableRow>
                           ))}
@@ -387,9 +250,7 @@ export default function QueryContent({ router }) {
                     </TableContainer>
                   ) : (
                     <Box sx={styles.noQueriesBox}>
-                      <Typography variant="body1" sx={styles.noQueriesText}>
-                        You haven't submitted any queries yet.
-                      </Typography>
+                      <Typography variant="body1" sx={styles.noQueriesText}>You haven't submitted any queries yet.</Typography>
                     </Box>
                   )}
                 </CardContent>
@@ -398,21 +259,8 @@ export default function QueryContent({ router }) {
           </Grid>
         )}
       </Box>
-      {/* Snackbar */}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={1500}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert severity="success"
-          sx={{
-            width: '100%',
-            fontWeight: 'bold',
-            fontSize: '1.2rem'
-          }}>
-          Logging out...
-        </Alert>
+      <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>Logging out...</Alert>
       </Snackbar>
     </Box>
   );
