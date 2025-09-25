@@ -16,9 +16,6 @@ export const useMeetingMes = () => {
   // MODIFIED: Destructured only the needed state from the store
   const { activeTab, setActiveTab } = useMeetingMesStore();
 
-  // REMOVED: useQuery for 'conversations'
-  // REMOVED: useQuery for 'teamMembers'
-
   const { data: meetings = [], isLoading: isLoadingMeetings } = useQuery({
     queryKey: ['meetings'],
     queryFn: meetingMesService.fetchMeetings,
@@ -28,10 +25,6 @@ export const useMeetingMes = () => {
     queryKey: ['notifications'],
     queryFn: meetingMesService.fetchNotifications,
   });
-
-  // REMOVED: sendMessageMutation (useMutation hook)
-  // REMOVED: handleSendMessage function
-  // REMOVED: filteredConversations logic
 
   // MODIFIED: Return object with only the necessary values
   return {
