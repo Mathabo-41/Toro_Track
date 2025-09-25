@@ -1,10 +1,11 @@
 // MODIFIED: ./auditor/assetStaDoc/AssetStatusContent.js
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   Box, Typography, List, ListItem,
   ListItemText, Drawer, ListItemButton,
@@ -21,7 +22,7 @@ import * as globalStyles from '../common/styles';
 import * as styles from './styles';
 import { auditorMenu } from '../common/auditorStore';
 
-const Sidebar = ({ handleLogout }) => {
+const Sidebar = ({ handleLogout, currentUser }) => {
   const router = useRouter();
   return (
     <Drawer
@@ -49,18 +50,12 @@ const Sidebar = ({ handleLogout }) => {
         ))}
       </List>
       <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-            <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
-          </Box>
-          <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                John Doe
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                user@toro.com
-              </Typography>
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+            <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+            <Box sx={{ minWidth: 0 }}>
+                <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+                <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Auditor</Typography>
+            </Box>
         </Box>
         <Button onClick={handleLogout} fullWidth sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}>
           <LogoutIcon /> Logout
@@ -96,7 +91,19 @@ const Header = ({ search, handleSearchChange }) => {
 
 export default function AssetStatusContent() {
   const router = useRouter();
-  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  /*
+  Fetches the current user's data when the component loads.
+  */
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = () => {
     setOpenSnackbar(true);
@@ -107,7 +114,7 @@ export default function AssetStatusContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      <Sidebar handleLogout={handleLogout} />
+      <Sidebar handleLogout={handleLogout} currentUser={currentUser} />
 
       <Box component="main" sx={globalStyles.mainContentBox}>
         <Header search={state.search} handleSearchChange={handlers.handleSearchChange} />

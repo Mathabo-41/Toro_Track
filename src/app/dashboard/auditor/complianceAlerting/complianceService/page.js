@@ -1,42 +1,78 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+// complianceService/page.js
+import { supabase } from '@/lib/supabaseClient';
 
-//hardcode
-const complianceFeaturesDummyData = [
-  {
-    title: 'Compliance Checklist Templates',
-    description:
-      'Pre-define steps for software license audits, hardware disposal protocols, and data-protection reviews.',
-  },
-  {
-    title: 'Role-Based Alerts',
-    description:
-      'Trigger notifications when required documentation is missing or retention periods are about to expire.',
-  },
-  {
-    title: 'Role-Based Access Controls',
-    description:
-      'Ensure auditors have read-only access to production systems, and that sensitive actions are logged and restricted.',
-  },
-  {
-    title: 'Reporting & Analytics',
-    description:
-      'Generate detailed reports on compliance status and identify areas of concern.',
-  },
-  {
-    title: 'Audit Trail Logging',
-    description:
-      'Maintain a chronological record of all actions for accountability and verification.',
-  },
-];
+export const fetchActiveAlerts = async () => {
+  const { data, error } = await supabase
+    .from('compliance_alerts')
+    .select(`
+      id,
+      severity,
+      details,
+      status,
+      created_at,
+      assigned_to,
+      clients(client_name),
+      profiles(full_name)
+    `)
+    .order('created_at', { ascending: false });
 
-/**
- * Simulates an asynchronous API call to fetch compliance features.
- * @returns {Promise<Array<Object>>} A promise that resolves with the compliance features data.
- */
-export async function fetchComplianceFeatures() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(complianceFeaturesDummyData);
-    }, 500); // Simulate network delay
-  });
-}
+  if (error) {
+    console.error('Error fetching compliance alerts:', error);
+    throw error;
+  }
+
+  return data.map(alert => ({
+    id: alert.id,
+    severity: alert.severity,
+    client: alert.clients?.client_name || 'Unknown Client',
+    details: alert.details,
+    timestamp: new Date(alert.created_at).toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    status: alert.status,
+    assignedTo: alert.profiles?.full_name || 'Unassigned'
+  }));
+};
+
+export const fetchSecurityChecks = async () => {
+  const { data, error } = await supabase
+    .from('security_compliance_checks')
+    .select('*')
+    .order('last_checked', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching security checks:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const exportComplianceReport = async () => {
+  const alerts = await fetchActiveAlerts();
+  
+  const headers = ['Severity', 'Client', 'Alert Details', 'Timestamp', 'Status', 'Assigned To'];
+  const csvContent = [
+    headers.join(','),
+    ...alerts.map(alert => [
+      alert.severity,
+      `"${alert.client}"`,
+      `"${alert.details}"`,
+      `"${alert.timestamp}"`,
+      alert.status,
+      `"${alert.assignedTo}"`
+    ].join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `compliance-report-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};

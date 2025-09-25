@@ -1,33 +1,30 @@
 // ./auditor/reportingExport/RepoExportContent.js
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
-  Box,  Typography,  Grid,  List,
-  ListItem,  ListItemText,  Drawer,
-  ListItemButton,  TextField,  MenuItem,
-  FormControl,  InputLabel,  Select,
+  Box, Typography, Grid, List,
+  ListItem, ListItemText, Drawer,
+  ListItemButton, TextField, MenuItem,
+  FormControl, InputLabel, Select,
   Button, IconButton
 } from '@mui/material';
-//dashboard icon import 
+
+// Dashboard icon import
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
-//snack bar 
+// Snackbar
 import { Snackbar, Alert } from '@mui/material';
 
-import { 
-  AccountCircle as AccountCircleIcon,
+import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import { useReportExport } from './useReportExport/page';
 import {
-  fullScreenContainerStyles,
-  drawerStyles,
-  drawerHeaderStyles,
-  listItemButtonStyles,
   mainContentBoxStyles,
   headerBoxStyles,
   pageTitleStyles,
@@ -41,19 +38,16 @@ import {
   reportingExportSectionDescription,
   reportingExportButton,
   reportingExportFormControl,
-  reportingExportMenuItem,
   reportingExportSelect,
 } from './styles';
 
 // Import global styles for layout and navigation
 import * as globalStyles from '../common/styles';
-import { useAuditorStore, auditorMenu} from '../common/auditorStore';
+import { auditorMenu } from '../common/auditorStore';
 
 export default function RepoExportContent() {
-  // --- Hook for State & Handlers ---
   const {
     search,
-    currentPath,
     fromDate,
     toDate,
     client,
@@ -80,28 +74,33 @@ export default function RepoExportContent() {
     generateSnapshotMutation,
   } = useReportExport();
 
-  // State for sidebar
-  const [sidebarOpen] = React.useState(true);
+  const router = useRouter();
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-//router for redirection/navigation
-     const router = useRouter();
-  
-     //snack-bar state 
-     const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  /*
+  Fetches the current user data from Supabase auth.
+  */
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
 
-  // Function to handle the logout action  with snackbar and redirect to the login page
+  /*
+  Handles user logout, shows a confirmation, signs the user out, and redirects to login.
+  */
   const handleLogout = () => {
-    setOpenSnackbar(true);//shows feedback for snackbar
-    setTimeout(()=> {
-       router.push('/login');
-    }, 1500); //snackbar will redirect after 1.5 seconds.
-   
+    setOpenSnackbar(true);
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500);
   };
-   
 
-  // --- Rendering Logic ---
   const { data: reportOptions, isLoading: isLoadingOptions } = reportOptionsQuery;
-
   const isExportingPdf = exportPdfMutation.isPending;
   const isExportingCsv = exportCsvMutation.isPending;
   const isSettingSchedule = setScheduleMutation.isPending;
@@ -109,28 +108,27 @@ export default function RepoExportContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* --- Sidebar Navigation --- */}
       <Drawer
         variant="permanent"
         anchor="left"
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        <Box sx={{ 
-    p: 1,
-    borderBottom: '2px solid #6b705c',
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 1 
-  }}>
-    <Link href="/dashboard" passHref>
-      <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-        <DashboardIcon />
-      </IconButton>
-    </Link>
-    <Typography variant="h5" sx={{ color: '#fefae0'}}>
-      Auditor Portal
-    </Typography>
-  </Box>
+        <Box sx={{
+          p: 1,
+          borderBottom: '2px solid #6b705c',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <Link href="/dashboard" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h5" sx={{ color: '#fefae0' }}>
+            Auditor Portal
+          </Typography>
+        </Box>
         <List>
           {auditorMenu.map((item) => (
             <ListItem key={item.path} disablePadding>
@@ -138,7 +136,6 @@ export default function RepoExportContent() {
                 component={Link}
                 href={item.path}
                 sx={globalStyles.listItemButton}
-                onMouseEnter={() => router.prefetch(item.path)}
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
@@ -146,97 +143,20 @@ export default function RepoExportContent() {
           ))}
         </List>
 
-        {/* Region: User Profile Section */}
-        <Box sx={{
-          padding: '1rem',
-          borderTop: '2px solid #6b705c',
-          marginTop: 'auto'
-        }}>
-          {/* User Profile Container */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '1rem',
-            overflow: 'hidden',
-            gap: '0.75rem'
-          }}>
-            {/* Profile Picture */}
-            <Box sx={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              position: 'relative',
-              flexShrink: 0,
-              border: '2px solid #f3722c'
-            }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-              />
+        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+                <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+                <Box sx={{ minWidth: 0 }}>
+                    <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+                    <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Auditor</Typography>
+                </Box>
             </Box>
-
-            {/* User Details (shown when sidebar is open) */}
-            {sidebarOpen && (
-              <Box sx={{ minWidth: 0 }}>
-                {/* User Name */}
-                <Typography sx={{ 
-                  fontWeight: '600', 
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: '#fefae0'
-                }}>
-                  John Doe
-                </Typography>
-                
-                {/* User Email */}
-                <Typography sx={{ 
-                  fontSize: '0.8rem', 
-                  opacity: 0.8, 
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  color: 'rgba(254, 250, 224, 0.7)'
-                }}>
-                  user@toro.com
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          {/* Logout Button */}
-          <Button 
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              '&:hover': {
-                background: '#6b705c'
-              }
-            }}
-          >
-            {sidebarOpen ? 'Logout' : <LogoutIcon />}
-          </Button>
+            <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+                Logout
+            </Button>
         </Box>
       </Drawer>
 
-      {/* --- Main Content --- */}
       <Box component="main" sx={mainContentBoxStyles}>
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
@@ -253,10 +173,8 @@ export default function RepoExportContent() {
           </Box>
         </Box>
 
-        {/* --- Reporting & Export Content --- */}
         <Box sx={reportingExportContainerStyles}>
           <Grid container maxWidth="md" sx={{ margin: '0 auto' }}>
-            {/* --- Main Header --- */}
             <Grid item xs={12}>
               <Typography variant="h4" sx={reportingExportTitle}>
                 Reporting & Export
@@ -266,7 +184,6 @@ export default function RepoExportContent() {
               </Typography>
             </Grid>
 
-            {/* --- Section 1: Customizable Reports --- */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
@@ -344,7 +261,6 @@ export default function RepoExportContent() {
               </Box>
             </Grid>
 
-            {/* --- Section 2: Scheduled Delivery --- */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
@@ -381,7 +297,6 @@ export default function RepoExportContent() {
               </Box>
             </Grid>
 
-            {/* --- Section 3: On-Demand Snapshots --- */}
             <Grid item xs={12}>
               <Box sx={reportingExportSection}>
                 <Typography variant="h6" sx={reportingExportSectionTitle}>
@@ -412,23 +327,21 @@ export default function RepoExportContent() {
           </Grid>
         </Box>
       </Box>
-      {/* Snackbar with message when the user logs out of the system /their portal */}
-      
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={1500}
-              onClose={() => setOpenSnackbar(false)}
-              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            >
-              <Alert severity="success" 
-              //we use SUCCESS instead of INFO so that we can have the power to switch colours
-              sx={{ width: '100%', 
-                fontWeight: 'bold',
-                fontSize: '1.2rem'
-              }}>
-                Logging out...
-              </Alert>
-            </Snackbar>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1500}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success"
+          sx={{
+            width: '100%',
+            fontWeight: 'bold',
+            fontSize: '1.2rem'
+          }}>
+          Logging out...
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

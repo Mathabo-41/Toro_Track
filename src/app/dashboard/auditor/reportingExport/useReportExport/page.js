@@ -1,18 +1,17 @@
-// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
+// useReportExport/page.js
 'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { create } from 'zustand';
-import {
-  getReportOptions,
-  exportPdfReport,
-  exportCsvReport,
-  setReportSchedule,
-  generateAuditSnapshot,
+import { 
+  getReportOptions, 
+  exportPdfReport, 
+  exportCsvReport, 
+  setReportSchedule, 
+  generateAuditSnapshot 
 } from '../reportingExService/page';
 
-// Zustand store for managing form state
 const useFormStore = create((set) => ({
   fromDate: '',
   toDate: '',
@@ -30,30 +29,12 @@ const useFormStore = create((set) => ({
   setCutOffDate: (date) => set({ cutOffDate: date }),
 }));
 
-// manage state and logic for this screen
 export const useReportExport = () => {
   const [search, setSearch] = useState('');
   const currentPath = '/dashboard/auditor/reportingExport';
 
-  // Use Zustand for form state
-  const {
-    fromDate,
-    toDate,
-    client,
-    assetType,
-    scheduleFrequency,
-    sendTo,
-    cutOffDate,
-    setFromDate,
-    setToDate,
-    setClient,
-    setAssetType,
-    setScheduleFrequency,
-    setSendTo,
-    setCutOffDate,
-  } = useFormStore();
+  const formState = useFormStore();
 
-  // Tanstack react Query to store and fetch data from the database
   const reportOptionsQuery = useQuery({
     queryKey: ['reportOptions'],
     queryFn: getReportOptions,
@@ -61,74 +42,62 @@ export const useReportExport = () => {
 
   const exportPdfMutation = useMutation({
     mutationFn: exportPdfReport,
-    onSuccess: (data) => console.log(data),
-    onError: (error) => console.error('PDF Export failed:', error),
   });
 
   const exportCsvMutation = useMutation({
     mutationFn: exportCsvReport,
-    onSuccess: (data) => console.log(data),
-    onError: (error) => console.error('CSV Export failed:', error),
   });
 
   const setScheduleMutation = useMutation({
     mutationFn: setReportSchedule,
-    onSuccess: (data) => console.log(data),
-    onError: (error) => console.error('Schedule failed:', error),
   });
 
   const generateSnapshotMutation = useMutation({
     mutationFn: generateAuditSnapshot,
-    onSuccess: (data) => console.log(data),
-    onError: (error) => console.error('Snapshot failed:', error),
   });
 
-  // Handlers for user interactions
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-  };
+  const handleSearchChange = (e) => setSearch(e.target.value);
 
   const handleExportPdf = () => {
-    exportPdfMutation.mutate({ fromDate, toDate, client, assetType });
+    exportPdfMutation.mutate({ 
+      fromDate: formState.fromDate, 
+      toDate: formState.toDate, 
+      client: formState.client, 
+      assetType: formState.assetType 
+    });
   };
 
   const handleExportCsv = () => {
-    exportCsvMutation.mutate({ fromDate, toDate, client, assetType });
+    exportCsvMutation.mutate({ 
+      fromDate: formState.fromDate, 
+      toDate: formState.toDate, 
+      client: formState.client, 
+      assetType: formState.assetType 
+    });
   };
 
   const handleSetSchedule = () => {
-    setScheduleMutation.mutate({ scheduleFrequency, sendTo });
+    setScheduleMutation.mutate({ 
+      scheduleFrequency: formState.scheduleFrequency, 
+      sendTo: formState.sendTo 
+    });
   };
 
   const handleGenerateSnapshot = () => {
-    generateSnapshotMutation.mutate({ cutOffDate });
+    generateSnapshotMutation.mutate({ 
+      cutOffDate: formState.cutOffDate 
+    });
   };
 
   return {
-    // State
     search,
     currentPath,
-    fromDate,
-    toDate,
-    client,
-    assetType,
-    scheduleFrequency,
-    sendTo,
-    cutOffDate,
-    // Handlers
+    ...formState,
     handleSearchChange,
     handleExportPdf,
     handleExportCsv,
     handleSetSchedule,
     handleGenerateSnapshot,
-    setFromDate,
-    setToDate,
-    setClient,
-    setAssetType,
-    setScheduleFrequency,
-    setSendTo,
-    setCutOffDate,
-    // Query results
     reportOptionsQuery,
     exportPdfMutation,
     exportCsvMutation,

@@ -1,10 +1,11 @@
 // ./auditor/complianceAlerting/CompliAlertContent.js
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   Box, Typography, Container, List, ListItem, ListItemText, Drawer,
   ListItemButton, Paper, TextField, Button, IconButton, Grid,
@@ -45,14 +46,28 @@ export default function CompliAlertContent() {
     isError
   } = useCompliance();
 
-  // State for sidebar
-  const [sidebarOpen] = React.useState(true);
   const router = useRouter();
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
+  /*
+  Fetches the current user data from Supabase auth.
+  */
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, []);
+
+  /*
+  Handles user logout and redirects to the login page.
+  */
   const handleLogout = () => {
     setOpenSnackbar(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      await supabase.auth.signOut();
       router.push('/login');
     }, 1500);
   };
@@ -65,7 +80,6 @@ export default function CompliAlertContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* --- Sidebar Navigation (unchanged) --- */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -88,37 +102,26 @@ export default function CompliAlertContent() {
             </ListItem>
           ))}
         </List>
-        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-              <Image src="/toroLogo.jpg" alt="User Profile" fill style={{ objectFit: 'cover' }} />
+        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+            <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+              <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Auditor</Typography>
             </Box>
-            {sidebarOpen && (
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                  John Doe
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                  user@toro.com
-                </Typography>
-              </Box>
-            )}
           </Box>
-          <Button onClick={handleLogout} fullWidth sx={{ padding: '0.75rem', background: 'transparent', border: '1px solid #fefae0', borderRadius: '8px', color: '#fefae0', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', '&:hover': { background: '#6b705c' } }}>
-            {sidebarOpen ? 'Logout' : <LogoutIcon />}
+          <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+            Logout
           </Button>
         </Box>
       </Drawer>
 
-      {/* --- Main Content --- */}
       <Box component="main" sx={mainContentBoxStyles}>
-        {/* --- Header --- */}
         <Box sx={headerBoxStyles}>
           <Typography variant="h4" sx={pageTitleStyles}>
             Compliance & Alerting
           </Typography>
           <Box sx={headerRightSectionStyles}>
-            {/* MODIFIED: Search bar now filters the live alerts table */}
             <TextField
               variant="outlined"
               placeholder="Search by client, alert, etc."
@@ -126,7 +129,6 @@ export default function CompliAlertContent() {
               onChange={handleSearchChange}
               sx={searchFieldStyles}
             />
-            {/* NEW: Export Button */}
             <Button
               variant="contained"
               startIcon={<FileDownloadIcon />}
@@ -138,9 +140,7 @@ export default function CompliAlertContent() {
           </Box>
         </Box>
 
-        {/* --- Main Content Area --- */}
         <Grid container spacing={4}>
-          {/* NEW: Actionable "Active Alerts" Table */}
           <Grid item xs={12}>
             <Typography variant="h5" sx={{ ...complianceFeatureTitleStyles, mb: 2 }}>
               Active Alerts
@@ -177,7 +177,6 @@ export default function CompliAlertContent() {
             </TableContainer>
           </Grid>
 
-          {/* NEW: Security & Data Compliance Section */}
           <Grid item xs={12}>
             <Typography variant="h5" sx={{ ...complianceFeatureTitleStyles, mb: 2 }}>
               Security & Data Compliance
@@ -201,7 +200,6 @@ export default function CompliAlertContent() {
         </Grid>
       </Box>
 
-      {/* --- Snackbar (unchanged) --- */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}

@@ -1,73 +1,126 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+import { supabase } from '@/lib/supabaseClient';
 
-// A simple function to simulate a network delay
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/*
+* A helper function to trigger a file download in the browser.
+*/
+const downloadFile = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
 
-// Dummy data to simulate server responses
-const DUMMY_ASSET_TYPES = [
-  { id: 1, name: 'Type 1' },
-  { id: 2, name: 'Type 2' },
-  { id: 3, name: 'Type 3' },
-];
-
-const DUMMY_CLIENTS = [
-  { id: 1, name: 'Client A' },
-  { id: 2, name: 'Client B' },
-  { id: 3, name: 'Client C' },
-];
-
-/**
- * Service function to get available report options.
- * @returns {Promise<{ assetTypes: Array, clients: Array }>}
- */
+/*
+* Service function to get available report options from the database.
+*/
 export async function getReportOptions() {
-  await sleep(500);
+  const { data, error } = await supabase.rpc('get_report_options');
+  if (error) {
+    console.error('Error fetching report options:', error);
+    throw error;
+  }
   return {
-    assetTypes: DUMMY_ASSET_TYPES,
-    clients: DUMMY_CLIENTS,
+    assetTypes: data[0].asset_types || [],
+    clients: data[0].clients || [],
   };
 }
 
-/**
- * Service function to simulate exporting a PDF report.
- * @param {object} params
- * @returns {Promise<string>}
- */
+/*
+* Fetches data and generates a PDF report on the client-side.
+*/
 export async function exportPdfReport(params) {
-  await sleep(1000);
-  console.log('Exporting PDF with params:', params);
+  // To use this function, you must install jspdf and jspdf-autotable
+  // npm install jspdf jspdf-autotable
+  const { jsPDF } = await import('jspdf');
+  await import('jspdf-autotable');
+
+  const { data, error } = await supabase.rpc('get_report_data', {
+    from_date: params.fromDate || null,
+    to_date: params.toDate || null,
+    client_name: params.client || null,
+    asset_type: params.assetType || null,
+  });
+
+  if (error) throw error;
+  
+  const doc = new jsPDF();
+  doc.autoTable({
+    head: [['Order ID', 'Timestamp', 'Receiver', 'Status', 'Asset', 'Serial', 'Client']],
+    body: data.map(row => [
+      row.order_id,
+      new Date(row.timestamp).toLocaleString(),
+      row.receiver,
+      row.status,
+      row.asset,
+      row.serial,
+      row.client,
+    ]),
+  });
+  doc.save('report.pdf');
+  
   return 'PDF report generated successfully.';
 }
 
-/**
- * Service function to simulate exporting a CSV report.
- * @param {object} params
- * @returns {Promise<string>}
- */
+/*
+* Fetches data and generates a CSV report on the client-side.
+*/
 export async function exportCsvReport(params) {
-  await sleep(1000);
-  console.log('Exporting CSV with params:', params);
+  const { data, error } = await supabase.rpc('get_report_data', {
+    from_date: params.fromDate || null,
+    to_date: params.toDate || null,
+    client_name: params.client || null,
+    asset_type: params.assetType || null,
+  });
+
+  if (error) throw error;
+
+  const headers = ['OrderID,Timestamp,Receiver,Status,Asset,Serial,Client'];
+  const rows = data.map(row => 
+    [
+      row.order_id,
+      new Date(row.timestamp).toLocaleString(),
+      row.receiver,
+      row.status,
+      row.asset,
+      row.serial,
+      row.client,
+    ].join(',')
+  );
+  
+  const csvContent = headers.concat(rows).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  downloadFile(blob, 'report.csv');
+  
   return 'CSV report generated successfully.';
 }
 
-/**
- * Service function to simulate setting a scheduled report.
- * @param {object} params
- * @returns {Promise<string>}
- */
+/*
+* Saves a scheduled report configuration to the database.
+*/
 export async function setReportSchedule(params) {
-  await sleep(1000);
-  console.log('Setting schedule with params:', params);
+  const { data, error } = await supabase.rpc('add_scheduled_report', {
+    p_frequency: params.scheduleFrequency,
+    p_destination: params.sendTo,
+  });
+  
+  if (error) throw error;
   return 'Report schedule set successfully.';
 }
 
-/**
- * Service function to simulate generating an on-demand audit snapshot.
- * @param {object} params
- * @returns {Promise<string>}
- */
+/*
+* Creates a new on-demand audit snapshot record in the database.
+*/
 export async function generateAuditSnapshot(params) {
-  await sleep(1000);
-  console.log('Generating snapshot with params:', params);
+  const { data, error } = await supabase.rpc('add_report_snapshot', {
+    p_cut_off_date: params.cutOffDate,
+  });
+  
+  if (error) throw error;
   return 'Audit snapshot generated successfully.';
 }

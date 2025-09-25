@@ -1,58 +1,53 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+import { supabase } from '@/lib/supabaseClient';
 
-/**
- * hardcode data for the license usage bar chart.
- * @type {Array<Object>}
- */
-export const licenseData = [
-  { software: 'Photoshop', assigned: 80, purchased: 100 },
-  { software: 'AutoCAD', assigned: 60, purchased: 50 },
-  { software: 'Office 365', assigned: 120, purchased: 120 },
-];
+/*
+* Fetches the initial data needed for the license dashboard.
+*/
+export const getDashboardData = async () => {
+  const [usage, register, renewals, clientList] = await Promise.all([
+    supabase.rpc('get_license_usage_stats'),
+    supabase.rpc('get_license_register', { p_client_id: null }),
+    supabase.rpc('get_upcoming_license_renewals'),
+    supabase.rpc('get_all_clients_for_filter'),
+  ]);
 
-/**
- * hardcode data for the per-client license register data grid.
- * @type {Array<Object>}
- */
-export const licenseRows = [
-  { id: 1, licenseName: 'Photoshop', licenseKey: 'ABC123', status: 'Active' },
-  { id: 2, licenseName: 'AutoCAD', licenseKey: 'DEF456', status: 'Expired' },
-  { id: 3, licenseName: 'Office 365', licenseKey: 'GHI789', status: 'Active' },
-  { id: 4, licenseName: 'Adobe', licenseKey: 'JKL000', status: 'Active' },
-  { id: 5, licenseName: 'Visual Studio', licenseKey: 'MNO111', status: 'Active' },
-];
+  if (usage.error) throw usage.error;
+  if (register.error) throw register.error;
+  if (renewals.error) throw renewals.error;
+  if (clientList.error) throw clientList.error;
 
-/**
- * hardcode data for the sidebar navigation menu.
- * @type {Array<Object>}
- */
-export const sidebarMenu = [
-  { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-  { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-  { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-  { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-  { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
-  { name: 'Settings', path: '/dashboard/auditor/settings' },
-];
+  return {
+    usageData: usage.data || [],
+    registerData: register.data || [],
+    renewalsData: renewals.data || [],
+    clientsData: clientList.data || [],
+  };
+};
 
-/**
- * hardcode data for the upcoming license renewals.
- * @type {Array<Object>}
- */
-export const renewalData = [
-  {
-    label: '30 days',
-    color: 'warning',
-    keys: ['XYZ123', 'ABC456', 'JKL789', 'MNO000'],
-  },
-  {
-    label: '60 days',
-    color: 'error',
-    keys: ['UVW000'],
-  },
-  {
-    label: '90 days',
-    color: 'default',
-    keys: ['LMN888', 'DEF333'],
-  },
-];
+/*
+* Fetches the license register for a specific client.
+*/
+export const getLicenseRegisterByClient = async (clientId) => {
+  const p_client_id = clientId === 'all' ? null : clientId;
+  const { data, error } = await supabase.rpc('get_license_register', { p_client_id });
+
+  if (error) throw error;
+  return data || [];
+};
+
+/*
+* Adds a new license to the database.
+*/
+export const addNewLicense = async (licenseInfo) => {
+  const { client, licenseName, licenseKey, status } = licenseInfo;
+  const { data, error } = await supabase.rpc('add_new_license', {
+    p_client_id: client,
+    p_software_name: licenseName,
+    p_license_key: licenseKey,
+    p_status: status,
+  });
+
+  if (error) throw error;
+  return data;
+};
