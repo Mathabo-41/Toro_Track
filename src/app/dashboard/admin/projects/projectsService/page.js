@@ -46,7 +46,6 @@ export const getClients = async () => {
     return data;
 };
 
-
 /**
  * Adds a new project to the database.
  */
@@ -71,6 +70,7 @@ export const addProject = async (projectData) => {
       status: projectData.status,
       end_date: projectData.dueDate,
       assigned_team: projectData.team
+      // Remove progress from insert
     });
 
   if (projectError) {
@@ -78,7 +78,6 @@ export const addProject = async (projectData) => {
     throw new Error(projectError.message);
   }
 };
-
 
 /**
  * Deletes a project from the database.
@@ -92,7 +91,6 @@ export const removeProject = async (projectId) => {
     throw new Error(error.message);
   }
 };
-
 
 /**
  * Updates the status of a project.
@@ -111,7 +109,6 @@ export const changeProjectStatus = async (projectId, newStatus) => {
     }
     return data;
 };
-
 
 /**
  * Updates all details of a project.
@@ -137,6 +134,7 @@ export const updateProjectDetails = async (projectData) => {
       end_date: projectData.dueDate,
       status: projectData.status,
       assigned_team: projectData.team
+      // Remove progress from update
     })
     .eq('id', projectData.id);
 

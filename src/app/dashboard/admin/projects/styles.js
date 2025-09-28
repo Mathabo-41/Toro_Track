@@ -59,95 +59,116 @@ export const styles = {
   },
   title: {
     color: '#525252',
-    fontWeight: 500
+    fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center'
   },
   titleIcon: {
-    mr: 1,
-    verticalAlign: 'middle',
+    mr: 2,
     color: '#f3722c'
   },
   searchStack: {
-    width: { xs: '100%', sm: 'auto' }
+    width: { xs: '100%', sm: 'auto' },
+    alignItems: 'center'
   },
   searchField: {
     flexGrow: { xs: 1, sm: 0 },
     '& .MuiInputBase-root': {
       color: '#525252',
-      backgroundColor: '#fefae0',
-      '& fieldset': { borderColor: '#525252' },
+      backgroundColor: '#faedcd',
+      '& fieldset': { 
+        borderColor: '#6b705c',
+        borderRadius: 1
+      },
+      '&:hover fieldset': {
+        borderColor: '#f3722c'
+      }
     }
   },
   searchIcon: {
-    color: '#525252'
+    color: '#6b705c'
   },
   newProjectButton: {
     backgroundColor: '#283618',
     color: '#fefae0',
     fontWeight: 500,
+    borderColor: '#283618',
     '&:hover': {
       backgroundColor: '#606c38',
-      borderColor: '#fefae0'
+      borderColor: '#606c38'
     },
     whiteSpace: 'nowrap'
   },
   projectsCard: {
     backgroundColor: '#fefae0',
     mb: 3,
-    border: '1px solid #525252'
+    border: '1px solid #6b705c',
+    borderRadius: 2
   },
   tableContainer: {
     backgroundColor: 'transparent',
-    border: '2px solid #525252'
+    border: '1px solid #e0e0e0',
+    borderRadius: 1
   },
   tableHeaderCell: {
-    color: '#525252',
-    fontWeight: 'bold'
+    color: '#283618',
+    fontWeight: 'bold',
+    backgroundColor: '#faedcd',
+    borderBottom: '2px solid #6b705c'
   },
   tableRowHover: {
-    '&:hover': { backgroundColor: '#d6d6d6' }
+    '&:hover': { 
+      backgroundColor: '#faedcd',
+      transition: 'background-color 0.2s ease'
+    }
   },
   tableCell: {
-    color: '#525252'
+    color: '#525252',
+    borderBottom: '1px solid #e0e0e0'
   },
   chip: (status) => {
     const statusStyles = {
-        'completed': {
-            backgroundColor: 'rgba(46, 125, 50, 0.2)',
-            color: '#81c784',
-            border: '1px solid #2e7d32'
-        },
-        'active': {
-            backgroundColor: 'rgba(2, 136, 209, 0.2)',
-            color: '#4fc3f7',
-            border: '1px solid #0288d1'
-        },
-        'pending': {
-            backgroundColor: 'rgba(244, 193, 15, 0.2)',
-            color: '#f3722c',
-            border: '1px solid #f3722c'
-        },
-        'inprogress': {
-            backgroundColor: 'rgba(100, 100, 255, 0.2)',
-            color: '#6464ff',
-            border: '1px solid #6464ff'
-        },
-        'on_hold': {
-            backgroundColor: 'rgba(255, 87, 34, 0.2)',
-            color: '#ff5722',
-            border: '1px solid #d84315'
-        },
-        'cancelled': {
-            backgroundColor: 'rgba(244, 67, 54, 0.2)',
-            color: '#f44336',
-            border: '1px solid #c62828'
-        },
-        'not started': {
-            backgroundColor: 'rgba(97, 97, 97, 0.2)',
-            color: '#bdbdbd',
-            border: '1px solid #616161'
-        }
+      'completed': {
+        backgroundColor: 'rgba(46, 125, 50, 0.2)',
+        color: '#2e7d32',
+        border: '1px solid #2e7d32'
+      },
+      'active': {
+        backgroundColor: 'rgba(2, 136, 209, 0.2)',
+        color: '#0288d1',
+        border: '1px solid #0288d1'
+      },
+      'pending': {
+        backgroundColor: 'rgba(244, 193, 15, 0.2)',
+        color: '#f3722c',
+        border: '1px solid #f3722c'
+      },
+      'inprogress': {
+        backgroundColor: 'rgba(100, 100, 255, 0.2)',
+        color: '#6464ff',
+        border: '1px solid #6464ff'
+      },
+      'on_hold': {
+        backgroundColor: 'rgba(255, 87, 34, 0.2)',
+        color: '#ff5722',
+        border: '1px solid #d84315'
+      },
+      'cancelled': {
+        backgroundColor: 'rgba(244, 67, 54, 0.2)',
+        color: '#f44336',
+        border: '1px solid #c62828'
+      },
+      'not started': {
+        backgroundColor: 'rgba(97, 97, 97, 0.2)',
+        color: '#616161',
+        border: '1px solid #616161'
+      }
     };
-    return { ...statusStyles[status], fontWeight: 'bold' };
+    return { 
+      ...statusStyles[status] || statusStyles['not started'], 
+      fontWeight: 'bold',
+      borderRadius: '16px'
+    };
   },
   statusChip: (status) => ({
     ...styles.chip(status),
@@ -160,77 +181,175 @@ export const styles = {
     fontSize: '0.8rem',
     bgcolor: '#6b705c',
     color: '#fefae0',
-    border: '1px solid #444'
+    border: '1px solid #444',
+    cursor: 'pointer'
   },
   actionIconButton: {
-    color: '#525252'
+    color: '#525252',
+    '&:hover': {
+      backgroundColor: 'rgba(107, 112, 92, 0.1)'
+    }
   },
+
+  // Statistics Cards
+  statsCard: {
+    borderRadius: 2,
+    background: 'linear-gradient(145deg, #fefae0 0%, #faedcd 100%)',
+    border: '1px solid #6b705c',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 12px rgba(0,0,0,0.15)'
+    }
+  },
+  
+  statsTypography: (color) => ({
+    color: color,
+    fontWeight: 'bold',
+    fontSize: '2rem'
+  }),
+  
+  statsCardIcon: (color) => ({
+    backgroundColor: color,
+    width: 56,
+    height: 56,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+  }),
+
+  // Dialog Styles
   createDialogPaper: {
-    backgroundColor: '#fefae0',
-    color: '#283618',
-    border: '2px solid #283618'
+    borderRadius: 2,
+    background: 'linear-gradient(145deg, #fefae0 0%, #faedcd 100%)',
+    border: '2px solid #6b705c'
   },
   createDialogTitle: {
+    background: 'linear-gradient(45deg, #6b705c 30%, #8a9175 90%)',
+    color: '#fefae0',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid #6b705c',
-    backgroundColor: '#fefae0',
-    color: '#283618'
+    py: 2,
+    fontWeight: 'bold',
+    borderBottom: '2px solid #6b705c'
   },
   dialogContent: {
     py: 3,
-    px: 3,
-    overflowY: 'auto', // This is the corrected line
+    px: 3
   },
   dialogTextField: {
-    '& .MuiInputBase-input': { color: '#283618' },
-    '& .MuiInputLabel-root': { color: '#6b705c' },
     '& .MuiOutlinedInput-root': {
-        '& fieldset': { borderColor: '#6b705c' },
-        '&:hover fieldset': { borderColor: '#283618' },
-        '&.Mui-focused fieldset': { borderColor: '#283618' },
-    }
+      '& fieldset': {
+        borderColor: '#6b705c',
+      },
+      '&:hover fieldset': {
+        borderColor: '#8a9175',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#f3722c',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: '#525252',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#f3722c',
+    },
   },
-  dialogInputLabel: {
-    color: '#6b705c',
-    '&.MuiInputLabel-shrink': {
-        transform: 'translate(14px, -6px) scale(0.75)',
-        backgroundColor: '#fefae0',
-        padding: '0 4px',
-        borderRadius: '4px'
-    }
+  dialogLabel: {
+    color: '#525252',
+    '&.Mui-focused': {
+      color: '#f3722c',
+    },
   },
   dialogSelect: {
-    color: '#283618'
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#6b705c',
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#8a9175',
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#f3722c',
+    },
+    '& .MuiSelect-select': {
+      color: '#283618'
+    }
+  },
+  dialogMenuItem: {
+    '&:hover': {
+      backgroundColor: '#faedcd',
+    },
+    '&.Mui-selected': {
+      backgroundColor: '#f3722c',
+      color: '#fefae0',
+      '&:hover': {
+        backgroundColor: '#e55a1e',
+      },
+    },
   },
   dialogActions: {
     borderTop: '1px solid #6b705c',
     px: 3,
     py: 2,
-    backgroundColor: '#fefae0'
+    backgroundColor: '#fefae0',
+    gap: 1
   },
   dialogCancelButton: {
     color: '#6b705c',
-    '&:hover': { backgroundColor: '#6b705c', color: '#fefae0' }
+    borderColor: '#6b705c',
+    '&:hover': {
+      backgroundColor: '#6b705c',
+      color: '#fefae0',
+      borderColor: '#6b705c',
+    },
   },
   dialogCreateButton: {
-    backgroundColor: '#283618',
+    background: 'linear-gradient(45deg, #f3722c 30%, #e55a1e 90%)',
     color: '#fefae0',
-    '&:hover': { backgroundColor: '#606c38' },
-    '&:disabled': { backgroundColor: '#e0e0e0', color: '#a0a0a0' }
+    fontWeight: 'bold',
+    '&:hover': {
+      background: 'linear-gradient(45deg, #e55a1e 30%, #d14916 90%)',
+    },
+    '&:disabled': {
+      background: '#e0e0e0',
+      color: '#a0a0a0'
+    }
   },
+  dialogConfirmButton: {
+    background: 'linear-gradient(45deg, #283618 30%, #606c38 90%)',
+    color: '#fefae0',
+    fontWeight: 'bold',
+    '&:hover': {
+      background: 'linear-gradient(45deg, #606c38 30%, #4a5530 90%)',
+    },
+  },
+
+  // Action Menu
   actionMenu: {
     backgroundColor: '#fefae0',
     color: '#283618',
-    border: '2px solid #283618',
-    minWidth: '200px'
+    border: '2px solid #6b705c',
+    minWidth: '200px',
+    borderRadius: 2
   },
   menuItem: {
-    '&:hover': { backgroundColor: '#606c38', color: '#fefae0' }
+    '&:hover': { 
+      backgroundColor: '#faedcd'
+    }
   },
   menuItemIcon: (color) => ({
     mr: 1,
     color: color
-  })
+  }),
+
+  // Popover Styles
+  popoverPaper: {
+    p: 2,
+    minWidth: 200,
+    backgroundColor: '#fefae0',
+    color: '#283618',
+    borderRadius: 2,
+    border: '1px solid #6b705c'
+  }
 };

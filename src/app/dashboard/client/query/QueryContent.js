@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import {
   Box, Typography, Card, CardContent,
   Stack, Button, Drawer, ListItemButton,
@@ -24,13 +25,18 @@ import {
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
+// Import Supabase client
+import { createSupabaseClient } from '@/lib/supabase/client';
+
 import { useRaiseQuery } from './useRaiseQuery/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
 
-export default function QueryContent({ router }) {
+export default function QueryContent() { // Remove router prop
   const supabase = createSupabaseClient();
+  const router = useRouter(); // Use useRouter hook
+  
   const {
     activeQuery,
     setActiveQuery,
@@ -46,6 +52,16 @@ export default function QueryContent({ router }) {
   const { profile, fetchProfile } = useClientStore();
   const [sidebarOpen] = React.useState(true);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState(null);
+
+  // Fetch current user from Supabase
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, [supabase]);
 
   useEffect(() => {
     if (!profile) {
@@ -53,10 +69,11 @@ export default function QueryContent({ router }) {
     }
   }, [profile, fetchProfile]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setOpenSnackbar(true);
-    setTimeout(() => {
-      router.push('/login');
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login'); // Now router is properly defined
     }, 1500);
   };
 
@@ -69,8 +86,8 @@ export default function QueryContent({ router }) {
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/login" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Login page">
+          <Link href="/dashboard" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>
           </Link>
@@ -91,7 +108,7 @@ export default function QueryContent({ router }) {
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
             <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
               <Image
-                src={profile?.avatar_url || "/toroLogo.jpg"}
+                src={profile?.avatar_url || currentUser?.user_metadata?.avatar_url || "/toroLogo.jpg"}
                 alt="User Profile"
                 fill
                 style={{ objectFit: 'cover' }}
@@ -100,10 +117,10 @@ export default function QueryContent({ router }) {
             {sidebarOpen && (
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                  {profile?.name || 'Client Name'}
+                  {profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
                 </Typography>
                 <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                  {profile?.email || 'client@email.com'}
+                  {profile?.email || currentUser?.email || 'client@email.com'}
                 </Typography>
               </Box>
             )}
