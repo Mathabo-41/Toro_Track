@@ -181,7 +181,7 @@ export const styles = {
   dialogContent: {
     py: 3,
     px: 3,
-    overflow: 'visible',
+    overflowY: 'auto', // This is the corrected line
   },
   dialogTextField: {
     '& .MuiInputBase-input': { color: '#283618' },

@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Button, Card, CardContent, Stack, Avatar, List,
   ListItem, ListItemButton, ListItemText, Drawer, Grid, Chip, IconButton,
@@ -26,6 +26,7 @@ import { styles } from './styles';
 import { useSettings } from './useSettings/page';
 
 export default function SystemSettings() {
+  const supabase = createSupabaseClient();
   const { 
     settingsCategories, menu, roles, setRoles,
     isLoading, handleConfigure, handleMaintenance, handleSavePermissions

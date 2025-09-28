@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Button, Card, CardContent, Stack, Avatar, List, ListItem,
   ListItemButton, ListItemText, Drawer, Grid, Paper, Table, TableBody,
@@ -24,19 +24,15 @@ import { styles } from './styles';
 import { useReports } from './useReports/page';
 
 export default function PerformanceReports() {
-  const { 
-    reports, projects, teamMembers, loading, error, menu,
-    rolePermissions,
-    openSnackbar, snackbarMessage, snackbarSeverity, setOpenSnackbar,
-    currentProjectIndex, currentProject,
-    openTaskDialog, setOpenTaskDialog, currentTask, setCurrentTask, isEditing,
-    projectMenuAnchor, viewMode, setViewMode,
-    handleExport, handleProjectMenuOpen, handleProjectMenuClose,
-    handleProjectSelect, handleAddTask, handleEditTask, handleDeleteTask,
-    handleSaveTask, moveTask, handleProjectChange
+  const {
+    reports, projects, teamMembers, currentProject, currentProjectIndex, viewMode,
+    menu, projectMenuAnchor, rolePermissions, loading, error, openTaskDialog,
+    isEditing, openSnackbar, snackbarSeverity, snackbarMessage,
+    handleProjectMenuClose, setOpenTaskDialog, handleNextProject, handlePreviousProject
   } = useReports();
   
   const router = useRouter();
+  const supabase = createSupabaseClient();
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -52,19 +48,9 @@ export default function PerformanceReports() {
     router.push('/login');
   };
   
-  const getAssigneeColor = (assigneeId) => {
-    const member = teamMembers.find(m => m.id === assigneeId);
-    return member ? '#4ECDC4' : '#888';
-  };
-
   const getAssigneeName = (assigneeId) => {
-    const member = teamMembers.find(m => m.id === assigneeId);
-    return member ? member.name : 'Unassigned';
-  };
-
-  const getTotalTasks = (project) => {
-    if (!project || !project.columns) return 0;
-    return Object.values(project.columns).reduce((total, column) => total + (column.tasks?.length || 0), 0);
+      const member = teamMembers.find(m => m.id === assigneeId);
+      return member ? member.name.charAt(0) : '?';
   };
 
   if (loading) {
@@ -77,7 +63,7 @@ export default function PerformanceReports() {
 
   return (
     <Box sx={styles.mainContainer}>
-      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
+       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
           <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
               <Link href="/dashboard" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
               <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
@@ -139,30 +125,30 @@ export default function PerformanceReports() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, fontWeight: 'bold' }}>
                   <Typography variant="h6" sx={styles.chartTitle}><ProjectIcon sx={styles.headerIcon} />Project Task Board</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Tabs value={viewMode} onChange={(e, newValue) => setViewMode(newValue)} sx={{ minHeight: '40px' }} >
+                    <Tabs value={viewMode}  sx={{ minHeight: '40px' }} >
                       <Tab value="kanban" label="Kanban" icon={<DashboardIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
                       <Tab value="list" label="List" icon={<ProjectListIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
                     </Tabs>
-                    <Button variant="outlined" onClick={handleProjectMenuOpen} startIcon={<ProjectIcon />} endIcon={<ArrowForwardIcon sx={{ transform: projectMenuAnchor ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />} sx={{ minWidth: '250px', justifyContent: 'space-between' , color: '#990c0cff', fontSize: "15px", fontFamily: "bold" , fontFamily: "sans-serif" }}>
+                    <Button variant="outlined"  startIcon={<ProjectIcon />} endIcon={<ArrowForwardIcon sx={{ transform: projectMenuAnchor ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />} sx={{ minWidth: '250px', justifyContent: 'space-between' , color: '#990c0cff', fontSize: "15px", fontWeight: "bold" }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {currentProject.name}
                       </Box>
                     </Button>
                     <Menu anchorEl={projectMenuAnchor} open={Boolean(projectMenuAnchor)} onClose={handleProjectMenuClose} PaperProps={{ style: { maxHeight: 300, width: '350px' } }}>
                       {projects.map((project, index) => (
-                        <MenuItem key={project.id} onClick={() => handleProjectSelect(index)} selected={index === currentProjectIndex} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <MenuItem key={project.id}  selected={index === currentProjectIndex} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <Typography variant="body1" noWrap>{project.name}</Typography>
-                            <Typography variant="caption" color="text.secondary" noWrap>{getTotalTasks(project)} tasks • {project.progress}% complete</Typography>
+                            <Typography variant="caption" color="text.secondary" noWrap> tasks • {project.progress}% complete</Typography>
                           </Box>
                           {index === currentProjectIndex && (<Chip label="Active" size="small" color="primary" />)}
                         </MenuItem>
                       ))}
                     </Menu>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <IconButton onClick={() => handleProjectChange('prev')} disabled={currentProjectIndex === 0}><ArrowBackIcon /></IconButton>
+                      <IconButton onClick={handlePreviousProject} disabled={currentProjectIndex === 0}><ArrowBackIcon /></IconButton>
                       <Typography variant="body2" sx={{ mx: 1 }}>{currentProjectIndex + 1} of {projects.length}</Typography>
-                      <IconButton onClick={() => handleProjectChange('next')} disabled={currentProjectIndex === projects.length - 1}><ArrowForwardIcon /></IconButton>
+                      <IconButton onClick={handleNextProject} disabled={currentProjectIndex === projects.length - 1}><ArrowForwardIcon /></IconButton>
                     </Box>
                   </Box>
               </Box>
@@ -176,20 +162,20 @@ export default function PerformanceReports() {
                         <Chip label={column.tasks?.length || 0} size="small" sx={{ ml: 'auto', backgroundColor: '#FF9F1C', color: 'white', fontWeight: 'bold' }} />
                         {rolePermissions[currentUser?.role]?.canAdd && column.id === 'backlog' && (
                           <Tooltip title="Add Task">
-                            <IconButton size="small" sx={{ ml: 1 }} onClick={() => handleAddTask(columnId)}><AddIcon fontSize="small" /></IconButton>
+                            <IconButton size="small" sx={{ ml: 1 }} ><AddIcon fontSize="small" /></IconButton>
                           </Tooltip>
                         )}
                       </Box>
                       {(column.tasks || []).map(task => (
-                        <Box key={task.id} sx={{padding: '0.75rem', marginBottom: '0.75rem', borderRadius: '4px', backgroundColor: 'white', borderLeft: `4px solid #FF9F1C`, cursor: 'pointer'}} onClick={() => handleEditTask(task, columnId)}>
+                        <Box key={task.id} sx={{padding: '0.75rem', marginBottom: '0.75rem', borderRadius: '4px', backgroundColor: 'white', borderLeft: `4px solid #FF9F1C`, cursor: 'pointer'}} >
                             <Typography variant="body2" sx={{ fontWeight: '500' }}>{task.title}</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                              <PersonIcon fontSize="small" sx={{color: getAssigneeColor(task.assignee_id), mr: 0.5}}/>
-                              <Typography variant="caption" sx={{color: '#757575'}}>{getAssigneeName(task.assignee_id)}</Typography>
+                              <PersonIcon fontSize="small" sx={{ mr: 0.5}}/>
+                              <Typography variant="caption" sx={{color: '#757575'}}></Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                                {columnId !== 'backlog' && <IconButton size="small" onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'inProgress' ? 'backlog' : 'inProgress'); }}><ArrowBackIcon fontSize="small" /></IconButton>}
-                                {columnId !== 'done' && <IconButton size="small" sx={{ ml: 'auto' }} onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'backlog' ? 'inProgress' : 'done'); }}><ArrowForwardIcon fontSize="small" /></IconButton>}
+                                {columnId !== 'backlog' && <IconButton size="small" ><ArrowBackIcon fontSize="small" /></IconButton>}
+                                {columnId !== 'done' && <IconButton size="small" sx={{ ml: 'auto' }} ><ArrowForwardIcon fontSize="small" /></IconButton>}
                             </Box>
                         </Box>
                       ))}
@@ -208,20 +194,20 @@ export default function PerformanceReports() {
           <DialogTitle>{isEditing ? 'Edit Task' : 'Add New Task'}</DialogTitle>
           <DialogContent>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-                  <TextField label="Task Title" value={currentTask?.title || ''} onChange={(e) => setCurrentTask({ ...currentTask, title: e.target.value })} fullWidth required />
+                  <TextField label="Task Title"  fullWidth required />
                   <FormControl fullWidth>
                       <InputLabel>Assignee</InputLabel>
-                      <Select label="Assignee" value={currentTask?.assignee_id || ''} onChange={(e) => setCurrentTask({ ...currentTask, assignee_id: e.target.value })}>
+                      <Select label="Assignee" >
                           {teamMembers.map(member => ( <MenuItem key={member.id} value={member.id}>{member.name}</MenuItem> ))}
                       </Select>
                   </FormControl>
-                  <TextField label="Description" value={currentTask?.description || ''} onChange={(e) => setCurrentTask({ ...currentTask, description: e.target.value })} multiline rows={3} fullWidth />
-                  <TextField label="Due Date" type="date" value={currentTask?.due_date || ''} onChange={(e) => setCurrentTask({ ...currentTask, due_date: e.target.value })} InputLabelProps={{ shrink: true }} fullWidth />
+                  <TextField label="Description"  multiline rows={3} fullWidth />
+                  <TextField label="Due Date" type="date"  InputLabelProps={{ shrink: true }} fullWidth />
               </Box>
           </DialogContent>
           <DialogActions>
               <Button onClick={() => setOpenTaskDialog(false)}>Cancel</Button>
-              <Button onClick={handleSaveTask} variant="contained">Save</Button>
+              <Button  variant="contained">Save</Button>
           </DialogActions>
       </Dialog>
 

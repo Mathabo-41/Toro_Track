@@ -36,6 +36,7 @@ import { clientMenu } from '../common/clientStore';
 
 // Accept router as a prop for navigation/prefetch
 export default function SettingsContent({ router }) {
+    const supabase = createSupabaseClient();
     const {
         activeTab,
         editMode,

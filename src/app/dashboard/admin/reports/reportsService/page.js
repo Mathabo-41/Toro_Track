@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client'; 
 import {
     People as PeopleIcon,
     Work as WorkIcon,
@@ -8,7 +8,7 @@ import {
     TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 
-// Static data for the sidebar navigation menu. This does not need to be in the database.
+// Static data for the sidebar navigation menu.
 export const adminMenuData = [
     { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
     { name: 'Performance Reports', path: '/dashboard/admin/reports' },
@@ -22,6 +22,7 @@ export const adminMenuData = [
   Fetches key performance metrics from the database.
 */
 export async function fetchReportMetrics() {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_admin_report_metrics');
 
     if (error) {
@@ -35,7 +36,6 @@ export async function fetchReportMetrics() {
 
     const metrics = data[0];
 
-    // Map database results to the structure expected by the frontend
     return {
         clientAcquisition: {
             title: 'Client Acquisition',
@@ -86,6 +86,7 @@ export async function fetchReportMetrics() {
   Fetches recent client activities from the database.
 */
 export async function fetchRecentActivities() {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_recent_client_activities', { limit_count: 5 });
 
     if (error) {
@@ -99,6 +100,7 @@ export async function fetchRecentActivities() {
   Fetches all project and task data for the Kanban board view.
 */
 export async function fetchKanbanData() {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_kanban_data');
     if (error) {
         console.error('Error fetching Kanban data:', error);
@@ -111,6 +113,7 @@ export async function fetchKanbanData() {
   Fetches a list of all team members.
 */
 export async function fetchTeamMembers() {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_team_members');
     if (error) {
         console.error('Error fetching team members:', error);
@@ -123,6 +126,7 @@ export async function fetchTeamMembers() {
   Adds a new task to a project in the database.
 */
 export async function addTask(taskData) {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('add_project_task', {
         p_project_id: taskData.projectId,
         p_title: taskData.title,
@@ -142,6 +146,7 @@ export async function addTask(taskData) {
   Updates the status of a task when it's moved between Kanban columns.
 */
 export async function updateTaskStatus(taskId, newStatus) {
+    const supabase = createSupabaseClient();
     const { error } = await supabase.rpc('update_project_task_status', {
         p_task_id: taskId,
         p_new_status: newStatus
@@ -157,6 +162,7 @@ export async function updateTaskStatus(taskId, newStatus) {
   Deletes a task from the database.
 */
 export async function deleteTask(taskId) {
+    const supabase = createSupabaseClient();
     const { error } = await supabase.rpc('delete_project_task', { p_task_id: taskId });
 
     if (error) {

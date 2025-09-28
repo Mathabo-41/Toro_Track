@@ -24,6 +24,7 @@ import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
 
 export default function MeetingMesContent({ router }) {
+  const supabase = createSupabaseClient();
   const {
     activeTab,
     setActiveTab,

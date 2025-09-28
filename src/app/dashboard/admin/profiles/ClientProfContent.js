@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Avatar, Chip, Stack, Divider, IconButton,
@@ -35,6 +35,7 @@ export default function ClientProfContent() {
 
   const { selectedMenu, setSelectedMenu } = useAdminStore();
   const router = useRouter();
+  const supabase = createSupabaseClient(); // Initialize the client here
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');

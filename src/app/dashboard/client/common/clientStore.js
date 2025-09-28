@@ -1,6 +1,6 @@
 // This file contains the global state management for the client portal.
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 export const useClientStore = create((set, get) => ({
   // Holds the fetched profile data for the logged-in client.
@@ -9,6 +9,7 @@ export const useClientStore = create((set, get) => ({
   
   // Fetches profile data from the database and updates the state.
   fetchProfile: async () => {
+    const supabase = createSupabaseClient();
     if (get().profile) return; // Avoid re-fetching if data already exists.
     
     set({ isLoadingProfile: true });

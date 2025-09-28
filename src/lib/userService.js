@@ -1,10 +1,11 @@
 // This file handles fetching user profile data.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /*
 * Fetches the profile data for the currently authenticated user.
 */
 export const getCurrentUserProfile = async () => {
+  const supabase = createSupabaseClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if (userError || !user) {

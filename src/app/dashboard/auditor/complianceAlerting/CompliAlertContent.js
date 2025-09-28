@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Container, List, ListItem, ListItemText, Drawer,
   ListItemButton, Paper, TextField, Button, IconButton, Grid,
@@ -36,6 +36,7 @@ import * as globalStyles from '../common/styles';
 import { useAuditorStore, auditorMenu } from '../common/auditorStore';
 
 export default function CompliAlertContent() {
+  const supabase = createSupabaseClient();
   const {
     search,
     handleSearchChange,

@@ -1,7 +1,8 @@
 // complianceService/page.js
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 export const fetchActiveAlerts = async () => {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('compliance_alerts')
     .select(`
@@ -39,6 +40,7 @@ export const fetchActiveAlerts = async () => {
 };
 
 export const fetchSecurityChecks = async () => {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('security_compliance_checks')
     .select('*')
@@ -53,6 +55,7 @@ export const fetchSecurityChecks = async () => {
 };
 
 export const exportComplianceReport = async () => {
+  const supabase = createSupabaseClient();
   const alerts = await fetchActiveAlerts();
   
   const headers = ['Severity', 'Client', 'Alert Details', 'Timestamp', 'Status', 'Assigned To'];

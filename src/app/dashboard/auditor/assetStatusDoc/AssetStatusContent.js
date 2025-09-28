@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, List, ListItem,
   ListItemText, Drawer, ListItemButton,
@@ -90,6 +90,7 @@ const Header = ({ search, handleSearchChange }) => {
 };
 
 export default function AssetStatusContent() {
+  const supabase = createSupabaseClient();
   const router = useRouter();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);

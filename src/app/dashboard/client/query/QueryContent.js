@@ -30,6 +30,7 @@ import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
 
 export default function QueryContent({ router }) {
+  const supabase = createSupabaseClient();
   const {
     activeQuery,
     setActiveQuery,

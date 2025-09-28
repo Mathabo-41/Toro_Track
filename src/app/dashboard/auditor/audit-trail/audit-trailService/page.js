@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature by calling database functions.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 export const auditTrailMenu = [
   { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
@@ -14,6 +14,7 @@ export const auditTrailMenu = [
 * Fetches audit trail data by calling the 'get_audit_trail_data' RPC function.
 */
 export const getAuditTrailData = async () => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_audit_trail_data');
 
     if (error) {
@@ -31,6 +32,7 @@ export const getAuditTrailData = async () => {
 * Creates a new asset and audit log entry by calling the 'add_asset_and_log' RPC function.
 */
 export const createAuditLogEntry = async (newLog) => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('add_asset_and_log', {
         p_order_sign_off: newLog.signOff,
         p_delivery_status: newLog.status,
@@ -51,6 +53,7 @@ export const createAuditLogEntry = async (newLog) => {
 * Updates an existing audit log entry by calling the 'update_audit_log' RPC function.
 */
 export const updateAuditLogEntry = async (updatedLog) => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('update_audit_log', {
         p_log_id: updatedLog.id,
         p_sign_off: updatedLog.signOff,
@@ -71,6 +74,7 @@ export const updateAuditLogEntry = async (updatedLog) => {
 * Deletes an audit log entry by calling the 'delete_audit_log' RPC function.
 */
 export const deleteAuditLogEntry = async (logId) => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('delete_audit_log', {
         p_log_id: logId
     });
@@ -87,6 +91,7 @@ export const deleteAuditLogEntry = async (logId) => {
 * Uploads a document to the 'asset_documents' storage bucket.
 */
 export const uploadDocument = async (file) => {
+    const supabase = createSupabaseClient();
     const filePath = `${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage
         .from('asset_documents')
@@ -104,6 +109,7 @@ export const uploadDocument = async (file) => {
 * Creates a database record for an uploaded document.
 */
 export const addDocumentRecord = async (logId, docData) => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('add_asset_document', {
         p_log_id: logId,
         p_doc_name: docData.name,

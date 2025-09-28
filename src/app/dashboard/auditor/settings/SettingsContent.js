@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, List, ListItem, ListItemText, Drawer,
   ListItemButton, Stack, TextField, MenuItem, FormControlLabel,
@@ -26,6 +26,7 @@ import * as globalStyles from '../common/styles';
 import { auditorMenu } from '../common/auditorStore';
 
 export default function SettingsContent() {
+  const supabase = createSupabaseClient();
   const {
     search, handleSearchChange, methods,
     handleSubmit, onSubmit, isLoading, isSubmitting,

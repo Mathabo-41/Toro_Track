@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   Box, Typography, Grid, Card, CardContent,
@@ -39,6 +39,7 @@ const COLUMN_COLORS = {
 };
 
 export default function ProjDetailsContent() {
+  const supabase = createSupabaseClient();
   const router = useRouter();
   const { profile, fetchProfile } = useClientStore();
   

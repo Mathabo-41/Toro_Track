@@ -1,10 +1,11 @@
-// This file contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
+// This file contains all the logic and instructions for this feature.
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import {
   getProjects,
   getTeamMembers,
+  getClients,
   addProject,
   removeProject,
   changeProjectStatus,
@@ -15,6 +16,7 @@ import {
 export const useProjects = () => {
   const [projects, setProjects] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [newProject, setNewProject] = useState({
@@ -22,23 +24,22 @@ export const useProjects = () => {
     client: '',
     status: 'active',
     dueDate: '',
-    team: []
+    team: ''
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [error, setError] = useState(null);
 
-  /**
-   * Fetches all necessary data from the database and updates the state.
-   */
   const fetchData = useCallback(async () => {
     try {
-      const [projectsData, teamMembersData] = await Promise.all([
+      const [projectsData, teamMembersData, clientsData] = await Promise.all([
         getProjects(),
-        getTeamMembers()
+        getTeamMembers(),
+        getClients()
       ]);
       setProjects(projectsData || []);
       setTeamMembers(teamMembersData || []);
+      setClients(clientsData || []);
     } catch (err) {
       console.error("Failed to fetch data:", err);
       setError('Could not load data. Please try again later.');
@@ -49,9 +50,6 @@ export const useProjects = () => {
     fetchData();
   }, [fetchData]);
 
-  /**
-   * Filters projects based on the search term.
-   */
   const filteredProjects = projects.filter(project => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -61,9 +59,6 @@ export const useProjects = () => {
     );
   });
 
-  /**
-   * Updates a project's details in the database and refetches data.
-   */
   const updateProject = async (updatedProject) => {
     try {
       await updateProjectDetails(updatedProject);
@@ -74,25 +69,16 @@ export const useProjects = () => {
     }
   };
 
-  /**
-   * Handles opening the actions menu for a specific project.
-   */
   const handleMenuOpen = (event, projectId) => {
     setAnchorEl(event.currentTarget);
     setSelectedProject(projectId);
   };
 
-  /**
-   * Handles closing the actions menu.
-   */
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedProject(null);
   };
 
-  /**
-   * Deletes the selected project from the database and refetches data.
-   */
   const handleDeleteProject = async () => {
     if (!selectedProject) return;
     try {
@@ -105,9 +91,6 @@ export const useProjects = () => {
     }
   };
 
-  /**
-   * Changes a project's status in the database and refetches data.
-   */
   const handleStatusChange = async (projectId, newStatus) => {
     try {
       await changeProjectStatus(projectId, newStatus);
@@ -119,18 +102,18 @@ export const useProjects = () => {
     }
   };
 
-  /**
-   * Creates a new project in the database and refetches data.
-   */
   const handleCreateProject = async () => {
     try {
-      await addProject(newProject);
+      const teamAsArray = newProject.team.split(',').map(item => item.trim()).filter(Boolean);
+      const projectPayload = { ...newProject, team: teamAsArray };
+
+      await addProject(projectPayload);
       setNewProject({
         name: '',
         client: '',
         status: 'active',
         dueDate: '',
-        team: []
+        team: ''
       });
       setOpenCreateDialog(false);
       await fetchData();
@@ -140,24 +123,14 @@ export const useProjects = () => {
     }
   };
 
-  /**
-   * Updates the new project form state on input change.
-   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProject(prev => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Updates the team selection for the new project form.
-   */
-  const handleTeamChange = (event) => {
-    const { value } = event.target;
-    setNewProject(prev => ({ ...prev, team: value }));
-  };
-
   return {
     projects,
+    clients,
     searchTerm,
     setSearchTerm,
     openCreateDialog,
@@ -175,7 +148,6 @@ export const useProjects = () => {
     handleStatusChange,
     handleCreateProject,
     handleInputChange,
-    handleTeamChange,
     updateProject
   };
 };

@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from '@/lib/supabaseClient'; 
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   mainContainer,
   videoBackground,
@@ -27,6 +27,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Initialize the new Supabase client inside the component.
+  const supabase = createSupabaseClient();
+
   /*
   Handles the standard email and password login process.
   It authenticates the user, fetches their role from the database,
@@ -38,12 +41,12 @@ export default function Login() {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
 
-      if (error) throw error;
+      if (signInError) throw signInError;
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -68,8 +71,8 @@ export default function Login() {
           router.push('/login');
       }
 
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }

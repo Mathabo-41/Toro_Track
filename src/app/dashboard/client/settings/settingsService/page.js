@@ -1,11 +1,12 @@
 // This file handles all data-related tasks for this feature, using TanStack Query to fetch and send information to our database.
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /**
  * Fetches the current client's settings from the database.
  */
 export const getSettings = async () => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_client_settings_data');
 
     if (error) {
@@ -21,6 +22,7 @@ export const getSettings = async () => {
  * @param {object} updatedData - The form data containing the new settings.
  */
 export const updateSettings = async (updatedData) => {
+    const supabase = createSupabaseClient();
     const { error } = await supabase.rpc('update_client_settings_data', {
         p_name: updatedData.name,
         p_company: updatedData.company,
@@ -45,6 +47,7 @@ export const updateSettings = async (updatedData) => {
  * @param {string} userId - The ID of the user.
  */
 export const uploadAvatar = async ({ avatarFile, userId }) => {
+    const supabase = createSupabaseClient();
     if (!avatarFile || !userId) return;
 
     const fileExtension = avatarFile.name.split('.').pop();
@@ -77,6 +80,7 @@ export const uploadAvatar = async ({ avatarFile, userId }) => {
  * A TanStack Query hook for fetching user settings.
  */
 export const useGetSettingsQuery = () => {
+    const supabase = createSupabaseClient();
     return useQuery({
         queryKey: ['userSettings'],
         queryFn: getSettings,
@@ -87,6 +91,7 @@ export const useGetSettingsQuery = () => {
  * A TanStack Query mutation hook for updating user settings.
  */
 export const useUpdateSettingsMutation = () => {
+    const supabase = createSupabaseClient();
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: updateSettings,

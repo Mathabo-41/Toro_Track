@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client'; 
 import {
   Box, Typography, Grid, Card, CardContent,
   Stack, Avatar, List, ListItem, ListItemText,
@@ -28,6 +28,7 @@ import * as styles from './styles';
 
 export default function AdminOverviewContent() {
   const router = useRouter();
+  const supabase = createSupabaseClient(); // Create client instance
   const { metrics, activities } = useOverview();
   const { setSelectedMenu } = useAdminStore();
   
@@ -72,7 +73,8 @@ export default function AdminOverviewContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
+      {/* --- Your existing JSX for Drawer, Main Content, etc. --- */}
+       <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex',  alignItems: 'center', gap: 1 }}>
           <Link href="/dashboard" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Admin Portal</Typography>

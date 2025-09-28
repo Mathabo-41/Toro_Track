@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography,
   List, ListItem, ListItemText,
@@ -33,6 +33,7 @@ import {
 import useAuditTrail from './useAudit-Trail/page';
 
 export default function AuditTrailContent() {
+  const supabase = createSupabaseClient();
   const {
     auditTrailMenu,
     filteredRows,

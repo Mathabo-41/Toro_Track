@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Grid, MenuItem, Button, Select, Box, Typography, Paper, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, List,
@@ -38,6 +38,7 @@ import * as LicenseConfigHook from './useLicenseConfig/page';
 * This component shows upcoming license renewals.
 */
 function RenewalCard() {
+  const supabase = createSupabaseClient();
   const { renewalData, loading } = LicenseConfigHook.useLicenseConfig();
   
   if (loading) {

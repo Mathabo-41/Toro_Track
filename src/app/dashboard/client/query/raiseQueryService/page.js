@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
  * @returns {Promise<Array>} A promise that resolves with the list of queries.
  */
 export async function fetchQueries() {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('get_client_queries_with_details');
   if (error) {
     console.error('Error fetching queries:', error);
@@ -22,6 +23,7 @@ export async function fetchQueries() {
  * @returns {Promise<Object>} A promise that resolves with the newly created query data.
  */
 export async function submitQuery(queryData, fileToUpload) {
+  const supabase = createSupabaseClient();
   // Step 1: Submit the text-based query data to get a query ID.
   const { data: newQueryId, error: queryError } = await supabase.rpc('submit_new_query', {
     p_title: queryData.title,

@@ -1,10 +1,11 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /*
 * A helper function to trigger a file download in the browser.
 */
 const downloadFile = (blob, filename) => {
+  const supabase = createSupabaseClient();
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.style.display = 'none';
@@ -20,6 +21,7 @@ const downloadFile = (blob, filename) => {
 * Service function to get available report options from the database.
 */
 export async function getReportOptions() {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('get_report_options');
   if (error) {
     console.error('Error fetching report options:', error);
@@ -35,6 +37,7 @@ export async function getReportOptions() {
 * Fetches data and generates a PDF report on the client-side.
 */
 export async function exportPdfReport(params) {
+  const supabase = createSupabaseClient();
   // To use this function, you must install jspdf and jspdf-autotable
   // npm install jspdf jspdf-autotable
   const { jsPDF } = await import('jspdf');
@@ -71,6 +74,7 @@ export async function exportPdfReport(params) {
 * Fetches data and generates a CSV report on the client-side.
 */
 export async function exportCsvReport(params) {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('get_report_data', {
     from_date: params.fromDate || null,
     to_date: params.toDate || null,
@@ -104,6 +108,7 @@ export async function exportCsvReport(params) {
 * Saves a scheduled report configuration to the database.
 */
 export async function setReportSchedule(params) {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('add_scheduled_report', {
     p_frequency: params.scheduleFrequency,
     p_destination: params.sendTo,
@@ -117,6 +122,7 @@ export async function setReportSchedule(params) {
 * Creates a new on-demand audit snapshot record in the database.
 */
 export async function generateAuditSnapshot(params) {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('add_report_snapshot', {
     p_cut_off_date: params.cutOffDate,
   });

@@ -1,10 +1,11 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /*
 * Fetches all data required for the Asset Status & Documentation screen.
 */
 export const getAssetStatusDocData = async () => {
+  const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

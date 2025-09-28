@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /*
   Maps the database status enum to the priority string used by the frontend.
@@ -29,6 +29,7 @@ const mapPriorityToDb = (priority) => {
   Fetches the list of clients from the database using a dedicated RPC function.
 */
 export async function fetchClients() {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase.rpc('get_client_profiles');
 
   if (error) {
@@ -47,6 +48,7 @@ export async function fetchClients() {
   Deletes a specific client from the database.
 */
 export async function deleteClient(clientId) {
+  const supabase = createSupabaseClient();
   const { error } = await supabase
     .from('clients')
     .delete()
@@ -62,6 +64,7 @@ export async function deleteClient(clientId) {
   Updates the status of a specific client.
 */
 export async function updateClientStatus(clientId, priority) {
+  const supabase = createSupabaseClient();
   const newStatus = mapPriorityToDb(priority);
 
   if (!newStatus) {
@@ -83,15 +86,16 @@ export async function updateClientStatus(clientId, priority) {
   Fetches detailed profile information for a single client.
 */
 export async function fetchClientProfile(clientId) {
-    if (!clientId) return null;
-  
-    const { data, error } = await supabase
-      .rpc('get_client_profile_details', { p_client_id: clientId });
-  
-    if (error) {
-      console.error('Error fetching client profile:', error);
-      throw new Error('Could not fetch client profile details.');
-    }
-  
-    return data;
+  const supabase = createSupabaseClient();
+  if (!clientId) return null;
+
+  const { data, error } = await supabase
+    .rpc('get_client_profile_details', { p_client_id: clientId });
+
+  if (error) {
+    console.error('Error fetching client profile:', error);
+    throw new Error('Could not fetch client profile details.');
+  }
+
+  return data;
 }

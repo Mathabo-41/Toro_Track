@@ -5,14 +5,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Grid, Card, CardContent, Avatar,
   Stack, List, ListItem, ListItemText, Button,
   Drawer, ListItemButton, TextField, Chip,
   IconButton, Menu, MenuItem, Paper, Table, TableBody, Tooltip,
-  TableCell, TableContainer, TableHead, TableRow, DialogActions, Dialog, DialogTitle, DialogContent,
-  Select, FormControl, InputAdornment,
+  TableCell, TableContainer, TableHead, TableRow, DialogActions, Dialog, DialogTitle, DialogContent, DialogContentText,
+  Select, FormControl, InputAdornment, Snackbar, Alert,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -25,20 +25,23 @@ import {
   Email as EmailIcon,
   Assignment as AssignmentIcon,
   GroupAdd as GroupAddIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Delete as DeleteIcon,
+  WarningAmber as WarningAmberIcon
 } from '@mui/icons-material';
-import { Snackbar, Alert } from '@mui/material';
 
 import { styles } from './styles';
 import { useUsers } from './useUsers/page';
 import { adminMenuData } from './usersService/page';
 
 export default function TeamsAndUsers() {
+  const supabase = createSupabaseClient();
   const {
-    inviteEmail, setInviteEmail, users, selectedUser,
+    inviteEmail, setInviteEmail, users,
     anchorEl, isMenuOpen, handleInviteUser,
     handleMenuOpen, handleMenuClose, handleAssignTask,
-    handleRemoveUser,
+    handleRemoveUser, isConfirmDialogOpen,
+    handleCloseConfirmDialog, handleConfirmRemove
   } = useUsers();
 
   const router = useRouter();
@@ -217,10 +220,36 @@ export default function TeamsAndUsers() {
           <Button variant="contained" onClick={handleSendInvite} startIcon={<EmailIcon />}>Send Invitation</Button>
         </DialogActions>
       </Dialog>
+      
+      {/* This is the new dialog for confirming user deletion */}
+      <Dialog
+        open={isConfirmDialogOpen}
+        onClose={handleCloseConfirmDialog}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningAmberIcon sx={{ color: '#f44336' }} />
+          Confirm User Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to permanently remove this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
+          <Button onClick={handleConfirmRemove} sx={{ color: '#f44336' }} autoFocus>
+            Delete User
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Menu anchorEl={anchorEl} open={isMenuOpen} onClose={handleMenuClose} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} PaperProps={{ sx: styles.actionMenu }}>
-        <MenuItem onClick={handleAssignTask} sx={styles.actionMenuItem}><AssignmentIcon sx={styles.actionMenuIcon('#f3722c')} /> Assign Task</MenuItem>
-        <MenuItem onClick={handleRemoveUser} sx={styles.actionMenuItem}><PeopleIcon sx={styles.actionMenuIcon('#f44336')} /> Remove User</MenuItem>
+        <MenuItem onClick={handleAssignTask} sx={styles.actionMenuItem}>
+          <AssignmentIcon sx={styles.actionMenuIcon('#f3722c')} /> Assign Task
+        </MenuItem>
+        <MenuItem onClick={handleRemoveUser} sx={styles.actionMenuItem}>
+          <DeleteIcon sx={styles.actionMenuIcon('#f44336')} /> Remove User
+        </MenuItem>
       </Menu>
 
       <Snackbar open={openInviteSuccess} autoHideDuration={3000} onClose={() => setOpenInviteSuccess(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>

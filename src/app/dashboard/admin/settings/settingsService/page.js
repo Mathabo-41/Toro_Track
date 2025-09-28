@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 // Static data for the sidebar navigation menu
 export const adminMenuData = [
@@ -15,6 +15,7 @@ export const adminMenuData = [
 * Fetches the settings categories from the database.
 */
 export const fetchSettingsCategories = async () => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_settings_categories');
     if (error) {
         console.error("Error fetching settings categories:", error);
@@ -27,6 +28,7 @@ export const fetchSettingsCategories = async () => {
 * Fetches role permissions from the database.
 */
 export const fetchRolePermissions = async () => {
+    const supabase = createSupabaseClient();
     const { data, error } = await supabase.rpc('get_role_permissions');
     if (error) {
         console.error("Error fetching role permissions:", error);

@@ -1,5 +1,5 @@
 // This file handles all data-related tasks by fetching information from our Supabase database.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /**
  * Fetches detailed data for a specific project from the database.
@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
  * @returns {Promise<object>} A promise that resolves with the project data.
  */
 export const fetchProjectData = async (projectId) => {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('projects')
     .select(`
@@ -36,6 +37,7 @@ export const fetchProjectData = async (projectId) => {
  * @returns {Promise<Array>} A promise that resolves with the comments data.
  */
 export const fetchComments = async (projectId) => {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .rpc('get_project_comments', { p_project_id: projectId });
 
@@ -49,6 +51,7 @@ export const fetchComments = async (projectId) => {
  * @returns {Promise<object>} A promise that resolves with the newly created comment.
  */
 export const postComment = async ({ projectId, commentText }) => {
+  const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .rpc('add_project_comment', { 
       p_project_id: projectId, 

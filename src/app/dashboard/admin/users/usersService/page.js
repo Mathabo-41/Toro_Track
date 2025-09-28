@@ -1,10 +1,11 @@
 // This file handles all data-related tasks for this feature.
-import { supabase } from '@/lib/supabaseClient';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 /*
 * Fetches all user, team, and task data from our secure API route.
 */
 export const fetchAllData = async () => {
+  const supabase = createSupabaseClient();
   try {
     const response = await fetch('/api/admin/users');
     if (!response.ok) {
@@ -30,33 +31,41 @@ export const inviteUser = async (email, role, password) => {
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error);
+      const errorMessage = result.error || 'An unexpected error occurred.';
+      throw new Error(errorMessage);
     }
     return { user: result.user };
   } catch (error) {
-    console.error('Error inviting user:', error);
-    return { error };
+    console.error('Error inviting user:', error.message);
+    return { error: { message: error.message } };
   }
 };
 
 /*
-* Removes a user from the system.
+* Removes a user by calling the secure DELETE API route.
 */
 export const removeUser = async (userId) => {
-    // Note: This requires an API route for DELETE for full security.
-    // For now, this is a placeholder as the setup for DELETE is more involved.
-    const { error } = await supabase.auth.admin.deleteUser(userId);
-    if (error) {
-        console.error('Error removing user:', error);
-    }
-    return { error };
-};
+  try {
+    const response = await fetch(`/api/admin/users?userId=${userId}`, {
+      method: 'DELETE',
+    });
 
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error removing user:', error.message);
+    return { error: { message: error.message } };
+  }
+};
 
 /*
 * Updates a user's role in the database.
 */
 export const updateUserRole = async (userId, newRole) => {
+  const supabase = createSupabaseClient();
   const { error } = await supabase.rpc('update_user_role', {
     p_user_id: userId,
     p_new_role: newRole.toLowerCase(),
@@ -71,6 +80,7 @@ export const updateUserRole = async (userId, newRole) => {
 * Updates a user's team assignment in the database.
 */
 export const updateUserTeam = async (userId, newTeam) => {
+  const supabase = createSupabaseClient();
   const { error } = await supabase.rpc('update_user_team', {
     p_user_id: userId,
     p_team_name: newTeam,
@@ -85,6 +95,7 @@ export const updateUserTeam = async (userId, newTeam) => {
 * Assigns a new task to a user.
 */
 export const assignTask = async (userId, taskDescription) => {
+    const supabase = createSupabaseClient();
     const { error } = await supabase.rpc('assign_task_to_user', {
         p_user_id: userId,
         p_task_description: taskDescription,
@@ -95,7 +106,6 @@ export const assignTask = async (userId, taskDescription) => {
     }
     return { error };
 };
-
 
 // Static data for the sidebar navigation menu
 export const adminMenuData = [
