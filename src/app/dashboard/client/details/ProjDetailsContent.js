@@ -13,7 +13,9 @@ import {
   Chip,
   Tabs, Tab, IconButton, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Snackbar, Alert
+  Snackbar, Alert,
+  Paper,
+  LinearProgress
 } from '@mui/material';
 import {
   Assignment as ProjectIcon,
@@ -22,47 +24,121 @@ import {
   Build as InProgressIcon,
   PlaylistAdd as BacklogIcon,
   Dashboard as DashboardIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Refresh as RefreshIcon,
+  Person as PersonIcon,
+  Description as DescriptionIcon,
+  Folder as FolderIcon,
+  Chat as ChatIcon,
+  ViewKanban as KanbanIcon,
+  CalendarToday as CalendarIcon
 } from '@mui/icons-material';
 
-import { useDetails } from './useDetails/page';
+// Import styles
 import { mainContentStyles, headerStyles, tabsStyles } from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
 
-// Kanban board column colors for visual distinction
+// Kanban board column colors
 const COLUMN_COLORS = {
-  backlog: '#E71D36',    // Red for backlog
-  in_progress: '#FF9F1C', // Orange for in progress
-  done: '#2EC4B6'        // Teal for completed
+  backlog: '#E71D36',
+  in_progress: '#FF9F1C',
+  done: '#2EC4B6'
 };
 
-// Application color theme constants for consistent styling
+// Application color theme
 const COLORS = {
-  primary: '#283618', // Dark green - main brand color
-  secondary: '#606c38', // Medium green - secondary elements
-  accent: '#f3722c', // Orange - highlights and CTAs
-  background: '#fefae0', // Cream - main background
-  lightBackground: 'rgba(254, 250, 224, 0.1)', // Light cream for subtle backgrounds
-  text: '#283618', // Dark text for contrast
-  textLight: 'rgba(254, 250, 224, 0.8)', // Light text for dark backgrounds
-  border: '#6b705c', // Gray-green for borders and dividers
-  success: '#2e7d32', // Green for success states
-  error: '#d32f2f' // Red for error states
+  primary: '#283618',
+  secondary: '#606c38',
+  accent: '#f3722c',
+  background: '#fefae0',
+  lightBackground: 'rgba(254, 250, 224, 0.1)',
+  text: '#283618',
+  textLight: 'rgba(254, 250, 224, 0.8)',
+  border: '#6b705c',
+  success: '#2e7d32',
+  error: '#d32f2f',
+  warning: '#ed6c02'
+};
+
+// Custom hook for tab management
+const useDetails = (projectId) => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  return {
+    activeTab,
+    handleTabChange,
+  };
+};
+
+/**
+ * Get user profile picture from multiple sources
+ */
+const getUserProfilePicture = async (supabase, user) => {
+  if (!user) return '/toroLogo.jpg';
+
+  try {
+    console.log('🖼️ Fetching profile picture for user:', user.id);
+    
+    // SOURCE 1: Check client_profiles table first
+    const { data: clientProfile, error: clientError } = await supabase
+      .from('client_profiles')
+      .select('avatar_url, profile_picture, image_url')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!clientError && clientProfile) {
+      const avatarUrl = clientProfile.avatar_url || clientProfile.profile_picture || clientProfile.image_url;
+      if (avatarUrl) {
+        console.log('✅ Found avatar in client_profiles:', avatarUrl);
+        return avatarUrl;
+      }
+    }
+
+    // SOURCE 2: Check profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('avatar_url, profile_picture, image_url')
+      .eq('id', user.id)
+      .single();
+
+    if (!profileError && profile) {
+      const avatarUrl = profile.avatar_url || profile.profile_picture || profile.image_url;
+      if (avatarUrl) {
+        console.log('✅ Found avatar in profiles:', avatarUrl);
+        return avatarUrl;
+      }
+    }
+
+    // SOURCE 3: Use Supabase Auth user_metadata
+    if (user.user_metadata?.avatar_url) {
+      console.log('✅ Found avatar in user_metadata:', user.user_metadata.avatar_url);
+      return user.user_metadata.avatar_url;
+    }
+
+    console.log('📷 No profile picture found, using default');
+    return '/toroLogo.jpg';
+
+  } catch (error) {
+    console.error('❌ Error fetching profile picture:', error);
+    return '/toroLogo.jpg';
+  }
 };
 
 /**
  * Main Project Details Component
  * Displays project information, team details, and Kanban board for task tracking
- * Clients can view project progress but cannot modify tasks (read-only)
  */
 export default function ProjDetailsContent() {
-  // Initialize Supabase client and router
   const supabase = createSupabaseClient();
   const router = useRouter();
   const { profile, fetchProfile } = useClientStore();
   
-  // State management for component data
+  // State management
   const [projects, setProjects] = useState([]);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
   const [kanbanColumns, setKanbanColumns] = useState(null);
@@ -75,8 +151,11 @@ export default function ProjDetailsContent() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [projectFiles, setProjectFiles] = useState([]);
+  const [clientProfile, setClientProfile] = useState(null);
+  const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
   
-  // Get current project from projects array
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
   // Custom hook for tab management
@@ -86,53 +165,201 @@ export default function ProjDetailsContent() {
   } = useDetails(currentProject?.id);
 
   /**
-   * Fetch initial data on component mount
-   * - Current user from Supabase auth
-   * - User profile from client store
-   * - Projects and tasks from database
+   * Fetch all necessary data
    */
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
-    fetchUser();
-
-    if (!profile) {
-      fetchProfile();
-    }
-
-    const fetchPageData = async () => {
+    const initializeData = async () => {
       try {
         setLoading(true);
-        // Safely fetch only existing database columns to avoid errors
-        const { data: projectList, error: projectError } = await supabase
-          .from('projects')
-          .select('id, project_name, description, status, created_at');
+        console.log('🔄 Starting data initialization...');
+
+        // 1. Get current authenticated user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         
-        if (projectError) {
-          console.log('No projects found or error:', projectError.message);
-          setProjects([]);
-        } else if (projectList && projectList.length > 0) {
-          setProjects(projectList);
-          await fetchTasksForProject(projectList[0].id);
-        } else {
-          setProjects([]);
+        if (userError) {
+          console.error('❌ Auth error:', userError);
+          setSnackbarMessage('Authentication error. Please log in again.');
+          setSnackbarSeverity('error');
+          setOpenSnackbar(true);
+          return;
         }
+
+        if (!user) {
+          console.log('❌ No user found');
+          setSnackbarMessage('Please log in to view projects');
+          setSnackbarSeverity('warning');
+          setOpenSnackbar(true);
+          router.push('/login');
+          return;
+        }
+
+        setCurrentUser(user);
+        console.log('✅ Authenticated user:', user.email, 'ID:', user.id);
+
+        // Fetch profile picture first
+        const userAvatar = await getUserProfilePicture(supabase, user);
+        setProfilePicture(userAvatar);
+
+        // 2. Try multiple approaches to find client data
+        let clientData = null;
+        let projectsData = [];
+
+        // APPROACH 1: Try client_profiles table
+        console.log('🔍 Searching in client_profiles table...');
+        const { data: clientProfileData, error: clientError } = await supabase
+          .from('client_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (clientError) {
+          console.log('❌ client_profiles error:', clientError);
+        } else {
+          clientData = clientProfileData;
+          console.log('✅ Found in client_profiles:', clientData);
+        }
+
+        // APPROACH 2: Try profiles table if client_profiles failed
+        if (!clientData) {
+          console.log('🔍 Searching in profiles table...');
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (!profileError && profileData) {
+            clientData = {
+              id: profileData.id,
+              user_id: profileData.id,
+              name: profileData.full_name || user.user_metadata?.full_name || 'Client',
+              email: profileData.email || user.email,
+              company: profileData.company || '',
+              phone: profileData.phone || ''
+            };
+            console.log('✅ Found in profiles:', clientData);
+          }
+        }
+
+        // APPROACH 3: Try clients table (alternative naming)
+        if (!clientData) {
+          console.log('🔍 Searching in clients table...');
+          const { data: clientsData, error: clientsError } = await supabase
+            .from('clients')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!clientsError && clientsData) {
+            clientData = clientsData;
+            console.log('✅ Found in clients table:', clientData);
+          }
+        }
+
+        // If we found a client profile, set it
+        if (clientData) {
+          setClientProfile(clientData);
+        }
+
+        // 3. Fetch projects using multiple approaches
+        console.log('🔍 Fetching projects...');
+
+        // APPROACH 1: By client_id
+        if (clientData?.id) {
+          const { data: clientProjects, error: projectsError } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('client_id', clientData.id)
+            .order('created_at', { ascending: false });
+
+          if (!projectsError && clientProjects) {
+            projectsData = clientProjects;
+            console.log(`✅ Found ${clientProjects.length} projects by client_id`);
+          }
+        }
+
+        // APPROACH 2: By user_id directly
+        if (projectsData.length === 0) {
+          const { data: userProjects, error: userProjectsError } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (!userProjectsError && userProjects) {
+            projectsData = userProjects;
+            console.log(`✅ Found ${userProjects.length} projects by user_id`);
+          }
+        }
+
+        // APPROACH 3: All projects (fallback)
+        if (projectsData.length === 0) {
+          const { data: allProjects, error: allError } = await supabase
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (!allError && allProjects) {
+            projectsData = allProjects;
+            console.log(`✅ Found ${allProjects.length} total projects`);
+          }
+        }
+
+        // Set the final projects data
+        if (projectsData.length > 0) {
+          setProjects(projectsData);
+          console.log(`🎉 Successfully loaded ${projectsData.length} project(s)`);
+          
+          // Fetch additional data for the first project
+          await fetchAdditionalProjectData(projectsData[0].id);
+          
+          setSnackbarMessage(`Loaded ${projectsData.length} project(s)`);
+          setSnackbarSeverity('success');
+        } else {
+          console.log('📭 No projects found for user');
+          setProjects([]);
+          setSnackbarMessage('No projects found for your account');
+          setSnackbarSeverity('info');
+        }
+
+        setOpenSnackbar(true);
+
       } catch (error) {
-        console.log('Error loading projects:', error);
+        console.error('💥 Unexpected error in initializeData:', error);
+        setSnackbarMessage('Error loading data. Please try refreshing.');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
         setProjects([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPageData();
-  }, [profile, fetchProfile]);
+    initializeData();
+  }, [supabase, router]);
 
   /**
-   * Fetch tasks for a specific project and organize them into Kanban columns
-   * @param {string} projectId - The ID of the project to fetch tasks for
+   * Fetch additional project data (tasks, team, files)
+   */
+  const fetchAdditionalProjectData = async (projectId) => {
+    try {
+      // Fetch tasks
+      await fetchTasksForProject(projectId);
+      
+      // Fetch team members
+      await fetchTeamMembers(projectId);
+      
+      // Fetch project files
+      await fetchProjectFiles(projectId);
+      
+    } catch (error) {
+      console.error('Error fetching additional project data:', error);
+    }
+  };
+
+  /**
+   * Fetch tasks for a specific project
    */
   const fetchTasksForProject = async (projectId) => {
     try {
@@ -143,59 +370,74 @@ export default function ProjDetailsContent() {
         .order('created_at', { ascending: true });
       
       if (error) {
-        console.log('No tasks found:', error.message);
-        // Initialize empty columns if no tasks found
+        console.error('Error fetching tasks:', error);
         initializeEmptyColumns();
         return;
       }
       
-      // Define Kanban columns structure
-      const columns = {
-        backlog: { 
-          id: 'backlog', 
-          title: 'Backlog', 
-          color: COLUMN_COLORS.backlog, 
-          icon: <BacklogIcon />, 
-          tasks: [] 
-        },
-        in_progress: { 
-          id: 'in_progress', 
-          title: 'In Progress', 
-          color: COLUMN_COLORS.in_progress, 
-          icon: <InProgressIcon />, 
-          tasks: [] 
-        },
-        done: { 
-          id: 'done', 
-          title: 'Done', 
-          color: COLUMN_COLORS.done, 
-          icon: <DoneIcon />, 
-          tasks: [] 
-        }
-      };
-      
-      // Organize tasks into their respective columns
-      if (tasks && tasks.length > 0) {
-        tasks.forEach(task => {
-          if (columns[task.status]) {
-            columns[task.status].tasks.push(task);
-          }
-        });
-      }
-      
-      setKanbanColumns(columns);
+      organizeTasksIntoColumns(tasks || []);
     } catch (error) {
-      console.log('Error fetching tasks:', error);
+      console.error('Error in fetchTasksForProject:', error);
       initializeEmptyColumns();
     }
   };
 
   /**
-   * Initialize empty Kanban columns when no tasks are found
-   * Ensures the Kanban board always has a proper structure
+   * Fetch team members for a project
    */
-  const initializeEmptyColumns = () => {
-    const emptyColumns = {
+  const fetchTeamMembers = async (projectId) => {
+    try {
+      // Try different table names for team members
+      const { data: members, error } = await supabase
+        .from('project_team_members')
+        .select(`
+          *,
+          profiles (*)
+        `)
+        .eq('project_id', projectId);
+
+      if (error) {
+        console.log('Error fetching team members:', error);
+        return;
+      }
+
+      if (members) {
+        setTeamMembers(members);
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
+
+  /**
+   * Fetch project files
+   */
+  const fetchProjectFiles = async (projectId) => {
+    try {
+      const { data: files, error } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Error fetching project files:', error);
+        return;
+      }
+
+      if (files) {
+        setProjectFiles(files);
+      }
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+    }
+  };
+
+  /**
+   * Organize tasks into Kanban columns
+   */
+  const organizeTasksIntoColumns = (tasks) => {
+    const columns = {
       backlog: { 
         id: 'backlog', 
         title: 'Backlog', 
@@ -218,12 +460,91 @@ export default function ProjDetailsContent() {
         tasks: [] 
       }
     };
+    
+    if (tasks && tasks.length > 0) {
+      tasks.forEach(task => {
+        let columnId = 'backlog';
+        
+        if (task.status === 'in_progress' || task.status === 'in progress') {
+          columnId = 'in_progress';
+        } else if (task.status === 'done' || task.status === 'completed') {
+          columnId = 'done';
+        } else if (task.status === 'backlog' || task.status === 'todo') {
+          columnId = 'backlog';
+        }
+        
+        if (columns[columnId]) {
+          columns[columnId].tasks.push(task);
+        }
+      });
+    }
+    
+    setKanbanColumns(columns);
+  };
+
+  /**
+   * Initialize empty columns
+   */
+  const initializeEmptyColumns = () => {
+    const emptyColumns = {
+      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
+      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
+      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
+    };
     setKanbanColumns(emptyColumns);
   };
-  
+
   /**
-   * Handle user logout with confirmation message
-   * Shows loading state and redirects to login page
+   * Handle project change
+   */
+  const handleProjectChange = async (projectId) => {
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+    if (projectIndex !== -1) {
+      setCurrentProjectIndex(projectIndex);
+      await fetchAdditionalProjectData(projectId);
+    }
+  };
+
+  /**
+   * Handle manual refresh
+   */
+  const handleRefresh = async () => {
+    setLoading(true);
+    // Re-run initialization
+    const initializeData = async () => {
+      // Get current user and refetch everything
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Refetch profile picture
+        const userAvatar = await getUserProfilePicture(supabase, user);
+        setProfilePicture(userAvatar);
+        
+        // Refetch projects
+        const { data: projectsData, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && projectsData) {
+          setProjects(projectsData);
+          if (projectsData.length > 0) {
+            await fetchAdditionalProjectData(projectsData[0].id);
+          }
+          setSnackbarMessage('Data refreshed successfully');
+          setSnackbarSeverity('success');
+        } else {
+          setSnackbarMessage('Error refreshing data');
+          setSnackbarSeverity('error');
+        }
+      }
+      setOpenSnackbar(true);
+      setLoading(false);
+    };
+    await initializeData();
+  };
+
+  /**
+   * Handle logout with the same snackbar style as Query screen
    */
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -238,19 +559,38 @@ export default function ProjDetailsContent() {
   };
 
   /**
-   * Open task details dialog for viewing task information
-   * @param {Object} task - The task object to view
-   * @param {string} columnId - The ID of the column the task belongs to
+   * Handle viewing task details
    */
   const handleViewTask = (task, columnId) => {
     setCurrentColumnId(columnId);
     setCurrentTask(task);
     setOpenTaskDialog(true);
   };
-  
+
   /**
-   * Render the Kanban board tab with project tasks
-   * Uses a static display without drag-and-drop for read-only access
+   * Format status for display
+   */
+  const formatStatus = (status) => {
+    if (!status) return '';
+    return status.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  /**
+   * Calculate project progress from tasks
+   */
+  const calculateProjectProgress = () => {
+    if (!kanbanColumns || !currentProject) return currentProject?.progress || 0;
+    
+    const totalTasks = Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0);
+    const completedTasks = kanbanColumns.done.tasks.length;
+    
+    return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  };
+
+  /**
+   * Render Kanban Board Tab
    */
   const renderKanbanTab = () => {
     if (!currentProject || !kanbanColumns) {
@@ -261,17 +601,45 @@ export default function ProjDetailsContent() {
       );
     }
     
+    const progress = calculateProjectProgress();
+    
     return (
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <KanbanIcon />
           Project Kanban Board
         </Typography>
-        <Typography variant="body2" sx={{ color: COLORS.border, mb: 3, fontStyle: 'italic' }}>
-          View-only mode: Only administrators can add or modify tasks. You can view task details by clicking on them.
-        </Typography>
         
-        {/* Static Kanban board without drag-and-drop functionality */}
-        <Box sx={{ display: 'flex', overflowX: 'auto', p: 1, backgroundColor: COLORS.lightBackground, borderRadius: 2 }}>
+        {/* Progress Summary */}
+        <Paper sx={{ p: 2, mb: 3, backgroundColor: COLORS.lightBackground }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography variant="body2" sx={{ color: COLORS.text, mb: 1 }}>
+                Overall Progress: {progress}%
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={progress} 
+                sx={{ 
+                  height: 8, 
+                  borderRadius: 4,
+                  backgroundColor: COLORS.border,
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: COLORS.success
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body2" sx={{ color: COLORS.text }}>
+                Tasks: {kanbanColumns.done.tasks.length} completed of {Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0)} total
+              </Typography>
+            </Grid>
+          </Grid>
+        </Paper>
+        
+        {/* Kanban Board */}
+        <Box sx={{ display: 'flex', overflowX: 'auto', p: 1, gap: 2 }}>
           {Object.values(kanbanColumns).map(column => (
             <Box 
               key={column.id}
@@ -281,12 +649,10 @@ export default function ProjDetailsContent() {
                 p: 2, 
                 borderRadius: 2, 
                 backgroundColor: COLORS.background, 
-                borderTop: `4px solid ${column.color}`, 
-                mx: 1,
-                boxShadow: 1
+                borderTop: `4px solid ${column.color}`,
+                boxShadow: 2
               }}
             >
-              {/* Column header with icon and task count */}
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ color: column.color, mr: 1 }}>{column.icon}</Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: COLORS.text }}>
@@ -304,117 +670,93 @@ export default function ProjDetailsContent() {
                 />
               </Box>
               
-              {/* Task list or empty state */}
               {column.tasks.length === 0 ? (
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    textAlign: 'center', 
-                    color: COLORS.border, 
-                    fontStyle: 'italic',
-                    py: 3
-                  }}
-                >
+                <Typography variant="body2" sx={{ textAlign: 'center', color: COLORS.border, fontStyle: 'italic', py: 3 }}>
                   No tasks in {column.title.toLowerCase()}
                 </Typography>
               ) : (
-                column.tasks.map((task, index) => (
-                  <Box 
+                column.tasks.map((task) => (
+                  <Paper 
                     key={task.id}
                     sx={{ 
-                      p: 1.5, 
-                      mb: 1.5, 
-                      borderRadius: 1, 
-                      backgroundColor: 'white', 
-                      boxShadow: 1, 
-                      borderLeft: `4px solid ${column.color}`,
+                      p: 2, 
+                      mb: 2, 
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
+                      borderLeft: `4px solid ${column.color}`,
                       '&:hover': {
-                        boxShadow: 2,
-                        transform: 'translateY(-1px)'
+                        boxShadow: 3,
+                        transform: 'translateY(-2px)'
                       }
                     }} 
                     onClick={() => handleViewTask(task, column.id)}
                   >
-                    <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text }}>
+                    <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, mb: 1 }}>
                       {task.title}
                     </Typography>
                     {task.description && (
-                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                        {task.description.length > 50 
-                          ? `${task.description.substring(0, 50)}...` 
+                      <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                        {task.description.length > 80 
+                          ? `${task.description.substring(0, 80)}...` 
                           : task.description
                         }
                       </Typography>
                     )}
-                    <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                      {task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString("en-GB")}` : 'No due date'}
-                    </Typography>
-                    {task.assignee_id && (
-                      <Chip 
-                        label="Assigned" 
-                        size="small" 
-                        variant="outlined"
-                        sx={{ 
-                          mt: 1,
-                          height: '20px',
-                          fontSize: '0.6rem'
-                        }}
-                      />
-                    )}
-                  </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
+                      </Typography>
+                      {task.priority && (
+                        <Chip 
+                          label={task.priority} 
+                          size="small" 
+                          variant="outlined"
+                          sx={{ 
+                            height: '20px',
+                            fontSize: '0.6rem'
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Paper>
                 ))
               )}
-              
-              {/* Read-only message for clients */}
-              <Box 
-                sx={{ 
-                  mt: 1, 
-                  p: 1.5, 
-                  backgroundColor: COLORS.lightBackground,
-                  borderRadius: 1,
-                  border: `1px dashed ${COLORS.border}`,
-                  textAlign: 'center'
-                }}
-              >
-                <Typography variant="caption" sx={{ color: COLORS.border, fontStyle: 'italic' }}>
-                  Contact admin to add new tasks
-                </Typography>
-              </Box>
             </Box>
           ))}
         </Box>
       </Box>
     );
   };
-  
+
   /**
-   * Render the Overview tab with project details and information
+   * Render Overview Tab
    */
   const renderOverviewTab = () => {
     if (!currentProject) return null;
     
+    const progress = calculateProjectProgress();
+    
     return (
       <Grid container spacing={3} sx={{ p: 2 }}>
-        {/* Project Details Card */}
+        {/* Project Details */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ backgroundColor: COLORS.background, border: `1px solid ${COLORS.border}` }}>
+          <Card sx={{ backgroundColor: COLORS.background, boxShadow: 2 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
+              <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DescriptionIcon />
                 Project Details
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: COLORS.border }}>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     PROJECT NAME
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.text }}>
-                    {currentProject.project_name}
+                    {currentProject.project_name || currentProject.name || 'Unnamed Project'}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: COLORS.border }}>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     DESCRIPTION
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.text }}>
@@ -422,16 +764,16 @@ export default function ProjDetailsContent() {
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: COLORS.border }}>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     STATUS
                   </Typography>
                   <Chip 
-                    label={currentProject.status} 
+                    label={formatStatus(currentProject.status)} 
                     sx={{ 
                       backgroundColor: 
                         currentProject.status === 'active' ? COLORS.success :
                         currentProject.status === 'completed' ? COLUMN_COLORS.done :
-                        currentProject.status === 'on-hold' ? COLUMN_COLORS.in_progress :
+                        currentProject.status === 'on_hold' ? COLUMN_COLORS.in_progress :
                         COLUMN_COLORS.backlog,
                       color: 'white'
                     }} 
@@ -442,33 +784,120 @@ export default function ProjDetailsContent() {
           </Card>
         </Grid>
         
-        {/* Project Information Card */}
+        {/* Project Information */}
         <Grid item xs={12} md={6}>
-          <Card sx={{ backgroundColor: COLORS.background, border: `1px solid ${COLORS.border}` }}>
+          <Card sx={{ backgroundColor: COLORS.background, boxShadow: 2 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
+              <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CalendarIcon />
                 Project Information
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: COLORS.border }}>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                    PROGRESS
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={progress} 
+                      sx={{ 
+                        flexGrow: 1, 
+                        height: 8, 
+                        borderRadius: 4,
+                        backgroundColor: COLORS.border,
+                        '& .MuiLinearProgress-bar': {
+                          backgroundColor: COLORS.success
+                        }
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ color: COLORS.text, minWidth: '40px' }}>
+                      {progress}%
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     CREATED
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.text }}>
                     {currentProject.created_at ? new Date(currentProject.created_at).toLocaleDateString() : 'Not available'}
                   </Typography>
                 </Box>
-                {kanbanColumns && (
+                {currentProject.due_date && (
                   <Box>
-                    <Typography variant="caption" sx={{ color: COLORS.border }}>
-                      TASK PROGRESS
+                    <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                      DUE DATE
                     </Typography>
                     <Typography variant="body1" sx={{ color: COLORS.text }}>
-                      {kanbanColumns.done.tasks.length} of {Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0)} tasks completed
+                      {new Date(currentProject.due_date).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                )}
+                {currentProject.budget && (
+                  <Box>
+                    <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                      BUDGET
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: COLORS.text }}>
+                      ${currentProject.budget?.toLocaleString() || '0'}
                     </Typography>
                   </Box>
                 )}
               </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Quick Stats */}
+        <Grid item xs={12}>
+          <Card sx={{ backgroundColor: COLORS.background, boxShadow: 2 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: COLORS.primary, mb: 3 }}>
+                Project Summary
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ color: COLORS.primary, fontWeight: 'bold' }}>
+                      {kanbanColumns ? Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0) : 0}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border }}>
+                      Total Tasks
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ color: COLORS.success, fontWeight: 'bold' }}>
+                      {kanbanColumns ? kanbanColumns.done.tasks.length : 0}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border }}>
+                      Completed
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ color: COLUMN_COLORS.in_progress, fontWeight: 'bold' }}>
+                      {kanbanColumns ? kanbanColumns.in_progress.tasks.length : 0}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border }}>
+                      In Progress
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ color: COLUMN_COLORS.backlog, fontWeight: 'bold' }}>
+                      {kanbanColumns ? kanbanColumns.backlog.tasks.length : 0}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border }}>
+                      Backlog
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
@@ -477,56 +906,199 @@ export default function ProjDetailsContent() {
   };
 
   /**
-   * Render content based on active tab selection
+   * Render Team Tab
+   */
+  const renderTeamTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PersonIcon />
+          Team Members
+        </Typography>
+        
+        {teamMembers.length > 0 ? (
+          <Grid container spacing={2}>
+            {teamMembers.map((member, index) => (
+              <Grid item xs={12} md={6} lg={4} key={member.id || index}>
+                <Card sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ width: 50, height: 50, borderRadius: '50%', overflow: 'hidden', backgroundColor: COLORS.border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PersonIcon sx={{ color: COLORS.background }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.text }}>
+                      {member.profiles?.full_name || member.name || `Team Member ${index + 1}`}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border }}>
+                      {member.role || 'Team Member'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: COLORS.border }}>
+                      {member.profiles?.email || member.email || ''}
+                    </Typography>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+            <PersonIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+            <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+              No Team Members Assigned
+            </Typography>
+            <Typography variant="body2" sx={{ color: COLORS.border }}>
+              Team members will appear here once they are assigned to this project.
+            </Typography>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  /**
+   * Render Files Tab
+   */
+  const renderFilesTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FolderIcon />
+          Project Files
+        </Typography>
+        
+        {projectFiles.length > 0 ? (
+          <Grid container spacing={2}>
+            {projectFiles.map((file) => (
+              <Grid item xs={12} md={6} key={file.id}>
+                <Card sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <FolderIcon sx={{ color: COLORS.primary }} />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.text }}>
+                      {file.file_name || file.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: COLORS.border }}>
+                      {file.file_type || file.type} • {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB` : 'Size unknown'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: COLORS.border, display: 'block' }}>
+                      Uploaded: {new Date(file.created_at).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+            <FolderIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+            <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+              No Files Uploaded
+            </Typography>
+            <Typography variant="body2" sx={{ color: COLORS.border }}>
+              Project files will appear here once they are uploaded by the team.
+            </Typography>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  /**
+   * Render Discussion Tab
+   */
+  const renderDiscussionTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ChatIcon />
+          Project Discussion
+        </Typography>
+        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+          <ChatIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+          <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+            Discussion Coming Soon
+          </Typography>
+          <Typography variant="body2" sx={{ color: COLORS.border, mb: 3 }}>
+            Real-time discussion features will be available in the next update.
+          </Typography>
+          <Button variant="outlined" sx={{ color: COLORS.primary, borderColor: COLORS.primary }}>
+            Notify Me When Ready
+          </Button>
+        </Paper>
+      </Box>
+    );
+  };
+
+  /**
+   * Render Milestones Tab
+   */
+  const renderMilestonesTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <KanbanIcon />
+          Project Milestones
+        </Typography>
+        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+          <KanbanIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+          <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+            Milestones Coming Soon
+          </Typography>
+          <Typography variant="body2" sx={{ color: COLORS.border }}>
+            Track major project milestones and deliverables here.
+          </Typography>
+        </Paper>
+      </Box>
+    );
+  };
+
+  /**
+   * Render project selector
+   */
+  const renderProjectSelector = () => {
+    if (projects.length <= 1) return null;
+
+    return (
+      <Paper sx={{ mb: 3, p: 2, backgroundColor: COLORS.lightBackground }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
+          Select Project
+        </Typography>
+        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+          {projects.map((project, index) => (
+            <Chip
+              key={project.id}
+              label={project.project_name || project.name}
+              onClick={() => handleProjectChange(project.id)}
+              color={index === currentProjectIndex ? "primary" : "default"}
+              variant={index === currentProjectIndex ? "filled" : "outlined"}
+              sx={{ 
+                backgroundColor: index === currentProjectIndex ? COLORS.primary : 'transparent',
+                color: index === currentProjectIndex ? COLORS.background : COLORS.text,
+                borderColor: COLORS.primary,
+                '&:hover': {
+                  backgroundColor: index === currentProjectIndex ? COLORS.primary : COLORS.lightBackground
+                }
+              }}
+            />
+          ))}
+        </Stack>
+      </Paper>
+    );
+  };
+
+  /**
+   * Render tab content
    */
   const renderTabContent = () => {
     switch (activeTab) {
       case 0:
         return renderOverviewTab();
       case 1:
-        return (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
-              Milestones
-            </Typography>
-            <Typography variant="body2" sx={{ color: COLORS.border }}>
-              Milestone tracking coming soon...
-            </Typography>
-          </Box>
-        );
+        return renderMilestonesTab();
       case 2:
-        return (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
-              Team Members
-            </Typography>
-            <Typography variant="body2" sx={{ color: COLORS.border }}>
-              Team information coming soon...
-            </Typography>
-          </Box>
-        );
+        return renderTeamTab();
       case 3:
-        return (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
-              Project Files
-            </Typography>
-            <Typography variant="body2" sx={{ color: COLORS.border }}>
-              File management coming soon...
-            </Typography>
-          </Box>
-        );
+        return renderFilesTab();
       case 4:
-        return (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2 }}>
-              Discussion
-            </Typography>
-            <Typography variant="body2" sx={{ color: COLORS.border }}>
-              Project discussions coming soon...
-            </Typography>
-          </Box>
-        );
+        return renderDiscussionTab();
       case 5:
         return renderKanbanTab();
       default:
@@ -534,12 +1106,15 @@ export default function ProjDetailsContent() {
     }
   };
 
-  // Show loading spinner while data is being fetched
+  // Show loading state
   if (loading) {
     return (
       <Box sx={globalStyles.rootBox}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: 2 }}>
           <CircularProgress />
+          <Typography variant="body1" sx={{ color: COLORS.text }}>
+            Loading your projects...
+          </Typography>
         </Box>
       </Box>
     );
@@ -547,15 +1122,19 @@ export default function ProjDetailsContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation */}
-      <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
+      {/* Sidebar Navigation - Updated to match Query screen */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+      >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
           <Link href="/dashboard/client/details" passHref>
             <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>
           </Link>
-          <Typography variant="h5" sx={{ color: COLORS.background }}>Client Portal</Typography>
+          <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
         </Box>
         <List>
           {clientMenu.map((item) => (
@@ -566,41 +1145,50 @@ export default function ProjDetailsContent() {
             </ListItem>
           ))}
         </List>
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: `2px solid ${COLORS.accent}` }}>
-              <Image 
-                src={profile?.avatar_url || currentUser?.user_metadata?.avatar_url || "/toroLogo.jpg"} 
-                alt="User Profile" 
-                fill 
+        
+        {/* Profile Section - Updated to match Query screen */}
+        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+              <Image
+                src={profilePicture}
+                alt="User Profile"
+                fill
                 style={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.src = '/toroLogo.jpg';
+                }}
               />
             </Box>
             <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontWeight: '600', color: COLORS.background }}>
-                {profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
               </Typography>
-              <Typography variant="caption" noWrap sx={{ color: COLORS.textLight }}>
-                {profile?.email || currentUser?.email || 'client@email.com'}
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
               </Typography>
             </Box>
           </Box>
-          <Button 
-            onClick={handleLogout} 
-            fullWidth 
-            variant="outlined" 
-            disabled={loggingOut}
+          <Button
+            onClick={handleLogout}
+            fullWidth
             sx={{ 
-              color: COLORS.background, 
-              borderColor: COLORS.background, 
-              '&:hover': { background: COLORS.border },
-              '&:disabled': {
-                color: COLORS.textLight,
-                borderColor: COLORS.textLight
-              }
+              padding: '0.75rem', 
+              background: 'transparent', 
+              border: '1px solid #fefae0', 
+              borderRadius: '8px', 
+              color: '#fefae0', 
+              cursor: 'pointer', 
+              transition: 'all 0.3s ease', 
+              fontWeight: '600', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '0.5rem', 
+              '&:hover': { background: '#6b705c' } 
             }}
           >
-            {loggingOut ? 'Logging out...' : 'Logout'}
+            Logout
           </Button>
         </Box>
       </Drawer>
@@ -609,39 +1197,83 @@ export default function ProjDetailsContent() {
       <Box component="main" sx={mainContentStyles.mainBox}>
         {currentProject ? (
           <>
-            {/* Project Header */}
+            {/* Project Header with Refresh Button */}
             <Box sx={headerStyles.headerBox}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h4" sx={headerStyles.headerTitle}>
                   <ProjectIcon sx={headerStyles.projectIcon} />
-                  {currentProject.project_name}
+                  {currentProject.project_name || currentProject.name}
                 </Typography>
-                <Chip label={currentProject.status} sx={headerStyles.chip(currentProject.status)} />
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={formatStatus(currentProject.status)} sx={headerStyles.chip(currentProject.status)} />
+                  <IconButton onClick={handleRefresh} sx={{ color: COLORS.primary }}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Stack>
               </Stack>
               <Typography variant="body1" sx={headerStyles.headerSubtext}>
-                Project ID: {currentProject.id} | {currentProject.description}
+                {currentProject.description || 'Project details'}
               </Typography>
             </Box>
+
+            {/* Project Selector */}
+            {renderProjectSelector()}
             
             {/* Navigation Tabs */}
-            <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
-              <Tab label="Overview" sx={tabsStyles.tab} />
-              <Tab label="Milestones" sx={tabsStyles.tab} />
-              <Tab label="Team" sx={tabsStyles.tab} />
-              <Tab label="Files" sx={tabsStyles.tab} />
-              <Tab label="Discussion" sx={tabsStyles.tab} />
-              <Tab label="Kanban Board" sx={tabsStyles.tab} />
-            </Tabs>
+            <Paper sx={{ mb: 2 }}>
+              <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
+                <Tab label="Overview" icon={<DescriptionIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Milestones" icon={<KanbanIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Team" icon={<PersonIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Files" icon={<FolderIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Discussion" icon={<ChatIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Kanban Board" icon={<KanbanIcon />} iconPosition="start" sx={tabsStyles.tab} />
+              </Tabs>
+            </Paper>
             
             {/* Tab Content */}
-            <Box sx={{ mt: 2 }}>{renderTabContent()}</Box>
+            <Box>{renderTabContent()}</Box>
           </>
         ) : (
           // Empty state when no projects exist
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center' }}>
-            <Typography variant="h5" sx={{ color: COLORS.border, fontWeight: 500 }}>
-              You currently do not have any projects with Toro Informatics.
-            </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center', flexDirection: 'column', gap: 3 }}>
+            <ProjectIcon sx={{ fontSize: 64, color: COLORS.border }} />
+            <Box>
+              <Typography variant="h5" sx={{ color: COLORS.border, fontWeight: 500, mb: 1 }}>
+                No Projects Found
+              </Typography>
+              <Typography variant="body1" sx={{ color: COLORS.border, mb: 3 }}>
+                {clientProfile 
+                  ? `No projects found for ${clientProfile.name}`
+                  : 'No projects found for your account'
+                }
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={2}>
+              <Button 
+                variant="contained" 
+                onClick={handleRefresh}
+                startIcon={<RefreshIcon />}
+                sx={{ 
+                  backgroundColor: COLORS.primary,
+                  '&:hover': {
+                    backgroundColor: COLORS.secondary
+                  }
+                }}
+              >
+                Refresh
+              </Button>
+              <Button 
+                variant="outlined"
+                onClick={() => router.push('/dashboard/client')}
+                sx={{ 
+                  color: COLORS.primary,
+                  borderColor: COLORS.primary
+                }}
+              >
+                Return to Dashboard
+              </Button>
+            </Stack>
           </Box>
         )}
       </Box>
@@ -675,7 +1307,7 @@ export default function ProjDetailsContent() {
           {currentTask && (
             <Stack spacing={3}>
               <Box>
-                <Typography variant="caption" sx={{ color: COLORS.border }}>
+                <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   TITLE
                 </Typography>
                 <Typography variant="body1" sx={{ color: COLORS.text, mt: 1 }}>
@@ -684,7 +1316,7 @@ export default function ProjDetailsContent() {
               </Box>
               
               <Box>
-                <Typography variant="caption" sx={{ color: COLORS.border }}>
+                <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   DESCRIPTION
                 </Typography>
                 <Typography variant="body1" sx={{ color: COLORS.text, mt: 1 }}>
@@ -693,7 +1325,7 @@ export default function ProjDetailsContent() {
               </Box>
               
               <Box>
-                <Typography variant="caption" sx={{ color: COLORS.border }}>
+                <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   DUE DATE
                 </Typography>
                 <Typography variant="body1" sx={{ color: COLORS.text, mt: 1 }}>
@@ -702,7 +1334,7 @@ export default function ProjDetailsContent() {
               </Box>
               
               <Box>
-                <Typography variant="caption" sx={{ color: COLORS.border }}>
+                <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   STATUS
                 </Typography>
                 <Chip 
@@ -714,13 +1346,25 @@ export default function ProjDetailsContent() {
                   }} 
                 />
               </Box>
-              
-              {/* Read-only notice for clients */}
-              <Box sx={{ p: 2, backgroundColor: COLORS.lightBackground, borderRadius: 1 }}>
-                <Typography variant="caption" sx={{ color: COLORS.border, fontStyle: 'italic' }}>
-                  Note: Only administrators can modify tasks. Please contact your project administrator for any changes.
-                </Typography>
-              </Box>
+
+              {currentTask.priority && (
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                    PRIORITY
+                  </Typography>
+                  <Chip 
+                    label={currentTask.priority.toUpperCase()} 
+                    sx={{ 
+                      mt: 1,
+                      backgroundColor: 
+                        currentTask.priority === 'high' ? COLORS.error :
+                        currentTask.priority === 'medium' ? COLUMN_COLORS.in_progress :
+                        COLUMN_COLORS.backlog,
+                      color: 'white'
+                    }} 
+                  />
+                </Box>
+              )}
             </Stack>
           )}
         </DialogContent>
@@ -739,25 +1383,25 @@ export default function ProjDetailsContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Global Snackbar for notifications */}
+      {/* Global Snackbar for notifications - Updated to match Query screen style */}
       <Snackbar 
         open={openSnackbar} 
-        autoHideDuration={3000} 
+        autoHideDuration={1500} 
         onClose={() => setOpenSnackbar(false)} 
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
           severity={snackbarSeverity} 
           sx={{ 
-            width: '100%',
+            width: '100%', 
+            fontWeight: 'bold', 
+            fontSize: '1.2rem',
             backgroundColor: 
               snackbarSeverity === 'success' ? COLORS.success :
               snackbarSeverity === 'error' ? COLORS.error :
-              snackbarSeverity === 'info' ? COLORS.primary : COLORS.secondary,
-            color: COLORS.background,
-            '& .MuiAlert-icon': {
-              color: COLORS.background
-            }
+              snackbarSeverity === 'info' ? COLORS.primary : 
+              snackbarSeverity === 'warning' ? COLORS.warning : COLORS.secondary,
+            color: COLORS.background
           }}
         >
           {snackbarMessage}
