@@ -64,6 +64,8 @@ export default function MeetingMesContent() {
   const { profile, fetchProfile } = useClientStore();
   const [sidebarOpen] = React.useState(true);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
   const [currentUser, setCurrentUser] = React.useState(null);
   
   // New state for meeting scheduling
@@ -90,11 +92,27 @@ export default function MeetingMesContent() {
   }, [profile, fetchProfile]);
 
   const handleLogout = async () => {
-    setOpenSnackbar(true);
-    setTimeout(async () => {
-      await supabase.auth.signOut();
-      router.push('/login');
-    }, 1500);
+    try {
+      setSnackbarMessage('Logging out...');
+      setSnackbarSeverity('success'); // Changed to success for green color
+      setOpenSnackbar(true);
+      
+      setTimeout(async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          setSnackbarMessage('Error logging out: ' + error.message);
+          setSnackbarSeverity('error');
+          setOpenSnackbar(true);
+        } else {
+          // Success - redirect to login
+          router.push('/login');
+        }
+      }, 1000);
+    } catch (error) {
+      setSnackbarMessage('Unexpected error during logout');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+    }
   };
 
   // Enhanced meeting scheduling function
@@ -130,7 +148,9 @@ export default function MeetingMesContent() {
 
   const handleCreateMeeting = () => {
     if (!meetingTitle.trim()) {
-      alert('Please enter a meeting title');
+      setSnackbarMessage('Please enter a meeting title');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
       return;
     }
 
@@ -156,6 +176,8 @@ export default function MeetingMesContent() {
     window.open(meetingLink, '_blank', 'noopener,noreferrer');
     
     // Show success message
+    setSnackbarMessage('Meeting created successfully! Opening meeting platform...');
+    setSnackbarSeverity('success');
     setOpenSnackbar(true);
     
     // Close dialog and reset form
@@ -268,6 +290,17 @@ export default function MeetingMesContent() {
       '& .MuiInputLabel-root.Mui-focused': {
         color: COLORS.accent
       }
+    }
+  };
+
+  // Get background color based on snackbar severity
+  const getSnackbarBackgroundColor = (severity) => {
+    switch (severity) {
+      case 'error': return COLORS.error;
+      case 'warning': return '#ed6c02';
+      case 'info': return '#0288d1';
+      case 'success': return COLORS.success;
+      default: return COLORS.success;
     }
   };
 
@@ -732,19 +765,19 @@ export default function MeetingMesContent() {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
-          severity="success" 
+          severity={snackbarSeverity} 
           sx={{ 
             width: '100%', 
             fontWeight: 'bold',
             borderRadius: 2,
-            backgroundColor: COLORS.success,
+            backgroundColor: getSnackbarBackgroundColor(snackbarSeverity),
             color: COLORS.background,
             '& .MuiAlert-icon': {
               color: COLORS.background
             }
           }}
         >
-          Meeting created successfully! Opening meeting platform...
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>
