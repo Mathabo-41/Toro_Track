@@ -83,6 +83,7 @@ export default function ProjectsContent() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [editProject, setEditProject] = useState(null);
   const [activeCategory, setActiveCategory] = useState('');
@@ -125,6 +126,7 @@ export default function ProjectsContent() {
   const showSnackbar = (message, severity = 'success') => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
+    setIsLogoutSnackbar(false); // Not a logout action
     setOpenSnackbar(true);
   };
 
@@ -132,8 +134,16 @@ export default function ProjectsContent() {
   // Logout function
   // ----------------------------
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    // Show green logout snackbar
+    setSnackbarMessage('Logging out...');
+    setSnackbarSeverity('success');
+    setIsLogoutSnackbar(true);
+    setOpenSnackbar(true);
+    
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500);
   };
 
   // ----------------------------
@@ -1079,7 +1089,7 @@ export default function ProjectsContent() {
       ============================ */}
       <Snackbar 
         open={openSnackbar} 
-        autoHideDuration={3000} 
+        autoHideDuration={1500} 
         onClose={() => setOpenSnackbar(false)} 
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
@@ -1090,7 +1100,14 @@ export default function ProjectsContent() {
             fontWeight: 'bold', 
             fontSize: '1rem',
             borderRadius: 2,
-            border: '1px solid #6b705c'
+            border: '1px solid #6b705c',
+            ...(isLogoutSnackbar && {
+              backgroundColor: '#4caf50',
+              color: 'white',
+              '& .MuiAlert-icon': {
+                color: 'white'
+              }
+            })
           }}
         >
           {snackbarMessage}

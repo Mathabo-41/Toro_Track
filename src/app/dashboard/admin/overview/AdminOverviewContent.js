@@ -35,6 +35,7 @@ export default function AdminOverviewContent() {
   const [currentUser, setCurrentUser] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
 
   /*
   Fetches the current user's data when the component loads.
@@ -51,8 +52,15 @@ export default function AdminOverviewContent() {
   Signs out the current user and redirects to the login page.
   */
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    // Show green logout snackbar
+    setSnackbarMessage('Logging out...');
+    setIsLogoutSnackbar(true);
+    setOpenSnackbar(true);
+    
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500);
   };
 
   const handleQuickActionClick = (actionName) => {
@@ -64,6 +72,7 @@ export default function AdminOverviewContent() {
     const destination = destinations[actionName];
 
     setSnackbarMessage(`Redirecting to ${destination.split('/').pop()} to ${actionName}`);
+    setIsLogoutSnackbar(false); // This is not a logout action
     setOpenSnackbar(true);
     
     setTimeout(() => {
@@ -167,8 +176,30 @@ export default function AdminOverviewContent() {
         </Grid>
       </Box>
 
-      <Snackbar open={openSnackbar} autoHideDuration={2000} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert severity="info" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1rem' }}>{snackbarMessage}</Alert>
+      {/* Snackbar for logout (green) and other actions (info) */}
+      <Snackbar 
+        open={openSnackbar} 
+        autoHideDuration={1500} 
+        onClose={() => setOpenSnackbar(false)} 
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          severity={isLogoutSnackbar ? "success" : "info"} 
+          sx={{ 
+            width: '100%', 
+            fontWeight: 'bold', 
+            fontSize: '1rem',
+            ...(isLogoutSnackbar && {
+              backgroundColor: '#4caf50',
+              color: 'white',
+              '& .MuiAlert-icon': {
+                color: 'white'
+              }
+            })
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
       </Snackbar>
     </Box>
   );
