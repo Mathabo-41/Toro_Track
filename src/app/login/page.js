@@ -18,14 +18,18 @@ import {
   loginButtonHover,
   globalStyles,
 } from './login_styles/styles.js';
+import CircularProgress from '@mui/material/CircularProgress'; 
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isHovered, setIsHovered] = useState(false);
+  /**Looading State */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  
 
   // Initialize the new Supabase client inside the component.
   const supabase = createSupabaseClient();
@@ -80,13 +84,7 @@ export default function Login() {
 
   return (
     <main style={mainContainer}>
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        style={videoBackground}
-      >
+      <video autoPlay loop muted playsInline style={videoBackground}>
         <source src="/appImages/logo_animation.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
@@ -95,9 +93,7 @@ export default function Login() {
 
       <div style={mainContentContainer}>
         <div style={formContainer}>
-          <h2 style={loginTitle}>
-            Login
-          </h2>
+          <h2 style={loginTitle}>Login</h2>
           <form onSubmit={handleLogin} style={formStyle}>
             <input
               type="email"
@@ -128,6 +124,27 @@ export default function Login() {
           </form>
         </div>
       </div>
+
+      {/* ✅ Full-screen overlay while logging in */}
+      {loading && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          zIndex: 2000
+        }}>
+          <CircularProgress style={{ color: '#fefae0', marginBottom: '1rem' }} />
+          <p style={{ color: '#fefae0', fontSize: '1.5rem', fontWeight: 'bold' }}>
+            Logging you in...
+          </p>
+        </div>
+      )}
 
       <style jsx global>{globalStyles}</style>
     </main>
