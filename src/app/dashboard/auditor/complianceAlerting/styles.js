@@ -148,6 +148,11 @@ export const tableHeaderCellStyles = {
 };
 
 export const getSeverityChipColor = (severity) => {
+  // Add null check and default value
+  if (!severity || typeof severity !== 'string') {
+    return 'default';
+  }
+  
   switch (severity.toLowerCase()) {
     case 'critical': return 'error';
     case 'high': return 'warning';
@@ -156,7 +161,6 @@ export const getSeverityChipColor = (severity) => {
     default: return 'default';
   }
 };
-
 export const securityComplianceSectionStyles = {
   p: 3,
   backgroundColor: '#ccd5ae',
