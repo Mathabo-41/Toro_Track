@@ -106,8 +106,8 @@ export default function SettingsContent() {
                 sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
             >
                 <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Link href="/login" passHref>
-                        <IconButton sx={{ color: 'green' }} aria-label="Go to Login">
+                    <Link href="/dashboard/client/details" passHref>
+                        <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
                             <DashboardIcon />
                         </IconButton>
                     </Link>

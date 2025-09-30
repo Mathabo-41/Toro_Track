@@ -245,7 +245,7 @@ export default function ProjDetailsContent() {
     <Box sx={globalStyles.rootBox}>
       <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex',  alignItems: 'center', gap: 1 }}>
-          <Link href="/login" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
+          <Link href="/dashboard/client/details" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
         </Box>
         <List>

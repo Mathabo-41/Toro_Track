@@ -86,7 +86,7 @@ export default function QueryContent() { // Remove router prop
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard" passHref>
+          <Link href="/dashboard/client/details" passHref>
             <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>
