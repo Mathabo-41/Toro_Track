@@ -46,6 +46,7 @@ import * as globalStyles from '../common/styles';
 import { auditorMenu } from '../common/auditorStore';
 
 export default function RepoExportContent() {
+  const supabase = createSupabaseClient();
   const {
     search,
     fromDate,
@@ -120,8 +121,8 @@ export default function RepoExportContent() {
           alignItems: 'center',
           gap: 1
         }}>
-          <Link href="/dashboard" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+          <Link href="/login" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Login">
               <DashboardIcon />
             </IconButton>
           </Link>

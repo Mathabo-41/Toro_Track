@@ -162,6 +162,7 @@ function PerClientLicenseRegister({ clientName = 'All Clients' }) {
 
 
 export default function LicenseConfigContent() {
+  const supabase = createSupabaseClient(); 
   const {
     client,
     clients,
@@ -207,8 +208,8 @@ export default function LicenseConfigContent() {
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+          <Link href="/login" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Login">
               <DashboardIcon />
             </IconButton>
           </Link>
