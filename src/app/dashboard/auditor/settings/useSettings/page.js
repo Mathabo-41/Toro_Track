@@ -28,6 +28,7 @@ export function useSettings() {
   const queryClient = useQueryClient();
   const { auditTrailMenu } = useSettingsStore();
   const [search, setSearch] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const currentPath = '/dashboard/auditor/settings';
 
   // Use React Query to fetch initial settings data

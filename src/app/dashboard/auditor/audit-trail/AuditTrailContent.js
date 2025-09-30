@@ -29,8 +29,10 @@ import {
   tableCellHeaderStyles,
   tableCellBodyStyles,
   modalStyles,
+  openSnackbar,
 } from './styles';
 import useAuditTrail from './useAudit-Trail/page';
+
 
 export default function AuditTrailContent() {
   const supabase = createSupabaseClient();
@@ -55,7 +57,8 @@ export default function AuditTrailContent() {
   const [currentUser, setCurrentUser] = useState(null);
   const fileInputRef = useRef(null);
   const [uploadTargetLogId, setUploadTargetLogId] = useState(null);
-  
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const initialFormState = {
       signOff: '', status: 'Pending', receiver: '', type: 'Hardware', serial: ''
   };
@@ -104,9 +107,14 @@ export default function AuditTrailContent() {
   Signs out the current user and redirects to the login page.
   */
   const handleLogout = async () => {
+  //  Show snackbar
+  setOpenSnackbar(true);
+  //Wait a moment so user sees it
+  setTimeout(async () => {
     await supabase.auth.signOut();
     router.push('/login');
-  };
+  }, 1500); 
+};
 
   const handleAttachClick = (logId) => {
     setUploadTargetLogId(logId);
@@ -130,7 +138,7 @@ export default function AuditTrailContent() {
         sx={{ '& .MuiDrawer-paper': commonStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/login" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
+          <Link href="/dashboard/auditor/audit-trail" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Auditor Portal</Typography>
         </Box>
         <List>
@@ -235,9 +243,18 @@ export default function AuditTrailContent() {
           </Box>
       </Modal>
 
-      <Snackbar open={feedback.open} autoHideDuration={4000} onClose={handleCloseFeedback} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert onClose={handleCloseFeedback} severity={feedback.severity} sx={{ width: '100%' }}>{feedback.message}</Alert>
-      </Snackbar>
+      <Snackbar
+  open={openSnackbar}
+  autoHideDuration={1500}
+  onClose={() => setOpenSnackbar(false)}
+  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+>
+  <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
+    Logging out...
+  </Alert>
+</Snackbar>
+
+
     </Box>
   );
 }

@@ -109,7 +109,7 @@ export default function SystemSettings() {
     <Box sx={styles.mainContainer}>
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
+          <Link href="/dashboard/admin/overview" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Admin Portal</Typography>
         </Box>
         <List>

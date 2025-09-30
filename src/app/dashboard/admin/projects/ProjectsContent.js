@@ -252,7 +252,7 @@ export default function ProjectsContent() {
       ============================ */}
       <Drawer variant="permanent" anchor="left" sx={styles.sidebar}>
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard" passHref>
+          <Link href="/dashboard/admin/overview" passHref>
             <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>

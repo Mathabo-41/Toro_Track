@@ -74,7 +74,7 @@ export default function PermissionSettings() {
     alignItems: 'center', 
     gap: 1 
   }}>
-    <Link href="/dashboard" passHref>
+    <Link href="/dashboard/admin/overview" passHref>
       <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
         <DashboardIcon />
       </IconButton>

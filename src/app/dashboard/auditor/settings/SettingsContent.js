@@ -34,6 +34,8 @@ export default function SettingsContent() {
 
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
+  // state for snackbar
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -43,9 +45,15 @@ export default function SettingsContent() {
     fetchUser();
   }, []);
 
+ /*
+    Logout with Snackbar effect
+  */
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    setOpenSnackbar(true);
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500); 
   };
 
   if (isLoading) {
@@ -60,8 +68,10 @@ export default function SettingsContent() {
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/login" passHref>
-            <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
+          <Link href="/dashboard/auditor/audit-trail" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
           </Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Auditor Portal</Typography>
         </Box>
@@ -122,6 +132,18 @@ export default function SettingsContent() {
           </FormProvider>
         </Box>
       </Box>
+
+      {/* Snackbar for logout */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1500}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
+          Logging out...
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

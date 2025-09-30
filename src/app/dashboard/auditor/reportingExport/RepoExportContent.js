@@ -121,8 +121,8 @@ export default function RepoExportContent() {
           alignItems: 'center',
           gap: 1
         }}>
-          <Link href="/login" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Login">
+          <Link href="/dashboard/auditor/audit-trail" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>
           </Link>

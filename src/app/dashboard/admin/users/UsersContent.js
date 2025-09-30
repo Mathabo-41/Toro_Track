@@ -104,7 +104,7 @@ export default function TeamsAndUsers() {
     <Box sx={styles.mainContainer}>
       <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
         <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
+          <Link href="/dashboard/admin/overview" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5">Admin Portal</Typography>
         </Box>
         <List>

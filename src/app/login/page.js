@@ -125,7 +125,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ✅ Full-screen overlay while logging in */}
+      {/*  Full-screen overlay while logging in */}
       {loading && (
         <div style={{
           position: 'fixed',

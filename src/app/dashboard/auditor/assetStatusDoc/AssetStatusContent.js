@@ -31,10 +31,10 @@ const Sidebar = ({ handleLogout, currentUser }) => {
       sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
     >
       <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Link href="/login" passHref>
-          <IconButton sx={{ color: 'green' }} aria-label="Go to Login">
-            <DashboardIcon />
-          </IconButton>
+        <Link href="/dashboard/auditor/audit-trail" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
         </Link>
         <Typography variant="h5" sx={{ color: '#fefae0' }}>
           Auditor Portal
