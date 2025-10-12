@@ -12,7 +12,7 @@ import {
   Tabs, Tab, IconButton, Chip, Snackbar, Alert,
   Avatar, Badge, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, MenuItem, Select,
-  FormControl, InputLabel
+  FormControl, InputLabel, CircularProgress
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -67,6 +67,7 @@ export default function MeetingMesContent() {
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
   const [currentUser, setCurrentUser] = React.useState(null);
+  const [loading, setLoading] = useState(true);
   
   // New state for meeting scheduling
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
@@ -86,33 +87,46 @@ export default function MeetingMesContent() {
   }, [supabase]);
 
   useEffect(() => {
-    if (!profile) {
-      fetchProfile();
-    }
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        setSnackbarMessage('Screen Done Loading...');
+        setSnackbarSeverity('info');
+        setOpenSnackbar(true);
+
+        if (!profile) {
+          await fetchProfile();
+        }
+
+        // Simulate loading time for better UX
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error) {
+        console.error('Error initializing data:', error);
+        setSnackbarMessage('Error loading agenda');
+        setSnackbarSeverity('error');
+        setOpenSnackbar(true);
+      } finally {
+        setLoading(false);
+        setTimeout(() => {
+          setOpenSnackbar(false);
+        }, 1000);
+      }
+    };
+
+    initializeData();
   }, [profile, fetchProfile]);
 
+  // Updated logout function to match Settings screen exactly
   const handleLogout = async () => {
-    try {
-      setSnackbarMessage('Logging out...');
-      setSnackbarSeverity('success'); // Changed to success for green color
-      setOpenSnackbar(true);
-      
-      setTimeout(async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-          setSnackbarMessage('Error logging out: ' + error.message);
-          setSnackbarSeverity('error');
-          setOpenSnackbar(true);
-        } else {
-          // Success - redirect to login
-          router.push('/login');
-        }
-      }, 1000);
-    } catch (error) {
-      setSnackbarMessage('Unexpected error during logout');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-    }
+    setSnackbarMessage('Logging out...');
+    setSnackbarSeverity('success');
+    setOpenSnackbar(true);
+    
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500);
   };
 
   // Enhanced meeting scheduling function
@@ -156,7 +170,7 @@ export default function MeetingMesContent() {
 
     const meetingLink = createMeetingLink();
     
-    // Here we can typically save the meeting to our database
+    //  save the meeting to our database
     const newMeeting = {
       id: Date.now().toString(),
       title: meetingTitle,
@@ -293,16 +307,30 @@ export default function MeetingMesContent() {
     }
   };
 
-  // Get background color based on snackbar severity
-  const getSnackbarBackgroundColor = (severity) => {
-    switch (severity) {
-      case 'error': return COLORS.error;
-      case 'warning': return '#ed6c02';
-      case 'info': return '#0288d1';
-      case 'success': return COLORS.success;
-      default: return COLORS.success;
-    }
-  };
+  // Show loading state
+  if (loading) {
+    return (
+      <Box sx={globalStyles.rootBox}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '100vh',
+          backgroundColor: COLORS.background
+        }}>
+          <Stack spacing={3} alignItems="center">
+            <CircularProgress size={50} sx={{ color: COLORS.primary }} />
+            <Typography variant="h5" sx={{ color: COLORS.primary }}>
+              Loading Agenda...
+            </Typography>
+            <Typography variant="body2" sx={{ color: COLORS.text }}>
+              Please wait while we load your meetings and notifications
+            </Typography>
+          </Stack>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={globalStyles.rootBox}>
@@ -312,11 +340,11 @@ export default function MeetingMesContent() {
         sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Link href="/dashboard/client/details" passHref>
-                        <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-                            <DashboardIcon />
-                        </IconButton>
-                    </Link>
+          <Link href="/dashboard/client/details" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
           <Typography variant="h5" sx={{ color: COLORS.background }}>
             Client Portal
           </Typography>
@@ -758,9 +786,10 @@ export default function MeetingMesContent() {
         </DialogActions>
       </Dialog>
 
+      {/* Updated Snackbar to match Settings screen exactly */}
       <Snackbar 
         open={openSnackbar} 
-        autoHideDuration={3000} 
+        autoHideDuration={1500} 
         onClose={() => setOpenSnackbar(false)} 
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
@@ -768,13 +797,14 @@ export default function MeetingMesContent() {
           severity={snackbarSeverity} 
           sx={{ 
             width: '100%', 
-            fontWeight: 'bold',
-            borderRadius: 2,
-            backgroundColor: getSnackbarBackgroundColor(snackbarSeverity),
-            color: COLORS.background,
-            '& .MuiAlert-icon': {
-              color: COLORS.background
-            }
+            fontWeight: 'bold', 
+            fontSize: '1.2rem',
+            backgroundColor: 
+              snackbarSeverity === 'success' ? COLORS.success :
+              snackbarSeverity === 'error' ? COLORS.error :
+              snackbarSeverity === 'info' ? COLORS.primary : 
+              snackbarSeverity === 'warning' ? '#ed6c02' : COLORS.secondary,
+            color: COLORS.background
           }}
         >
           {snackbarMessage}

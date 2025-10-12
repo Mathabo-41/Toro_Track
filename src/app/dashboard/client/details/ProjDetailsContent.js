@@ -148,13 +148,13 @@ export default function ProjDetailsContent() {
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [currentColumnId, setCurrentColumnId] = useState('backlog');
-  const [loggingOut, setLoggingOut] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamMembers, setTeamMembers] = useState([]);
   const [projectFiles, setProjectFiles] = useState([]);
   const [clientProfile, setClientProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
+  const [sidebarOpen] = React.useState(true);
   
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
@@ -164,6 +164,21 @@ export default function ProjDetailsContent() {
     handleTabChange,
   } = useDetails(currentProject?.id);
 
+  // Fetch current user from Supabase
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    fetchUser();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, [profile, fetchProfile]);
+
   /**
    * Fetch all necessary data
    */
@@ -172,6 +187,11 @@ export default function ProjDetailsContent() {
       try {
         setLoading(true);
         console.log('🔄 Starting data initialization...');
+
+        // Show loading message when screen opens
+        setSnackbarMessage('Loading projects...');
+        setSnackbarSeverity('info');
+        setOpenSnackbar(true);
 
         // 1. Get current authenticated user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -204,7 +224,7 @@ export default function ProjDetailsContent() {
         let clientData = null;
         let projectsData = [];
 
-        // APPROACH 1: Try client_profiles table
+        //  Try client_profiles table
         console.log('🔍 Searching in client_profiles table...');
         const { data: clientProfileData, error: clientError } = await supabase
           .from('client_profiles')
@@ -219,7 +239,7 @@ export default function ProjDetailsContent() {
           console.log('✅ Found in client_profiles:', clientData);
         }
 
-        // APPROACH 2: Try profiles table if client_profiles failed
+        //  Try profiles table if client_profiles failed
         if (!clientData) {
           console.log('🔍 Searching in profiles table...');
           const { data: profileData, error: profileError } = await supabase
@@ -228,7 +248,7 @@ export default function ProjDetailsContent() {
             .eq('id', user.id)
             .single();
 
-          if (!profileError && profileData) {
+        if (!profileError && profileData) {
             clientData = {
               id: profileData.id,
               user_id: profileData.id,
@@ -241,7 +261,7 @@ export default function ProjDetailsContent() {
           }
         }
 
-        // APPROACH 3: Try clients table (alternative naming)
+        // Try clients table
         if (!clientData) {
           console.log('🔍 Searching in clients table...');
           const { data: clientsData, error: clientsError } = await supabase
@@ -264,7 +284,7 @@ export default function ProjDetailsContent() {
         // 3. Fetch projects using multiple approaches
         console.log('🔍 Fetching projects...');
 
-        // APPROACH 1: By client_id
+        // By client_id
         if (clientData?.id) {
           const { data: clientProjects, error: projectsError } = await supabase
             .from('projects')
@@ -278,7 +298,7 @@ export default function ProjDetailsContent() {
           }
         }
 
-        // APPROACH 2: By user_id directly
+        //  By user_id directly
         if (projectsData.length === 0) {
           const { data: userProjects, error: userProjectsError } = await supabase
             .from('projects')
@@ -292,7 +312,7 @@ export default function ProjDetailsContent() {
           }
         }
 
-        // APPROACH 3: All projects (fallback)
+        // All projects (fallback)
         if (projectsData.length === 0) {
           const { data: allProjects, error: allError } = await supabase
             .from('projects')
@@ -314,16 +334,12 @@ export default function ProjDetailsContent() {
           // Fetch additional data for the first project
           await fetchAdditionalProjectData(projectsData[0].id);
           
-          setSnackbarMessage(`Loaded ${projectsData.length} project(s)`);
-          setSnackbarSeverity('success');
+          // Don't show success message here - only show loading message initially
         } else {
           console.log('📭 No projects found for user');
           setProjects([]);
-          setSnackbarMessage('No projects found for your account');
-          setSnackbarSeverity('info');
+          // Don't show message for no projects found
         }
-
-        setOpenSnackbar(true);
 
       } catch (error) {
         console.error('💥 Unexpected error in initializeData:', error);
@@ -333,6 +349,10 @@ export default function ProjDetailsContent() {
         setProjects([]);
       } finally {
         setLoading(false);
+        // Close the loading snackbar after a short delay
+        setTimeout(() => {
+          setOpenSnackbar(false);
+        }, 1000);
       }
     };
 
@@ -530,28 +550,21 @@ export default function ProjDetailsContent() {
           if (projectsData.length > 0) {
             await fetchAdditionalProjectData(projectsData[0].id);
           }
-          setSnackbarMessage('Data refreshed successfully');
-          setSnackbarSeverity('success');
-        } else {
-          setSnackbarMessage('Error refreshing data');
-          setSnackbarSeverity('error');
+          // Don't show message on refresh
         }
       }
-      setOpenSnackbar(true);
       setLoading(false);
     };
     await initializeData();
   };
 
   /**
-   * Handle logout with the same snackbar style as Query screen
+   * Handle logout - EXACT SAME AS SETTINGS SCREEN
    */
   const handleLogout = async () => {
-    setLoggingOut(true);
-    setOpenSnackbar(true);
     setSnackbarMessage('Logging out...');
-    setSnackbarSeverity('info');
-    
+    setSnackbarSeverity('success');
+    setOpenSnackbar(true);
     setTimeout(async () => {
       await supabase.auth.signOut();
       router.push('/login');
@@ -1107,22 +1120,33 @@ export default function ProjDetailsContent() {
   };
 
   // Show loading state
-  if (loading) {
-    return (
-      <Box sx={globalStyles.rootBox}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: 2 }}>
-          <CircularProgress />
-          <Typography variant="body1" sx={{ color: COLORS.text }}>
-            Loading your projects...
+ if (loading) {
+  return (
+    <Box sx={globalStyles.rootBox}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        backgroundColor: COLORS.background
+      }}>
+        <Stack spacing={3} alignItems="center">
+          <CircularProgress size={50} sx={{ color: COLORS.primary }} />
+          <Typography variant="h5" sx={{ color: COLORS.primary }}>
+            Loading Project Details...
           </Typography>
-        </Box>
+          <Typography variant="body2" sx={{ color: COLORS.text }}>
+            Please wait while we load your projects
+          </Typography>
+        </Stack>
       </Box>
-    );
-  }
+    </Box>
+  );
+}
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation - Updated to match Query screen */}
+      {/* Sidebar Navigation - EXACT SAME AS SETTINGS SCREEN */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -1146,7 +1170,7 @@ export default function ProjDetailsContent() {
           ))}
         </List>
         
-        {/* Profile Section - Updated to match Query screen */}
+        {/* Profile Section - EXACT SAME AS SETTINGS SCREEN */}
         <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
             <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
@@ -1160,14 +1184,16 @@ export default function ProjDetailsContent() {
                 }}
               />
             </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
-              </Typography>
-            </Box>
+            {sidebarOpen && (
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                  {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                  {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
+                </Typography>
+              </Box>
+            )}
           </Box>
           <Button
             onClick={handleLogout}
@@ -1188,7 +1214,7 @@ export default function ProjDetailsContent() {
               '&:hover': { background: '#6b705c' } 
             }}
           >
-            Logout
+            {sidebarOpen ? 'Logout' : <LogoutIcon />}
           </Button>
         </Box>
       </Drawer>
@@ -1383,27 +1409,9 @@ export default function ProjDetailsContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Global Snackbar for notifications - Updated to match Query screen style */}
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={1500} 
-        onClose={() => setOpenSnackbar(false)} 
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          severity={snackbarSeverity} 
-          sx={{ 
-            width: '100%', 
-            fontWeight: 'bold', 
-            fontSize: '1.2rem',
-            backgroundColor: 
-              snackbarSeverity === 'success' ? COLORS.success :
-              snackbarSeverity === 'error' ? COLORS.error :
-              snackbarSeverity === 'info' ? COLORS.primary : 
-              snackbarSeverity === 'warning' ? COLORS.warning : COLORS.secondary,
-            color: COLORS.background
-          }}
-        >
+      {/* Global Snackbar for notifications - EXACT SAME AS SETTINGS SCREEN */}
+      <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
