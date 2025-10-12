@@ -92,6 +92,9 @@ export default function RepoExportContent() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  
+  // Logout snackbar state
+  const [logoutSnackbar, setLogoutSnackbar] = useState(false);
 
   /**
    * Displays a snackbar notification with the specified message and severity 
@@ -110,6 +113,16 @@ export default function RepoExportContent() {
       return;
     }
     setOpenSnackbar(false);
+  };
+
+  /**
+   * Handles closing the logout snackbar
+   */
+  const handleCloseLogoutSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setLogoutSnackbar(false);
   };
 
   /**
@@ -224,7 +237,7 @@ export default function RepoExportContent() {
    * Handles user logout with confirmation and redirect
    */
   const handleLogout = async () => {
-    showSnackbar('Logging out...', 'info');
+    setLogoutSnackbar(true);
     setTimeout(async () => {
       try {
         await supabase.auth.signOut();
@@ -688,6 +701,27 @@ export default function RepoExportContent() {
           onClose={handleCloseSnackbar}
         >
           {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Logout Snackbar */}
+      <Snackbar
+        open={logoutSnackbar}
+        autoHideDuration={1500}
+        onClose={handleCloseLogoutSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          severity="success" 
+          sx={{ 
+            width: '100%', 
+            fontWeight: 'bold', 
+            fontSize: '1.2rem',
+            backgroundColor: '#a6f0daff',
+            color: 'black'
+          }}
+        >
+          Logging out...
         </Alert>
       </Snackbar>
     </Box>
