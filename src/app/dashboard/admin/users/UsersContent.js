@@ -449,8 +449,8 @@ export default function TeamsAndUsers() {
             width: '100%',
             fontWeight: 'bold',
             fontSize: '1.2rem',
-            backgroundColor: '#4caf50',
-            color: 'white',
+              backgroundColor: '#5caa93ff',
+            color: 'black',
             '& .MuiAlert-icon': { color: 'white' },
           }}
         >

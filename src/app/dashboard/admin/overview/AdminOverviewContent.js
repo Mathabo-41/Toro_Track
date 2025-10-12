@@ -188,10 +188,11 @@ export default function AdminOverviewContent() {
           sx={{ 
             width: '100%', 
             fontWeight: 'bold', 
-            fontSize: '1rem',
+            fontSize: '1.2rem',
             ...(isLogoutSnackbar && {
-              backgroundColor: '#4caf50',
-              color: 'white',
+               width: '100%', 
+            backgroundColor: '#5caa93ff',
+            color: 'black',
               '& .MuiAlert-icon': {
                 color: 'white'
               }

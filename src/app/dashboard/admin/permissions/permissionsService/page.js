@@ -13,14 +13,15 @@ import {
 
 // Static data for the sidebar navigation menu
 // Static data for the sidebar navigation menu.
-export const adminMenuData = [
-    { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-    { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-    { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-    { name: 'Projects', path: '/dashboard/admin/projects' },
-    { name: 'Teams & Users', path: '/dashboard/admin/users' },
-    { name: 'Settings', path: '/dashboard/admin/settings' }
+export const adminMenu = [
+  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+  { name: 'Projects', path: '/dashboard/admin/projects' },
+  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
+  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
+  { name: 'Teams & Users', path: '/dashboard/admin/users' },
+  { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
+
 
 // Permission level configurations
 export const permissionLevelsData = [

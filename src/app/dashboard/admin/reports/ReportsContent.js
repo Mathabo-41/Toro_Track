@@ -50,14 +50,15 @@ export default function PerformanceReports() {
   const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
 
   // Menu data
-  const menu = [
-    { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-    { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-    { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-    { name: 'Projects', path: '/dashboard/admin/projects' },
-    { name: 'Teams & Users', path: '/dashboard/admin/users' },
-    { name: 'Settings', path: '/dashboard/admin/settings' }
-  ];
+ const menu = [
+  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+  { name: 'Projects', path: '/dashboard/admin/projects' },
+  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
+  { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
+  { name: 'Teams & Users', path: '/dashboard/admin/users' },
+  { name: 'Settings', path: '/dashboard/admin/settings' }
+];
+
 
   // Current project
   const currentProject = projects[currentProjectIndex];
@@ -996,10 +997,10 @@ export default function PerformanceReports() {
           sx={{ 
             width: '100%', 
             fontWeight: 'bold', 
-            fontSize: '1rem',
+            fontSize: '1.2rem',
             ...(isLogoutSnackbar && {
-              backgroundColor: '#4caf50',
-              color: 'white',
+               backgroundColor: '#5caa93ff',
+            color: 'black',
               '& .MuiAlert-icon': {
                 color: 'white'
               }

@@ -34,14 +34,15 @@ const formatStatus = (status) => {
 };
 
 // Sidebar menu items
-const adminMenu = [
+export const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+  { name: 'Projects', path: '/dashboard/admin/projects' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
   { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
   { name: 'Teams & Users', path: '/dashboard/admin/users' },
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
+
 
 // ----------------------------
 // Main Component
@@ -1098,12 +1099,12 @@ export default function ProjectsContent() {
           sx={{ 
             width: '100%', 
             fontWeight: 'bold', 
-            fontSize: '1rem',
+            fontSize: '1.2rem',
             borderRadius: 2,
             border: '1px solid #6b705c',
             ...(isLogoutSnackbar && {
-              backgroundColor: '#4caf50',
-              color: 'white',
+                backgroundColor: '#5caa93ff',
+            color: 'black',
               '& .MuiAlert-icon': {
                 color: 'white'
               }

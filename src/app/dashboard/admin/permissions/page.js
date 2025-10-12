@@ -356,7 +356,9 @@ export default function PermissionSettings() {
               //we use SUCCESS instead of INFO so that we can have the power to switch colours
               sx={{ width: '100%', 
                 fontWeight: 'bold',
-                fontSize: '1.2rem'
+                fontSize: '1.2rem',
+                  backgroundColor: '#5caa93ff',
+            color: 'black'
               }}>
                 Logging out...
               </Alert>

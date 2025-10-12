@@ -32,6 +32,7 @@ export default function SystemSettings() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openLogoutSnackbar, setOpenLogoutSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const [selectedRole, setSelectedRole] = useState('admin');
@@ -54,14 +55,12 @@ export default function SystemSettings() {
     fetchUser();
   }, []);
 
-  // 🔹 Logout with snackbar
+  // 🔹 Logout with exact snackbar style you requested
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSnackbarMessage('Logging out...');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
-
-    setTimeout(() => {
+    setOpenLogoutSnackbar(true);
+    
+    setTimeout(async () => {
+      await supabase.auth.signOut();
       router.push('/login');
     }, 1500);
   };
@@ -231,9 +230,43 @@ export default function SystemSettings() {
         </Box>
       </Box>
 
-      {/* Snackbar feedback */}
-      <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.1rem' }}>
+      {/* Snackbar: logout feedback */}
+      <Snackbar
+        open={openLogoutSnackbar}
+        autoHideDuration={1500}
+        onClose={() => setOpenLogoutSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          severity="success"
+          sx={{
+            width: '100%',
+            fontWeight: 'bold',
+            fontSize: '1.2rem',
+            backgroundColor: '#5caa93ff',
+            color: 'black',
+            '& .MuiAlert-icon': { color: 'white' },
+          }}
+        >
+          Logging out...
+        </Alert>
+      </Snackbar>
+
+      {/* Regular snackbar for other feedback */}
+      <Snackbar 
+        open={openSnackbar} 
+        autoHideDuration={3000} 
+        onClose={() => setOpenSnackbar(false)} 
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          severity={snackbarSeverity} 
+          sx={{ 
+            width: '100%', 
+            fontWeight: 'bold', 
+            fontSize: '1.1rem' 
+          }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
