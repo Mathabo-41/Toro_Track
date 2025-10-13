@@ -3,20 +3,18 @@
 'use client';
 
 import React, { Suspense, lazy } from 'react';
-// Removed unused imports if they are not needed elsewhere
-// import { Box, CircularProgress } from '@mui/material';
-// import * as globalStyles from '../common/styles';
-
-// Import LoadingScreen component
 import LoadingScreen from '../common/LoadingScreen';
 
-const LazyAdminOverviewContent = lazy(() => import('./SettingsContent'));
+// Lazily import the main content of the settings page.
+// This allows the loading screen to be displayed while the main component is fetched.
+const LazySettingsContent = lazy(() => import('./SettingsContent'));
 
-export default function AdminOverviewPage() {
+export default function SettingsPage() {
   return (
-    // Use the LoadingScreen component in the fallback prop
+    // The Suspense component wraps the lazy-loaded component.
+    // The 'fallback' prop takes the component to render during the wait.
     <Suspense fallback={<LoadingScreen message="Loading Settings..." />}>
-      <LazyAdminOverviewContent />
+      <LazySettingsContent />
     </Suspense>
   );
 }

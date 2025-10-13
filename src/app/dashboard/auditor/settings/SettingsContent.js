@@ -21,6 +21,8 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { Snackbar, Alert } from '@mui/material';
 
+import LoadingScreen from '../common/LoadingScreen'; 
+
 import { useSettings } from './useSettings/page';
 import * as globalStyles from '../common/styles';
 import { auditorMenu } from '../common/auditorStore';
@@ -56,8 +58,9 @@ export default function SettingsContent() {
     }, 1500); 
   };
 
+  // If the component is fetching internal data, display the consistent, styled loading screen.
   if (isLoading) {
-    return <Typography>Loading settings...</Typography>;
+    return <LoadingScreen message="Loading settings configuration..." />;
   }
 
   return (
