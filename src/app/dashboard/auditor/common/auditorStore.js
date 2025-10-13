@@ -15,9 +15,9 @@ import { create } from 'zustand';
   // Side bar feature list
   export const auditorMenu = [
     { name: 'Audit Trail', path: '/dashboard/auditor/audit-trail' },
-    { name: 'License Configuration Tracking', path: '/dashboard/auditor/licenseConfig' },
-    { name: 'Asset Status Documentation', path: '/dashboard/auditor/assetStatusDoc' },
-    { name: 'Reporting & Export', path: '/dashboard/auditor/reportingExport' },
-    { name: 'Compliance & Alerting', path: '/dashboard/auditor/complianceAlerting' },
+    { name: 'License Configuration', path: '/dashboard/auditor/licenseConfig' },
+    { name: 'Asset Status', path: '/dashboard/auditor/assetStatusDoc' },
+    { name: 'Report', path: '/dashboard/auditor/reportingExport' },
+    { name: 'Compliance Alerts', path: '/dashboard/auditor/complianceAlerting' },
     { name: 'Settings', path: '/dashboard/auditor/settings' }
   ];
