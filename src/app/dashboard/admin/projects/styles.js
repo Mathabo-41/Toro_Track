@@ -233,10 +233,12 @@ export const styles = {
     fontWeight: 'bold',
     borderBottom: '2px solid #6b705c'
   },
-  dialogContent: {
-    py: 3,
-    px: 3
-  },
+dialogContent: {
+  paddingTop: '2rem', // Increased top padding
+  paddingBottom: '1.5rem',
+  paddingLeft: '1.5rem',
+  paddingRight: '1.5rem'
+},
   dialogTextField: {
     '& .MuiOutlinedInput-root': {
       '& fieldset': {

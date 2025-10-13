@@ -222,17 +222,22 @@ export default function ProjectsContent() {
     setEditProject(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEditTeamChange = (event) => {
-    const { value } = event.target;
-    setEditProject(prev => ({ ...prev, team: value }));
-  };
-
+  // The handleEditTeamChange function is no longer needed and can be removed.
   const handleSaveEdit = async () => {
     if (!editProject.name || !editProject.client || !editProject.status || !editProject.dueDate) {
       showSnackbar('Please fill all required fields!', 'error');
       return;
     }
-    await updateProject(editProject);
+    
+    // MODIFICATION: Convert the team string into an array
+    const projectToUpdate = {
+      ...editProject,
+      team: typeof editProject.team === 'string' 
+        ? editProject.team.split(',').map(item => item.trim()).filter(Boolean)
+        : editProject.team
+    };
+
+    await updateProject(projectToUpdate);
     showSnackbar('Project updated successfully!', 'success');
     setOpenEditDialog(false);
     setEditProject(null);
@@ -469,19 +474,10 @@ export default function ProjectsContent() {
                           </Stack>
                         </TableCell>
                         <TableCell>
-                          <Stack 
-                            direction="row" 
-                            spacing={0.5}
-                            onClick={(e) => handleTeamClick(e, project.team)}
-                            sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
-                          >
-                            {(project.team || []).map((member, i) => (
-                              <Avatar key={i} sx={styles.teamAvatar}>
-                                {member}
-                              </Avatar>
-                            ))}
-                          </Stack>
-                        </TableCell>
+                          <Typography sx={{ fontWeight: 'normal' }}>
+                            {Array.isArray(project.team) ? project.team.join(', ') : 'N/A'}
+                          </Typography>
+                  </TableCell>
                         <TableCell>
                           <IconButton sx={styles.actionIconButton} onClick={(e) => handleMenuOpen(e, project.id)}>
                             <MoreVertIcon />
@@ -521,9 +517,9 @@ export default function ProjectsContent() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            py: 3,
+            py: 2,
             fontWeight: 'bold',
-            fontSize: '1.25rem'
+            fontSize: '1.25rem',
           }}
         >
           Update Project Details
@@ -534,9 +530,9 @@ export default function ProjectsContent() {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ py: 4, px: 3 }}>
+        <DialogContent sx={{paddingTop: '20px', paddingX: '24px', paddingBottom: '32px' }}>
           {editProject && (
-            <Grid container spacing={4}>
+            <Grid container spacing={4} sx={{ pt: 2 }}>
               <Grid item xs={12} md={6}>
                 <Stack spacing={3}>
                   <TextField 
@@ -550,37 +546,40 @@ export default function ProjectsContent() {
                     InputProps={{ sx: { fontSize: '1rem' } }}
                     InputLabelProps={{ sx: { fontSize: '1rem' } }}
                   />
-                  <FormControl fullWidth required>
-                    <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Client</InputLabel>
-                    <Select 
-                      name="client" 
-                      value={editProject.client} 
-                      onChange={handleEditInputChange}
-                      sx={styles.dialogSelect}
-                      MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
-                    >
-                      {clients.map(client => (
-                        <MenuItem key={client.id} value={client.client_name} sx={styles.dialogMenuItem}>
-                          <Typography sx={{ fontSize: '1rem' }}>{client.client_name}</Typography>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <FormControl fullWidth required>
-                    <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Status</InputLabel>
-                    <Select 
-                      name="status" 
-                      value={editProject.status} 
-                      onChange={handleEditInputChange}
-                      sx={styles.dialogSelect}
-                    >
-                      {PROJECT_STATUSES.map(status => (
-                        <MenuItem key={status} value={status} sx={styles.dialogMenuItem}>
-                          <Typography sx={{ fontSize: '1rem' }}>{formatStatus(status)}</Typography>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <TextField
+                    select
+                    fullWidth
+                    required
+                    label="Client"
+                    name="client"
+                    value={editProject.client}
+                    onChange={handleEditInputChange}
+                    sx={styles.dialogTextField}
+                    InputLabelProps={{ sx: { fontSize: '1rem' } }}
+                  >
+                    {clients.map(client => (
+                      <MenuItem key={client.id} value={client.client_name} sx={styles.dialogMenuItem}>
+                        <Typography sx={{ fontSize: '1rem' }}>{client.client_name}</Typography>
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    fullWidth
+                    required
+                    label="Status"
+                    name="status"
+                    value={editProject.status}
+                    onChange={handleEditInputChange}
+                    sx={styles.dialogTextField}
+                    InputLabelProps={{ sx: { fontSize: '1rem' } }}
+                  >
+                    {PROJECT_STATUSES.map(status => (
+                      <MenuItem key={status} value={status} sx={styles.dialogMenuItem}>
+                        <Typography sx={{ fontSize: '1rem' }}>{formatStatus(status)}</Typography>
+                      </MenuItem>
+                    ))}
+                  </TextField>
                   <TextField 
                     fullWidth 
                     type="date" 
@@ -599,22 +598,8 @@ export default function ProjectsContent() {
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" sx={{ color: '#283618', mb: 2, fontSize: '1.1rem' }}>
-                      Current Progress: {getSafeProgress(editProject.progress)}%
+                      Progress Percentage:
                     </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={getSafeProgress(editProject.progress)} 
-                      sx={{
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: '#e0e0e0',
-                        mb: 2,
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: getProgressColor(getSafeProgress(editProject.progress)),
-                          borderRadius: 6
-                        }
-                      }}
-                    />
                     <Button 
                       variant="outlined" 
                       startIcon={<ProgressIcon />}
@@ -631,37 +616,18 @@ export default function ProjectsContent() {
                       Update Progress
                     </Button>
                   </Box>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Team Members</InputLabel>
-                    <Select
-                      multiple
-                      name="team"
-                      value={editProject.team || []}
-                      onChange={handleEditTeamChange}
-                      label="Team Members"
-                      renderValue={(selected) => (
-                        <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
-                          {selected.map(member => (
-                            <Avatar key={member} sx={styles.teamAvatar}>
-                              {member}
-                            </Avatar>
-                          ))}
-                        </Stack>
-                      )}
-                      sx={styles.dialogSelect}
-                      MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
-                    >
-                      {teamMembers.map(member => (
-                        <MenuItem key={member.id} value={member.initials} sx={styles.dialogMenuItem}>
-                          <Checkbox checked={(editProject.team || []).indexOf(member.initials) > -1} />
-                          <ListItemText 
-                            primary={member.name} 
-                            sx={{ color: '#283618', '& .MuiTypography-root': { fontSize: '1rem' } }} 
-                          />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <TextField 
+                    fullWidth 
+                    label="Team" 
+                    name="team" 
+                    value={Array.isArray(editProject.team) ? editProject.team.join(', ') : editProject.team} 
+                    onChange={handleEditInputChange} 
+                    sx={styles.dialogTextField}
+                    placeholder="e.g., Business Analyst, Project Manager"
+                    InputProps={{ sx: { fontSize: '1rem' } }}
+                    InputLabelProps={{ sx: { fontSize: '1rem' } }}
+                    helperText="Enter team roles separated by commas."
+                  />
                 </Stack>
               </Grid>
             </Grid>
@@ -710,7 +676,7 @@ export default function ProjectsContent() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            py: 3,
+            py: 2,
             fontWeight: 'bold',
             fontSize: '1.25rem'
           }}
@@ -723,8 +689,8 @@ export default function ProjectsContent() {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ py: 4, px: 3 }}>
-          <Grid container spacing={4}>
+        <DialogContent sx={{ paddingTop: '20px', paddingX: '24px', paddingBottom: '32px' }}>
+          <Grid container spacing={4} sx={{ pt: 2 }}>
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
                 <TextField 
@@ -739,37 +705,40 @@ export default function ProjectsContent() {
                   InputLabelProps={{ sx: { fontSize: '1rem' } }}
                   placeholder="Enter project name"
                 />
-                <FormControl fullWidth required>
-                  <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Client</InputLabel>
-                  <Select 
-                    name="client" 
-                    value={newProject.client} 
-                    onChange={handleInputChange}
-                    sx={styles.dialogSelect}
-                    MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
-                  >
-                    {clients.map(client => (
-                      <MenuItem key={client.id} value={client.client_name} sx={styles.dialogMenuItem}>
-                        <Typography sx={{ fontSize: '1rem' }}>{client.client_name}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth required>
-                  <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Status</InputLabel>
-                  <Select 
-                    name="status" 
-                    value={newProject.status} 
-                    onChange={handleInputChange}
-                    sx={styles.dialogSelect}
-                  >
-                    {PROJECT_STATUSES.map(status => (
-                      <MenuItem key={status} value={status} sx={styles.dialogMenuItem}>
-                        <Typography sx={{ fontSize: '1rem' }}>{formatStatus(status)}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  select
+                  fullWidth
+                  required
+                  label="Client"
+                  name="client"
+                  value={newProject.client}
+                  onChange={handleInputChange}
+                  sx={styles.dialogTextField}
+                  InputLabelProps={{ shrink: true }} 
+                >
+                  {clients.map(client => (
+                    <MenuItem key={client.id} value={client.client_name} sx={styles.dialogMenuItem}>
+                      <Typography sx={{ fontSize: '1rem' }}>{client.client_name}</Typography>
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  fullWidth
+                  required
+                  label="Status"
+                  name="status"
+                  value={newProject.status}
+                  onChange={handleInputChange}
+                  sx={styles.dialogTextField}
+                  InputLabelProps={{ shrink: true }}
+                >
+                  {PROJECT_STATUSES.map(status => (
+                    <MenuItem key={status} value={status} sx={styles.dialogMenuItem}>
+                      <Typography sx={{ fontSize: '1rem' }}>{formatStatus(status)}</Typography>
+                    </MenuItem>
+                  ))}
+                </TextField>
                 <TextField 
                   fullWidth 
                   type="date" 

@@ -9,7 +9,8 @@ import {
   addProject,
   removeProject,
   changeProjectStatus,
-  updateProjectDetails
+  updateProjectDetails,
+  updateProjectProgress, // Import the new function
 } from '../projectsService/page';
 
 // This hook manages state and logic for the projects screen.
@@ -31,9 +32,6 @@ export const useProjects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [error, setError] = useState(null);
   
-  // ADD THIS: Local state to store progress (temporary solution)
-  const [localProgress, setLocalProgress] = useState({});
-
   const fetchData = useCallback(async () => {
     try {
       const [projectsData, teamMembersData, clientsData] = await Promise.all([
@@ -42,45 +40,20 @@ export const useProjects = () => {
         getClients()
       ]);
       
-      // ADD THIS: Initialize projects with progress from local storage or default to 0
-      const projectsWithProgress = (projectsData || []).map(project => ({
-        ...project,
-        progress: localProgress[project.id] || project.progress || 0
-      }));
-      
-      setProjects(projectsWithProgress);
+      setProjects(projectsData || []);
       setTeamMembers(teamMembersData || []);
       setClients(clientsData || []);
     } catch (err) {
       console.error("Failed to fetch data:", err);
       setError('Could not load data. Please try again later.');
     }
-  }, [localProgress]); // ADD localProgress to dependencies
+  }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // ADD THIS: Load progress from localStorage on component mount
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('projectProgress');
-    if (savedProgress) {
-      setLocalProgress(JSON.parse(savedProgress));
-    }
-  }, []);
-
-  // ADD THIS: Save progress to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('projectProgress', JSON.stringify(localProgress));
-  }, [localProgress]);
-
-  // UPDATE THIS: Use projects with combined progress
-  const projectsWithProgress = projects.map(project => ({
-    ...project,
-    progress: localProgress[project.id] || project.progress || 0
-  }));
-
-  const filteredProjects = projectsWithProgress.filter(project => {
+  const filteredProjects = projects.filter(project => {
     const searchLower = searchTerm.toLowerCase();
     return (
       project.name.toLowerCase().includes(searchLower) ||
@@ -91,9 +64,7 @@ export const useProjects = () => {
 
   const updateProject = async (updatedProject) => {
     try {
-      // Remove progress from the update since database doesn't have the column
-      const { progress, ...projectWithoutProgress } = updatedProject;
-      await updateProjectDetails(projectWithoutProgress);
+      await updateProjectDetails(updatedProject);
       await fetchData();
     } catch (err) {
       console.error("Failed to update project:", err);
@@ -101,25 +72,13 @@ export const useProjects = () => {
     }
   };
 
-  // UPDATE THIS: Progress update handler (local storage only)
   const handleProgressChange = async (projectId, progress) => {
     try {
-      // Store progress locally since database doesn't have the column
-      setLocalProgress(prev => ({
-        ...prev,
-        [projectId]: progress
-      }));
-      
-      // Update local projects state immediately for better UX
-      setProjects(prev => prev.map(p => 
-        p.id === projectId ? { ...p, progress: progress } : p
-      ));
-      
-      return { data: { id: projectId, progress }, error: null };
+      await updateProjectProgress(projectId, progress);
+      await fetchData(); // Refetch data to get the latest progress
     } catch (err) {
       console.error("Failed to update project progress:", err);
       setError('Failed to update project progress.');
-      return { data: null, error: err };
     }
   };
 
@@ -137,12 +96,6 @@ export const useProjects = () => {
     if (!selectedProject) return;
     try {
       await removeProject(selectedProject);
-      // Also remove from local progress
-      setLocalProgress(prev => {
-        const newProgress = { ...prev };
-        delete newProgress[selectedProject];
-        return newProgress;
-      });
       await fetchData();
       handleMenuClose();
     } catch (err) {
@@ -164,11 +117,13 @@ export const useProjects = () => {
 
   const handleCreateProject = async () => {
     try {
-      const teamAsArray = newProject.team.split(',').map(item => item.trim()).filter(Boolean);
+      const teamAsArray = Array.isArray(newProject.team) 
+        ? newProject.team 
+        : newProject.team.split(',').map(item => item.trim()).filter(Boolean);
+        
       const projectPayload = { 
         ...newProject, 
         team: teamAsArray
-        // Don't send progress to database since column doesn't exist
       };
 
       await addProject(projectPayload);
@@ -199,7 +154,7 @@ export const useProjects = () => {
   };
 
   return {
-    projects: projectsWithProgress, // RETURN projects with progress
+    projects,
     clients,
     searchTerm,
     setSearchTerm,

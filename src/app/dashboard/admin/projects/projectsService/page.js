@@ -69,8 +69,8 @@ export const addProject = async (projectData) => {
       client_id: client.id,
       status: projectData.status,
       end_date: projectData.dueDate,
-      assigned_team: projectData.team
-      // Remove progress from insert
+      assigned_team: projectData.team,
+      progress: projectData.progress, // Add progress to the insert
     });
 
   if (projectError) {
@@ -133,8 +133,8 @@ export const updateProjectDetails = async (projectData) => {
       client_id: client.id,
       end_date: projectData.dueDate,
       status: projectData.status,
-      assigned_team: projectData.team
-      // Remove progress from update
+      assigned_team: projectData.team,
+      progress: projectData.progress, // Add progress to the update
     })
     .eq('id', projectData.id);
 
@@ -142,4 +142,22 @@ export const updateProjectDetails = async (projectData) => {
     console.error('Error updating project details:', projectUpdateError.message);
     throw new Error(projectUpdateError.message);
   }
+};
+
+/**
+ * Updates only the progress of a project.
+ */
+export const updateProjectProgress = async (projectId, progress) => {
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase
+    .from('projects')
+    .update({ progress: progress })
+    .eq('id', projectId)
+    .select();
+
+  if (error) {
+    console.error('Error updating project progress:', error.message);
+    throw new Error(error.message);
+  }
+  return data;
 };
