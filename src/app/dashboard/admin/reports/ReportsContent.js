@@ -292,7 +292,7 @@ export default function PerformanceReports() {
   const createProjectWithEmptyTasks = (project) => {
     return {
       id: project.id,
-      name: project.name || 'Unnamed Project',
+      name: project.project_name || 'Unnamed Project',
       description: project.description || 'No description available',
       progress: 0,
       columns: {
