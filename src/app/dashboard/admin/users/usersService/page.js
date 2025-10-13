@@ -14,7 +14,7 @@ export const fetchAllData = async () => {
     return await response.json();
   } catch (error) {
     console.error('Error fetching all data:', error);
-    return { users: [], teams: [], tasks: [] };
+    return { users: [], tasks: [] };
   }
 };
 
@@ -72,21 +72,6 @@ export const updateUserRole = async (userId, newRole) => {
   });
   if (error) {
     console.error('Error updating role:', error);
-  }
-  return { error };
-};
-
-/*
-* Updates a user's team assignment in the database.
-*/
-export const updateUserTeam = async (userId, newTeam) => {
-  const supabase = createSupabaseClient();
-  const { error } = await supabase.rpc('update_user_team', {
-    p_user_id: userId,
-    p_team_name: newTeam,
-  });
-  if (error) {
-    console.error('Error updating team:', error);
   }
   return { error };
 };

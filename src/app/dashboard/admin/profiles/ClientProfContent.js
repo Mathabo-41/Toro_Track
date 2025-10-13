@@ -19,7 +19,8 @@ import {
   Add as AddIcon, Search as SearchIcon, MoreVert as MoreVertIcon, Person as PersonIcon,
   Email as EmailIcon, Work as WorkIcon, People as PeopleIcon, Delete as DeleteIcon,
   Star as PremiumIcon, Logout as LogoutIcon, FilterList as FilterIcon,
-  Phone as PhoneIcon, Business as BusinessIcon, CalendarToday as CalendarIcon
+  Phone as PhoneIcon, Business as BusinessIcon, CalendarToday as CalendarIcon,
+  Badge as BadgeIcon
 } from '@mui/icons-material';
 
 import useProfiles from './useProfiles/page';
@@ -54,7 +55,7 @@ export default function ClientProfContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase]);
 
   const handleLogout = async () => {
     // Show green logout snackbar
@@ -166,7 +167,7 @@ export default function ClientProfContent() {
   // Safely get projects count - handle both numbers and objects
   const getProjectsCount = (projects) => {
     if (typeof projects === 'number') return projects;
-    if (typeof projects === 'string') return parseInt(projects) || 0;
+    if (typeof projects === 'string') return parseInt(projects, 10) || 0;
     if (Array.isArray(projects)) return projects.length;
     if (projects && typeof projects === 'object') {
       return projects.count || projects.total || projects.length || 0;
@@ -441,7 +442,16 @@ export default function ClientProfContent() {
                       <BusinessIcon fontSize="small" /> Company Name
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
-                      {selectedClient?.name}
+                      {profileData?.company || 'Not available'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <PersonIcon fontSize="small" /> Full Name
+                    </Typography>
+                    <Typography variant="body1">
+                        {profileData?.full_name || selectedClient?.name || 'Not available'}
                     </Typography>
                   </Box>
                   
@@ -450,7 +460,7 @@ export default function ClientProfContent() {
                       <EmailIcon fontSize="small" /> Email Address
                     </Typography>
                     <Typography variant="body1">
-                      {selectedClient?.email || 'No email provided'}
+                      {profileData?.email || selectedClient?.email || 'No email provided'}
                     </Typography>
                   </Box>
                   
@@ -459,7 +469,16 @@ export default function ClientProfContent() {
                       <PhoneIcon fontSize="small" /> Contact Information
                     </Typography>
                     <Typography variant="body1">
-                      {selectedClient?.contact}
+                      {profileData?.phone_number || selectedClient?.contact || 'Not available'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <BadgeIcon fontSize="small" /> Position
+                    </Typography>
+                    <Typography variant="body1">
+                        {profileData?.position || 'Not available'}
                     </Typography>
                   </Box>
                   
@@ -524,17 +543,6 @@ export default function ClientProfContent() {
                           </Typography>
                         )}
                       </Stack>
-                    </Box>
-                  )}
-                  
-                  {profileData && (
-                    <Box>
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                        Additional Profile Data:
-                      </Typography>
-                      <Typography variant="body2">
-                        {JSON.stringify(profileData)}
-                      </Typography>
                     </Box>
                   )}
                 </Stack>

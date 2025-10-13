@@ -41,7 +41,7 @@ export default function TeamsAndUsers() {
   const {
     inviteEmail, setInviteEmail, users,
     anchorEl, isMenuOpen, handleInviteUser,
-    handleMenuOpen, handleMenuClose, handleAssignTask,
+    handleMenuOpen, handleMenuClose,
     handleRemoveUser, isConfirmDialogOpen,
     handleCloseConfirmDialog, handleConfirmRemove
   } = useUsers();
@@ -88,7 +88,7 @@ export default function TeamsAndUsers() {
 
   // Generate a random password for new user
   const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123 thoughtfulness9!@#$%^&*';
     let password = '';
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -262,8 +262,7 @@ export default function TeamsAndUsers() {
                     <TableCell sx={styles.tableHeaderCell}>Name</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Email</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Role</TableCell>
-                    <TableCell sx={styles.tableHeaderCell}>Team</TableCell>
-                    <TableCell sx={styles.tableHeaderCell}>Tasks</TableCell>
+                    <TableCell sx={styles.tableHeaderCell}>Status</TableCell>
                     <TableCell sx={styles.tableHeaderCell}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -293,7 +292,6 @@ export default function TeamsAndUsers() {
                           sx={{ fontWeight: 600 }}
                         />
                       </TableCell>
-                      <TableCell sx={styles.tableBodyCell}>{user.team || '-'}</TableCell>
                       <TableCell sx={styles.tableBodyCell}>
                         <Chip label="Active" size="small" color="success" variant="outlined" />
                       </TableCell>
@@ -413,9 +411,6 @@ export default function TeamsAndUsers() {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{ sx: styles.actionMenu }}
       >
-        <MenuItem onClick={handleAssignTask} sx={styles.actionMenuItem}>
-          <AssignmentIcon sx={styles.actionMenuIcon('#f3722c')} /> Assign Task
-        </MenuItem>
         <MenuItem onClick={handleRemoveUser} sx={styles.actionMenuItem}>
           <DeleteIcon sx={styles.actionMenuIcon('#f44336')} /> Remove User
         </MenuItem>

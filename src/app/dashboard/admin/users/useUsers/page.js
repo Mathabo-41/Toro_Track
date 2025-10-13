@@ -7,7 +7,6 @@ import {
   inviteUser,
   removeUser as removeUserService,
   updateUserRole,
-  updateUserTeam,
   assignTask,
 } from '../usersService/page';
 
@@ -17,7 +16,6 @@ import {
 export const useUsers = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [users, setUsers] = useState([]);
-  const [teams, setTeams] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newTask, setNewTask] = useState('');
@@ -28,9 +26,8 @@ export const useUsers = () => {
   const isMenuOpen = Boolean(anchorEl);
   
   const loadInitialData = async () => {
-      const { users, teams, tasks } = await fetchAllData();
+      const { users, tasks } = await fetchAllData();
       setUsers(users || []);
-      setTeams(teams || []);
       setTasks(tasks || []);
   };
 
@@ -99,17 +96,12 @@ export const useUsers = () => {
     loadInitialData();
   };
 
-  const handleUpdateTeam = async (userId, newTeam) => {
-    await updateUserTeam(userId, newTeam);
-    loadInitialData();
-  };
-
   return {
-    inviteEmail, setInviteEmail, users, teams,
+    inviteEmail, setInviteEmail, users,
     tasks, selectedUser, newTask, setNewTask, anchorEl,
     isMenuOpen, menuUserId, isConfirmDialogOpen,
     handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
-    handleAssignTask, handleRemoveUser, handleUpdateRole, handleUpdateTeam,
+    handleAssignTask, handleRemoveUser, handleUpdateRole,
     handleCloseConfirmDialog, handleConfirmRemove,
   };
 };
