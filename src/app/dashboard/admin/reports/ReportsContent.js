@@ -932,25 +932,13 @@ export default function PerformanceReports() {
               fullWidth 
               required 
             />
-            <FormControl fullWidth>
-              <InputLabel>Assignee</InputLabel>
-              <Select 
-                label="Assignee" 
-                value={currentTask?.assignee || ''}
-                onChange={(e) => setCurrentTask({ ...currentTask, assignee: e.target.value })}
-              >
-                {teamMembers.map(member => (
-                  <MenuItem key={member.id} value={member.id}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar sx={{ width: 24, height: 24, mr: 1, backgroundColor: member.color, fontSize: '0.8rem' }}>
-                        {member.name.charAt(0)}
-                      </Avatar>
-                      {member.name} ({member.role})
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              label="Assignee Name"
+              value={currentTask?.assignee || ''}
+              onChange={(e) => setCurrentTask({ ...currentTask, assignee: e.target.value })}
+              fullWidth
+              placeholder="Enter name and surname"
+            />
             <TextField 
               label="Description" 
               value={currentTask?.description || ''}
