@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { createSupabaseClient } from '@/lib/supabase/client'; 
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
     People as PeopleIcon,
     Work as WorkIcon,
@@ -22,69 +22,7 @@ export const adminMenuData = [
   Fetches key performance metrics from the database.
 */
 export async function fetchReportMetrics() {
-    // Commented out database call - using mock data instead
-    /*
-    const supabase = createSupabaseClient();
-    const { data, error } = await supabase.rpc('get_admin_report_metrics');
-
-    if (error) {
-        console.error('Error fetching report metrics:', error);
-        return getFallbackMetrics();
-    }
-    
-    if (!data || data.length === 0) {
-        return getFallbackMetrics();
-    }
-
-    const metrics = data[0];
-
-    return {
-        clientAcquisition: {
-            title: 'Client Acquisition',
-            value: metrics.client_acquisition_quarter || 0,
-            change: 'this quarter',
-            trend: 'up',
-            icon: <PeopleIcon />
-        },
-        projectCompletion: {
-            title: 'Project Completion Rate',
-            value: `${Math.round(metrics.project_completion_rate || 0)}%`,
-            change: 'last quarter',
-            trend: 'up',
-            icon: <WorkIcon />
-        },
-        clientRetention: {
-            title: 'Client Retention Rate',
-            value: `${Math.round(metrics.client_retention_rate || 0)}%`,
-            change: 'last quarter',
-            trend: 'up',
-            icon: <TrendingUpIcon />
-        },
-        revenueGrowth: {
-            title: 'Revenue Growth Rate',
-            value: `${Math.round(metrics.revenue_growth_rate || 0)}%`,
-            change: 'quarter-over-quarter',
-            trend: 'up',
-            icon: <StarIcon />
-        },
-        satisfactionScores: {
-            title: 'Avg. Satisfaction',
-            value: `${(metrics.avg_satisfaction_score || 0).toFixed(1)}/5`,
-            change: 'last quarter',
-            trend: 'up',
-            icon: <StarIcon />
-        },
-        teamPerformance: {
-            title: 'Team Performance',
-            value: `${Math.round(metrics.team_performance_rate || 0)}%`,
-            change: 'tasks on time',
-            trend: 'up',
-            icon: <BarChartIcon />
-        }
-    };
-    */
-    
-    console.log('📊 Using mock report metrics');
+    // This function can remain as is, using mock data for now.
     return getFallbackMetrics();
 }
 
@@ -92,153 +30,144 @@ export async function fetchReportMetrics() {
   Fetches all project and task data for the Kanban board view.
 */
 export async function fetchKanbanData() {
-    // Commented out database call - using mock data instead
-    /*
     const supabase = createSupabaseClient();
-    
+
     try {
-        const { data, error } = await supabase.rpc('get_kanban_data');
-        
-        if (error) {
-            console.log('RPC failed, trying direct table access...');
-            return await fetchKanbanDataDirect();
+        const { data: projects, error: projectsError } = await supabase
+            .from('projects')
+            .select('*');
+
+        if (projectsError) {
+            console.error('Error fetching projects:', projectsError);
+            return []; // Return empty array on error
         }
-        
-        return data || getFallbackProjects();
+
+        const projectsWithTasks = await Promise.all(
+            projects.map(async (project) => {
+                const { data: tasks, error: tasksError } = await supabase
+                    .from('project_tasks')
+                    .select('*')
+                    .eq('project_id', project.id);
+                
+                // Even if tasks fail to load, return the project with empty columns
+                if (tasksError) {
+                    console.error(`Error fetching tasks for project ${project.id}:`, tasksError);
+                }
+
+                const organizedTasks = tasks || [];
+
+                return {
+                    ...project,
+                    columns: {
+                        backlog: {
+                            id: 'backlog',
+                            title: 'Backlog',
+                            tasks: organizedTasks.filter(t => t.status === 'backlog')
+                        },
+                        inProgress: {
+                            id: 'inProgress',
+                            title: 'In Progress',
+                            tasks: organizedTasks.filter(t => t.status === 'inProgress')
+                        },
+                        done: {
+                            id: 'done',
+                            title: 'Done',
+                            tasks: organizedTasks.filter(t => t.status === 'done')
+                        }
+                    }
+                };
+            })
+        );
+
+        return projectsWithTasks;
     } catch (error) {
         console.error('Error fetching Kanban data:', error);
-        return getFallbackProjects();
+        return []; // Return empty array on error
     }
-    */
-    
-    console.log('📋 Using mock Kanban data');
-    return getFallbackProjects();
 }
 
 /*
   Fetches a list of all team members.
 */
 export async function fetchTeamMembers() {
-    // Commented out database call - using mock data instead
-    /*
     const supabase = createSupabaseClient();
-    
+    const colors = ['#f3722c', '#2ec4b6', '#e71d36', '#ff9f1c', '#6b705c'];
+
     try {
-        const { data, error } = await supabase.rpc('get_team_members');
-        
-        if (error) {
-            console.log('RPC failed, trying direct table access...');
-            const { data: members, error: membersError } = await supabase
-                .from('profiles')
-                .select('id, name, role')
-                .order('name');
+        // Query the 'profiles' table as defined by your schema
+        const { data: members, error: membersError } = await supabase
+            .from('profiles')
+            .select('id, name, role')
+            .order('name');
 
-            if (membersError) {
-                console.error('Error fetching team members:', membersError);
-                return getFallbackTeamMembers();
-            }
-
-            return members?.map((member, index) => ({
-                ...member,
-                color: getColorByIndex(index)
-            })) || getFallbackTeamMembers();
+        if (membersError) {
+            // This is where your error was happening
+            console.error('Error fetching team members:', membersError);
+            throw membersError; // Throw error to be caught by the calling function
         }
-        
-        return data || getFallbackTeamMembers();
+
+        // Map colors to the members
+        return members?.map((member, index) => ({
+            ...member,
+            color: colors[index % colors.length] // Assign a color from the array
+        })) || [];
     } catch (error) {
-        console.error('Error fetching team members:', error);
-        return getFallbackTeamMembers();
+        console.error('An unexpected error occurred in fetchTeamMembers:', error);
+        return []; // Return an empty array if anything goes wrong
     }
-    */
-    
-    console.log('👥 Using mock team members');
-    return getFallbackTeamMembers();
 }
+
 
 /*
   Creates a new task in the database.
 */
 export async function createTask(taskData) {
-    // Commented out database call - using mock data instead
-    /*
     const supabase = createSupabaseClient();
-    
-    console.log('Creating task with data:', taskData);
-    
-    // Validate required fields
-    if (!taskData.projectId) {
-        throw new Error('Project ID is required to create a task');
-    }
-    
-    if (!taskData.title || taskData.title.trim() === '') {
-        throw new Error('Task title is required');
+
+    if (!taskData.projectId || !taskData.title) {
+        throw new Error('Project ID and Title are required to create a task.');
     }
 
     try {
         const { data, error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .insert({
                 project_id: taskData.projectId,
                 title: taskData.title.trim(),
-                description: taskData.description || '',
-                assignee: taskData.assignee || '',
-                assignee_role: taskData.assigneeRole || 'team_member',
+                description: taskData.description || null,
+                assignee_id: taskData.assignee_id || null,
                 due_date: taskData.dueDate || null,
-                status: taskData.status || 'backlog',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                status: 'backlog',
             })
             .select()
             .single();
 
         if (error) {
-            console.error('Error creating task:', error);
-            console.log('Using mock task creation');
-            return createMockTask(taskData);
+            console.error('Error creating task in database:', error);
+            throw error;
         }
 
-        console.log('Task created successfully:', data);
         return data;
-        
     } catch (error) {
         console.error('Unexpected error in createTask:', error);
-        return createMockTask(taskData);
+        throw error;
     }
-    */
-    
-    console.log('✅ Creating mock task:', taskData);
-    
-    // Validate required fields
-    if (!taskData.projectId) {
-        throw new Error('Project ID is required to create a task');
-    }
-    
-    if (!taskData.title || taskData.title.trim() === '') {
-        throw new Error('Task title is required');
-    }
-    
-    return createMockTask(taskData);
 }
 
 /*
   Updates an existing task in the database.
 */
 export async function updateTask(taskId, taskData) {
-    // Commented out database call - using mock data instead
-    /*
     const supabase = createSupabaseClient();
-    
-    console.log('Updating task:', taskId, 'with data:', taskData);
-    
+
     try {
         const { data, error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .update({
                 title: taskData.title,
                 description: taskData.description,
-                assignee: taskData.assignee,
-                assignee_role: taskData.assigneeRole || 'team_member',
-                due_date: taskData.due_date || taskData.dueDate,
+                assignee_id: taskData.assignee_id || null,
+                due_date: taskData.dueDate || taskData.due_date,
                 status: taskData.status,
                 updated_at: new Date().toISOString()
             })
@@ -248,111 +177,40 @@ export async function updateTask(taskId, taskData) {
 
         if (error) {
             console.error('Error updating task:', error);
-            return { id: taskId, ...taskData };
+            throw error;
         }
 
         return data;
-        
     } catch (error) {
         console.error('Unexpected error in updateTask:', error);
-        return { id: taskId, ...taskData };
+        throw error;
     }
-    */
-    
-    console.log('✏️ Updating mock task:', taskId, taskData);
-    return { id: taskId, ...taskData };
-}
-
-/*
-  Updates only the status of a task when it's moved between Kanban columns.
-*/
-export async function updateTaskStatus(taskId, newStatus) {
-    // Commented out database call - using mock success instead
-    /*
-    const supabase = createSupabaseClient();
-    
-    console.log('Updating task status:', taskId, 'to:', newStatus);
-    
-    try {
-        const { error } = await supabase
-            .from('tasks')
-            .update({
-                status: newStatus,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', taskId);
-
-        if (error) {
-            console.error('Error updating task status:', error);
-            return;
-        }
-
-        console.log('Task status updated successfully');
-        
-    } catch (error) {
-        console.error('Unexpected error in updateTaskStatus:', error);
-    }
-    */
-    
-    console.log('🔄 Updating mock task status:', taskId, 'to', newStatus);
-    // Mock success - no return needed
 }
 
 /*
   Deletes a task from the database.
 */
 export async function deleteTask(taskId) {
-    // Commented out database call - using mock success instead
-    /*
     const supabase = createSupabaseClient();
-    
-    console.log('Deleting task:', taskId);
-    
+
     try {
         const { error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .delete()
             .eq('id', taskId);
 
         if (error) {
             console.error('Error deleting task:', error);
-            return;
+            throw error;
         }
 
-        console.log('Task deleted successfully');
-        
     } catch (error) {
         console.error('Unexpected error in deleteTask:', error);
+        throw error;
     }
-    */
-    
-    console.log('🗑️ Deleting mock task:', taskId);
-    // Mock success - no return needed
 }
 
-/*
-  Exports reports data in various formats.
-*/
-export async function exportReports(format) {
-    // Commented out database call
-    /*
-    const supabase = createSupabaseClient();
-    const { data, error } = await supabase.rpc('export_reports_data', {
-        p_format: format.toLowerCase()
-    });
-
-    if (error) {
-        console.error('Error exporting reports:', error);
-        throw new Error(`Failed to export ${format} report.`);
-    }
-    return data;
-    */
-    
-    console.log('📤 Mock export:', format);
-    return { message: `Mock ${format} export completed` };
-}
-
-// Mock data functions
+// Mock data functions (can be removed if not needed elsewhere)
 function getFallbackMetrics() {
     return {
         clientAcquisition: {
@@ -397,133 +255,5 @@ function getFallbackMetrics() {
             trend: 'up',
             icon: <BarChartIcon />
         }
-    };
-}
-
-function getFallbackProjects() {
-    return [
-        {
-            id: 1,
-            name: 'CRM Dashboard Redesign',
-            description: 'Redesign of the main CRM dashboard interface',
-            progress: 65,
-            columns: {
-                backlog: {
-                    id: 'backlog',
-                    title: 'Backlog',
-                    tasks: [
-                        { 
-                            id: 1, 
-                            title: 'Update dashboard UI', 
-                            assignee: '1', 
-                            assignee_id: 1,
-                            assignee_role: 'admin',
-                            description: 'Redesign the main dashboard components', 
-                            due_date: '2023-12-15' 
-                        },
-                        { 
-                            id: 2, 
-                            title: 'Research analytics tools', 
-                            assignee: '2', 
-                            assignee_id: 2,
-                            assignee_role: 'auditor',
-                            description: 'Evaluate new tools for customer analytics', 
-                            due_date: '2023-12-20' 
-                        }
-                    ]
-                },
-                inProgress: {
-                    id: 'inProgress',
-                    title: 'In Progress',
-                    tasks: [
-                        { 
-                            id: 3, 
-                            title: 'Implement API endpoints', 
-                            assignee: '3', 
-                            assignee_id: 3,
-                            assignee_role: 'client',
-                            description: 'Create new endpoints for customer data', 
-                            due_date: '2023-12-10' 
-                        }
-                    ]
-                },
-                done: {
-                    id: 'done',
-                    title: 'Done',
-                    tasks: [
-                        { 
-                            id: 4, 
-                            title: 'Deploy latest version', 
-                            assignee: '1', 
-                            assignee_id: 1,
-                            assignee_role: 'admin',
-                            description: 'Production deployment v2.1.0', 
-                            due_date: '2023-12-05' 
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            id: 2,
-            name: 'Mobile App Development',
-            description: 'iOS and Android application for customer access',
-            progress: 35,
-            columns: {
-                backlog: {
-                    id: 'backlog',
-                    title: 'Backlog',
-                    tasks: [
-                        { 
-                            id: 5, 
-                            title: 'Create wireframes', 
-                            assignee: '4', 
-                            assignee_id: 4,
-                            assignee_role: 'auditor',
-                            description: 'Design app wireframes', 
-                            due_date: '2024-01-10' 
-                        }
-                    ]
-                },
-                inProgress: {
-                    id: 'inProgress',
-                    title: 'In Progress',
-                    tasks: []
-                },
-                done: {
-                    id: 'done',
-                    title: 'Done',
-                    tasks: []
-                }
-            }
-        }
-    ];
-}
-
-function getFallbackTeamMembers() {
-    return [
-        { id: 1, name: 'John D.', role: 'admin', color: '#FF6B6B' },
-        { id: 2, name: 'ZamaZama M.', role: 'auditor', color: '#4ECDC4' },
-        { id: 3, name: 'Thato T.', role: 'client', color: '#45B7D1' },
-        { id: 4, name: 'Zweli L.', role: 'auditor', color: '#FFA07A' },
-        { id: 5, name: 'Alex K.', role: 'client', color: '#98D8C8' }
-    ];
-}
-
-function createMockTask(taskData) {
-    const selectedMember = getFallbackTeamMembers().find(m => m.id === taskData.assignee);
-    
-    return {
-        id: Date.now(), // Generate a unique ID
-        title: taskData.title,
-        description: taskData.description,
-        assignee: taskData.assignee,
-        assignee_id: taskData.assignee,
-        assignee_role: selectedMember?.role || 'team_member',
-        due_date: taskData.dueDate,
-        status: taskData.status || 'backlog',
-        project_id: taskData.projectId,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
     };
 }

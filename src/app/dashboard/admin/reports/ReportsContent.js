@@ -102,7 +102,7 @@ export default function PerformanceReports() {
             try {
               // Check if tasks table exists by making a simple query
               const { data: tasks, error: tasksError } = await supabase
-                .from('tasks')
+                .from('project_tasks')
                 .select('*')
                 .eq('project_id', project.id)
                 .limit(1);
@@ -115,7 +115,7 @@ export default function PerformanceReports() {
 
               // If tasks table exists, fetch all tasks for this project
               const { data: allTasks, error: allTasksError } = await supabase
-                .from('tasks')
+                .from('project_tasks')
                 .select('*')
                 .eq('project_id', project.id);
 
@@ -147,7 +147,7 @@ export default function PerformanceReports() {
 
               return {
                 id: project.id,
-                name: project.name || 'Unnamed Project',
+                name: project.project_name || 'Unnamed Project',
                 description: project.description || 'No description available',
                 progress: progress,
                 columns: columns,
@@ -422,7 +422,7 @@ export default function PerformanceReports() {
       // Try to delete from database if tasks table exists
       try {
         const { error } = await supabase
-          .from('tasks')
+          .from('project_tasks')
           .delete()
           .eq('id', taskId);
         
@@ -482,7 +482,7 @@ export default function PerformanceReports() {
         // Try to update in database
         try {
           const { error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .update({
               title: currentTask.title,
               description: currentTask.description,
@@ -524,7 +524,7 @@ export default function PerformanceReports() {
         // Try to save to database
         try {
           const { error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .insert({
               title: currentTask.title,
               description: currentTask.description,
@@ -573,7 +573,7 @@ export default function PerformanceReports() {
         // Try to update in database
         try {
           const { error } = await supabase
-            .from('tasks')
+            .from('project_tasks')
             .update({ 
               status: toColumn,
               updated_at: new Date().toISOString()
@@ -708,7 +708,6 @@ export default function PerformanceReports() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Tabs value={viewMode} onChange={(e, newValue) => setViewMode(newValue)} sx={{ minHeight: '40px' }}>
                     <Tab value="kanban" label="Kanban" icon={<DashboardIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
-                    <Tab value="list" label="List" icon={<ProjectListIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
                   </Tabs>
                   
                   <Button 
@@ -752,15 +751,10 @@ export default function PerformanceReports() {
               {currentProject && (
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="body2" sx={{ color: 'maroon', fontWeight: 'bold' }}>
-                    {currentProject.description}
+                    {currentProject?.name || 'No Project Selected'}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                      Progress: {currentProject.progress || 0}%
-                    </Typography>
-                    <Box sx={{ width: '100px', height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
-                      <Box sx={{ width: `${currentProject.progress || 0}%`, height: '100%', backgroundColor: '#4caf50', transition: 'width 0.3s ease' }} />
-                    </Box>
+                  
                   </Box>
                 </Box>
               )}

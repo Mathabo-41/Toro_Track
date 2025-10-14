@@ -22,7 +22,7 @@ import {
 
 import { useProjects } from './useProjects/page';
 import { styles } from './styles';
-
+import LoadingScreen from '../common/LoadingScreen';
 // ----------------------------
 // Constants
 // ----------------------------
@@ -260,6 +260,11 @@ export default function ProjectsContent() {
     showSnackbar(`Project status changed to ${formatStatus(status)}`, 'info');
     handleMenuClose();
   };
+
+  // If the component is fetching internal data, display the consistent, styled loading screen.
+    if (isLoading) {
+      return <LoadingScreen message="Loading Projects..." />;
+    }
 
   return (
     <Box sx={styles.container}>
