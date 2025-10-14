@@ -757,52 +757,39 @@ export default function ProjectsContent() {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" sx={{ color: '#283618', mb: 2, fontSize: '1.1rem' }}>
-                    Initial Progress: 0%
+                    Initial Progress
                   </Typography>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={0} 
+                  <Button
+                    variant="outlined"
+                    startIcon={<ProgressIcon />}
+                    disabled // This is the crucial fix
                     sx={{
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: '#e0e0e0',
-                      mb: 2
+                      borderColor: '#cccccc', // Muted color for disabled state
+                      color: '#aaaaaa',
+                      '&.Mui-disabled': {
+                        borderColor: '#cccccc',
+                        color: '#aaaaaa'
+                      }
                     }}
-                  />
-                  <Typography variant="body2" sx={{ color: '#6b705c', fontStyle: 'italic' }}>
-                    Progress can be updated after project creation
+                  >
+                    Update Progress
+                  </Button>
+                  <Typography variant="body2" sx={{ color: '#6b705c', fontStyle: 'italic', mt: 1 }}>
+                    Progress can be updated after the project is created.
                   </Typography>
                 </Box>
-                <FormControl fullWidth>
-                  <InputLabel sx={{ ...styles.dialogLabel, fontSize: '1rem' }}>Team Members</InputLabel>
-                  <Select
-                    multiple
-                    value={newProject.team || []}
-                    onChange={handleTeamChange}
-                    label="Team Members"
-                    renderValue={(selected) => (
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
-                        {selected.map(member => (
-                          <Avatar key={member} sx={styles.teamAvatar}>
-                            {member}
-                          </Avatar>
-                        ))}
-                      </Stack>
-                    )}
-                    sx={styles.dialogSelect}
-                    MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
-                  >
-                    {teamMembers.map(member => (
-                      <MenuItem key={member.id} value={member.initials} sx={styles.dialogMenuItem}>
-                        <Checkbox checked={(newProject.team || []).indexOf(member.initials) > -1} />
-                        <ListItemText 
-                          primary={member.name} 
-                          sx={{ color: '#283618', '& .MuiTypography-root': { fontSize: '1rem' } }} 
-                        />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Team"
+                  name="team"
+                  value={Array.isArray(newProject.team) ? newProject.team.join(', ') : newProject.team}
+                  onChange={handleInputChange}
+                  sx={styles.dialogTextField}
+                  placeholder="e.g., Business Analyst, Project Manager"
+                  InputProps={{ sx: { fontSize: '1rem' } }}
+                  InputLabelProps={{ sx: { fontSize: '1rem' } }}
+                  helperText="Enter team roles separated by commas."
+                />
               </Stack>
             </Grid>
           </Grid>
