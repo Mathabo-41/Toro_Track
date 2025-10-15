@@ -15,7 +15,7 @@ const LazyAdminOverviewContent = lazy(() => import('./UsersContent'));
 export default function AdminOverviewPage() {
   return (
     // Use the LoadingScreen component in the fallback prop
-    <Suspense fallback={<LoadingScreen message="Loading Team Users..." />}>
+    <Suspense fallback={<LoadingScreen message="LoadingUsers..." />}>
       <LazyAdminOverviewContent />
     </Suspense>
   );

@@ -181,10 +181,10 @@ export default function TeamsAndUsers() {
       <Box component="main" sx={styles.mainContent}>
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageTitle}>
-            <TeamsIcon sx={styles.headerIcon} />Teams & Users
+            <TeamsIcon sx={styles.headerIcon} />Invite Users
           </Typography>
           <Typography variant="body1" sx={styles.pageSubtitle}>
-            Manage your team members and assign tasks
+            Invite and remove users from the system
           </Typography>
         </Box>
 
