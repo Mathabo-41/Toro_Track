@@ -319,16 +319,24 @@ export default function PerformanceReports() {
     return member ? member.color : '#888';
   };
 
-  const getAssigneeName = (assigneeId) => {
-    if (!assigneeId) return 'Unassigned';
-    const member = teamMembers.find(m => m.id === assigneeId);
-    return member ? member.name : 'Unassigned';
+  const getAssigneeName = (task) => {
+    // Prioritize the new team name, but fall back to the old user name for existing tasks
+    if (task.assignee_team) return task.assignee_team;
+    if (task.assignee_id) {
+        const member = teamMembers.find(m => m.id === task.assignee_id);
+        return member ? member.name : 'Unassigned';
+    }
+    return 'Unassigned';
   };
 
-  const getAssigneeRole = (assigneeId) => {
-    if (!assigneeId) return 'unassigned';
-    const member = teamMembers.find(m => m.id === assigneeId);
-    return member ? member.role : 'unassigned';
+  const getAssigneeRole = (task) => {
+    // This is now simpler: if there's a team, that's the role.
+    if (task.assignee_team) return 'Team';
+    if (task.assignee_id) {
+        const member = teamMembers.find(m => m.id === task.assignee_id);
+        return member ? member.role : 'unassigned';
+    }
+    return 'unassigned';
   };
 
   const getTotalTasks = (project) => {
@@ -446,109 +454,80 @@ export default function PerformanceReports() {
   };
 
   const handleSaveTask = async () => {
-    if (!currentTask || !currentTask.title) {
-      showSnackbar('Task title is required', 'error');
-      return;
-    }
-
-    if (!currentProject) {
-      showSnackbar('No project selected', 'error');
-      return;
-    }
-
-    try {
-      if (isEditing) {
-        // Update existing task in local state
-        const updatedProjects = [...projects];
-        for (const columnKey in updatedProjects[currentProjectIndex].columns) {
-          const column = updatedProjects[currentProjectIndex].columns[columnKey];
-          const taskIndex = column.tasks.findIndex(t => t.id === currentTask.id);
-          if (taskIndex !== -1) {
-            // Remove from current column
-            column.tasks.splice(taskIndex, 1);
-            // Add to new column with updated data
-            const updatedTask = {
-              ...currentTask,
-              status: currentColumn,
-              assignee: getAssigneeName(currentTask.assignee),
-              assignee_role: getAssigneeRole(currentTask.assignee)
-            };
-            updatedProjects[currentProjectIndex].columns[currentColumn].tasks.push(updatedTask);
-            break;
-          }
-        }
-        setProjects(updatedProjects);
-        
-        // Try to update in database
-        try {
-          const { error } = await supabase
-            .from('project_tasks')
-            .update({
-              title: currentTask.title,
-              description: currentTask.description,
-              assignee_id: currentTask.assignee,
-              due_date: currentTask.dueDate,
-              status: currentColumn,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentTask.id);
-          
-          if (error) {
-            console.warn('Error updating task in database:', error);
-          }
-        } catch (dbError) {
-          console.warn('Tasks table might not exist:', dbError);
-        }
-        
-        showSnackbar('Task updated successfully');
-      } else {
-        // Create new task
-        const newTask = {
-          id: Date.now().toString(), // Temporary ID for local state
-          title: currentTask.title,
-          description: currentTask.description,
-          assignee_id: currentTask.assignee,
-          assignee: getAssigneeName(currentTask.assignee),
-          assignee_role: getAssigneeRole(currentTask.assignee),
-          due_date: currentTask.dueDate,
-          status: 'backlog',
-          project_id: currentProject.id,
-          created_at: new Date().toISOString()
-        };
-        
-        // Update local state
-        const updatedProjects = [...projects];
-        updatedProjects[currentProjectIndex].columns.backlog.tasks.push(newTask);
-        setProjects(updatedProjects);
-        
-        // Try to save to database
-        try {
-          const { error } = await supabase
-            .from('project_tasks')
-            .insert({
-              title: currentTask.title,
-              description: currentTask.description,
-              assignee_id: currentTask.assignee,
-              due_date: currentTask.dueDate,
-              status: 'backlog',
-              project_id: currentProject.id
-            });
-          
-          if (error) {
-            console.warn('Error creating task in database:', error);
-          }
-        } catch (dbError) {
-          console.warn('Tasks table might not exist:', dbError);
-        }
-        
-        showSnackbar('Task added successfully');
+      if (!currentTask || !currentTask.title) {
+        showSnackbar('Task title is required', 'error');
+        return;
       }
 
-      setOpenTaskDialog(false);
-    } catch (err) {
-      showSnackbar(`Error ${isEditing ? 'updating' : 'creating'} task: ${err.message}`, 'error');
-    }
-  };
+      if (!currentProject) {
+        showSnackbar('No project selected', 'error');
+        return;
+      }
+
+      // The logic to find a user ID is no longer needed. We save the team string directly.
+
+      try {
+        if (isEditing) {
+          // Logic for updating an existing task
+          const { data: updatedTask, error } = await supabase
+              .from('project_tasks')
+              .update({
+                title: currentTask.title,
+                description: currentTask.description,
+                due_date: currentTask.dueDate,
+                status: currentColumn,
+                assignee_team: currentTask.assignee_team, // Save the team name
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', currentTask.id)
+              .select()
+              .single();
+
+          if (error) throw error;
+
+          // Refresh local state to show the update
+          const updatedProjects = [...projects];
+          const project = updatedProjects[currentProjectIndex];
+          
+          Object.keys(project.columns).forEach(key => {
+              project.columns[key].tasks = project.columns[key].tasks.filter(t => t.id !== updatedTask.id);
+          });
+          
+          project.columns[currentColumn].tasks.push(updatedTask);
+          setProjects(updatedProjects);
+          showSnackbar('Task updated successfully');
+
+        } else {
+          // Logic for creating a new task
+          const { data: savedTask, error } = await supabase
+              .from('project_tasks')
+              .insert({
+                title: currentTask.title,
+                description: currentTask.description,
+                due_date: currentTask.dueDate,
+                status: 'backlog',
+                project_id: currentProject.id,
+                assignee_team: currentTask.assignee_team // Save the team name
+              })
+              .select()
+              .single();
+
+          if (error) throw error;
+
+          // Add the newly created task (returned from DB) to our local state
+          const updatedProjects = [...projects];
+          updatedProjects[currentProjectIndex].columns.backlog.tasks.push(savedTask);
+          setProjects(updatedProjects);
+          showSnackbar('Task added successfully');
+        }
+
+        setOpenTaskDialog(false);
+
+      } catch (err) {
+        console.error(`Error saving task:`, err);
+        showSnackbar(`Error: ${err.message}`, 'error');
+      }
+    };
 
   const moveTask = async (taskId, fromColumn, toColumn) => {
     try {
@@ -790,18 +769,18 @@ export default function PerformanceReports() {
                             </IconButton>
                           </Box>
 
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-                            <PersonIcon fontSize="small" sx={{ color: getAssigneeColor(task.assignee_id), mr: 0.5 }} />
-                            <Typography variant="caption" sx={{ color: '#757575' }}>
-                              {getAssigneeName(task.assignee_id)}
-                            </Typography>
-                            <Chip 
-                              label={getAssigneeRole(task.assignee_id)} 
-                              size="small" 
-                              sx={{ ml: 1, fontSize: '0.6rem', height: '20px', backgroundColor: getAssigneeColor(task.assignee_id), color: 'white' }} 
-                              icon={<RoleIcon fontSize="small" sx={{ color: 'white' }} />}
-                            />
-                          </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                          <PersonIcon fontSize="small" sx={{ color: getAssigneeColor(task.assignee_id), mr: 0.5 }} />
+                          <Typography variant="caption" sx={{ color: '#757575' }}>
+                            {getAssigneeName(task)} 
+                          </Typography>
+                          <Chip 
+                            label={getAssigneeRole(task)} 
+                            size="small" 
+                            sx={{ ml: 1, fontSize: '0.6rem', height: '20px', backgroundColor: getAssigneeColor(task.assignee_id), color: 'white' }} 
+                            icon={<RoleIcon fontSize="small" sx={{ color: 'white' }} />}
+                          />
+                        </Box>
 
                           {task.due_date && (
                             <Typography variant="caption" sx={{ color: '#757575', display: 'block', mt: 0.5 }}>
@@ -926,13 +905,28 @@ export default function PerformanceReports() {
               fullWidth 
               required 
             />
-            <TextField
-              label="Assignee Name"
-              value={currentTask?.assignee || ''}
-              onChange={(e) => setCurrentTask({ ...currentTask, assignee: e.target.value })}
-              fullWidth
-              placeholder="Enter name and surname"
-            />
+            <FormControl fullWidth>
+              <InputLabel id="team-select-label">Team</InputLabel>
+              <Select
+                labelId="team-select-label"
+                value={currentTask?.assignee_team || ''}
+                label="Team"
+                onChange={(e) => {
+                  setCurrentTask({
+                    ...currentTask,
+                    assignee_team: e.target.value,
+                  });
+                }}
+              >
+                <MenuItem value=""><em>Unassigned</em></MenuItem>
+                <MenuItem value="Business Analyst">Business Analyst</MenuItem>
+                <MenuItem value="Project Manager">Project Manager</MenuItem>
+                <MenuItem value="Software Engineer">Software Engineer</MenuItem>
+                <MenuItem value="DevOps Team">DevOps Team</MenuItem>
+                <MenuItem value="UX/UI Team">UX/UI Team</MenuItem>
+                <MenuItem value="Software Architect">Software Architect</MenuItem>
+              </Select>
+            </FormControl>
             <TextField 
               label="Description" 
               value={currentTask?.description || ''}

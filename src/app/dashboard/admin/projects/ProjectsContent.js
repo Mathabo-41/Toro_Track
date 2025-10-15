@@ -261,11 +261,6 @@ export default function ProjectsContent() {
     handleMenuClose();
   };
 
-  // If the component is fetching internal data, display the consistent, styled loading screen.
-    if (isLoading) {
-      return <LoadingScreen message="Loading Projects..." />;
-    }
-
   return (
     <Box sx={styles.container}>
       {/* ===========================
