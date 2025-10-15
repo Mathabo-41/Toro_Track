@@ -130,9 +130,9 @@ export default function PerformanceReports() {
                   title: 'Backlog',
                   tasks: allTasks?.filter(task => task.status === 'backlog' || !task.status) || []
                 },
-                inProgress: {
+                in_progress: { // CHANGE THIS KEY
                   title: 'In Progress',
-                  tasks: allTasks?.filter(task => task.status === 'inProgress') || []
+                  tasks: allTasks?.filter(task => task.status === 'in_progress') || [] 
                 },
                 done: {
                   title: 'Done',
@@ -349,7 +349,7 @@ export default function PerformanceReports() {
   const getColumnColor = (columnId) => {
     const colors = {
       backlog: '#E71D36',
-      inProgress: '#FF9F1C',
+      in_progress: '#FF9F1C', 
       done: '#2EC4B6'
     };
     return colors[columnId] || '#6b705c';
@@ -358,7 +358,7 @@ export default function PerformanceReports() {
   const getColumnIcon = (columnId) => {
     const icons = {
       backlog: <BacklogIcon />,
-      inProgress: <InProgressIcon />,
+      in_progress: <InProgressIcon />, 
       done: <DoneIcon />
     };
     return icons[columnId] || <BacklogIcon />;
@@ -530,46 +530,48 @@ export default function PerformanceReports() {
     };
 
   const moveTask = async (taskId, fromColumn, toColumn) => {
+    // This makes the app feel fast and responsive. We optimistically update the UI first.
+    const updatedProjects = JSON.parse(JSON.stringify(projects)); 
+    const projectToUpdate = updatedProjects[currentProjectIndex];
+    const fromCol = projectToUpdate.columns[fromColumn];
+    const taskIndex = fromCol.tasks.findIndex(t => t.id === taskId);
+
+    if (taskIndex === -1) {
+      console.error("Task not found for moving.");
+      return;
+    }
+
+    // Remove the task from its original column and add it to the new one
+    const [movedTask] = fromCol.tasks.splice(taskIndex, 1);
+    movedTask.status = toColumn; // Updates the task's status property
+    projectToUpdate.columns[toColumn].tasks.push(movedTask);
+    setProjects(updatedProjects); // Applies the UI change immediately
+
+    // Attempt to update the database
     try {
-      // Update local state first for immediate feedback
-      const updatedProjects = [...projects];
-      const project = updatedProjects[currentProjectIndex];
-      
-      // Find and move task
-      const fromCol = project.columns[fromColumn];
-      const taskIndex = fromCol.tasks.findIndex(t => t.id === taskId);
-      
-      if (taskIndex !== -1) {
-        const task = fromCol.tasks[taskIndex];
-        fromCol.tasks.splice(taskIndex, 1);
-        project.columns[toColumn].tasks.push({
-          ...task,
-          status: toColumn
-        });
-        
-        setProjects(updatedProjects);
-        
-        // Try to update in database
-        try {
-          const { error } = await supabase
-            .from('project_tasks')
-            .update({ 
-              status: toColumn,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', taskId);
-          
-          if (error) {
-            console.warn('Error updating task status in database:', error);
-          }
-        } catch (dbError) {
-          console.warn('Tasks table might not exist:', dbError);
-        }
-        
-        showSnackbar('Task moved successfully');
+      const { error } = await supabase
+        .from('project_tasks')
+        .update({
+          status: toColumn,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId);
+
+      // If the database update fails, throw an error to trigger the catch block
+      if (error) {
+        throw error;
       }
+      
+      // success message on every status move
+       showSnackbar('Task status updated!', 'success');
+
     } catch (err) {
-      showSnackbar('Error moving task: ' + err.message, 'error');
+      // Handle failure by reverting the UI change
+      console.error('Failed to move task in database:', err);
+      showSnackbar(`Error: Could not update task status. Reverting.`, 'error');
+
+      // If the database call fails, we set the state back to how it was before the move.
+      setProjects(projects); 
     }
   };
 
@@ -788,22 +790,22 @@ export default function PerformanceReports() {
                             </Typography>
                           )}
                           
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                            {columnId !== 'backlog' && (
-                              <Tooltip title={`Move to ${columnId === 'inProgress' ? 'Backlog' : 'In Progress'}`}>
-                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'inProgress' ? 'backlog' : 'inProgress'); }}>
-                                  <ArrowBackIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                            {columnId !== 'done' && (
-                              <Tooltip title={`Move to ${columnId === 'backlog' ? 'In Progress' : 'Done'}`}>
-                                <IconButton size="small" sx={{ ml: 'auto' }} onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'backlog' ? 'inProgress' : 'done'); }}>
-                                  <ArrowForwardIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                          {columnId !== 'backlog' && (
+                            <Tooltip title={`Move to ${columnId === 'in_progress' ? 'Backlog' : 'In Progress'}`}>
+                              <IconButton size="small" onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'in_progress' ? 'backlog' : 'in_progress'); }}>
+                                <ArrowBackIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {columnId !== 'done' && (
+                            <Tooltip title={`Move to ${columnId === 'backlog' ? 'In Progress' : 'Done'}`}>
+                              <IconButton size="small" sx={{ ml: 'auto' }} onClick={(e) => { e.stopPropagation(); moveTask(task.id, columnId, columnId === 'backlog' ? 'in_progress' : 'done'); }}>
+                                <ArrowForwardIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Box>
                         </Box>
                       ))}
                     </Box>
@@ -947,9 +949,21 @@ export default function PerformanceReports() {
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select value={currentColumn} onChange={(e) => setCurrentColumn(e.target.value)} label="Status">
-                  <MenuItem value="backlog"><Box sx={{ display: 'flex', alignItems: 'center' }}><BacklogIcon sx={{ color: '#E71D36', mr: 1 }} />Backlog</Box></MenuItem>
-                  <MenuItem value="inProgress"><Box sx={{ display: 'flex', alignItems: 'center' }}><InProgressIcon sx={{ color: '#FF9F1C', mr: 1 }} />In Progress</Box></MenuItem>
-                  <MenuItem value="done"><Box sx={{ display: 'flex', alignItems: 'center' }}><DoneIcon sx={{ color: '#2EC4B6', mr: 1 }} />Done</Box></MenuItem>
+                  <MenuItem value="backlog">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <BacklogIcon sx={{ color: '#E71D36', mr: 1 }} />Backlog
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="in_progress">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <InProgressIcon sx={{ color: '#FF9F1C', mr: 1 }} />In Progress
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="done">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <DoneIcon sx={{ color: '#2EC4B6', mr: 1 }} />Done
+                    </Box>
+                  </MenuItem>
                 </Select>
               </FormControl>
             )}
