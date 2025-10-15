@@ -10,10 +10,11 @@ import {
   assignTask,
 } from '../usersService/page';
 
-/*
+/**
 * Manages state and logic for the users screen.
 */
 export const useUsers = () => {
+  // Existing state
   const [inviteEmail, setInviteEmail] = useState('');
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -23,27 +24,63 @@ export const useUsers = () => {
   const [menuUserId, setMenuUserId] = useState(null);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
+  // New state for client details
+  const [clientName, setClientName] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+
   const isMenuOpen = Boolean(anchorEl);
   
+  /**
+  * Fetches the initial list of users and tasks from the server.
+  */
   const loadInitialData = async () => {
+    try {
       const { users, tasks } = await fetchAllData();
       setUsers(users || []);
       setTasks(tasks || []);
+    } catch (error) {
+        console.error("Failed to load initial data:", error);
+        // Optionally, set an error state to show in the UI
+    }
   };
 
   useEffect(() => {
     loadInitialData();
   }, []);
 
-  const handleInviteUser = async (role, password) => {
-    if (inviteEmail) {
-      const { error } = await inviteUser(inviteEmail, role, password);
+/**
+* Handles the user invitation process, including client creation.
+* @param {string} role - The role assigned to the new user.
+* @param {string} password - The temporary password for the new user.
+*/
+const handleInviteUser = async (role, password) => {
+    if (!inviteEmail) return;
+
+    try {
+      // Package client data if the role is 'Client'
+      const clientData = role === 'Client' 
+        ? { client_name: clientName, contact_person: contactPerson, logo_url: logoUrl, contact_email: inviteEmail } 
+        : null;
+
+      const { error } = await inviteUser(inviteEmail, role, password, clientData);
+      
       if (!error) {
+        // Reset all form fields on success
         setInviteEmail('');
-        loadInitialData();
+        setClientName('');
+        setContactPerson('');
+        setLogoUrl('');
+        loadInitialData(); // Refresh the user list
+      } else {
+        // Handle API errors by logging the actual message from the backend.
+        // This provides a much clearer error in the console.
+        console.error("Invitation failed:", error.message || error);
       }
+    } catch (error) {
+        console.error("An unexpected error occurred during invitation:", error);
     }
-  };
+};
 
   const handleAddTask = async (userId) => {
     if (newTask) {
@@ -61,7 +98,6 @@ export const useUsers = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    // The user ID is intentionally not cleared here to allow follow-up actions.
   };
 
   const handleAssignTask = () => {
@@ -71,13 +107,11 @@ export const useUsers = () => {
   
   const handleRemoveUser = () => {
     setConfirmDialogOpen(true);
-    // Close the menu, but keep the menuUserId for the confirmation step.
     setAnchorEl(null);
   };
 
   const handleCloseConfirmDialog = () => {
     setConfirmDialogOpen(false);
-    // Now that the action is cancelled or complete, clear the user ID.
     setMenuUserId(null);
   };
 
@@ -100,6 +134,10 @@ export const useUsers = () => {
     inviteEmail, setInviteEmail, users,
     tasks, selectedUser, newTask, setNewTask, anchorEl,
     isMenuOpen, menuUserId, isConfirmDialogOpen,
+    // Export new state and setters
+    clientName, setClientName,
+    contactPerson, setContactPerson,
+    logoUrl, setLogoUrl,
     handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
     handleAssignTask, handleRemoveUser, handleUpdateRole,
     handleCloseConfirmDialog, handleConfirmRemove,

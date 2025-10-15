@@ -29,7 +29,10 @@ import {
   GroupAdd as GroupAddIcon,
   Logout as LogoutIcon,
   Delete as DeleteIcon,
-  WarningAmber as WarningAmberIcon
+  WarningAmber as WarningAmberIcon,
+  Business as BusinessIcon,
+  Person as PersonIcon,
+  Link as LinkIcon,
 } from '@mui/icons-material';
 
 import { styles } from './styles';
@@ -43,20 +46,18 @@ export default function TeamsAndUsers() {
     anchorEl, isMenuOpen, handleInviteUser,
     handleMenuOpen, handleMenuClose,
     handleRemoveUser, isConfirmDialogOpen,
-    handleCloseConfirmDialog, handleConfirmRemove
+    handleCloseConfirmDialog, handleConfirmRemove,
+    // Import new state and setters for the client form
+    clientName, setClientName,
+    contactPerson, setContactPerson,
+    logoUrl, setLogoUrl,
   } = useUsers();
 
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
-
-  // Invite success snackbar
   const [openInviteSuccess, setOpenInviteSuccess] = useState(false);
   const [invitedEmail, setInvitedEmail] = useState('');
-
-  // Logout snackbar
   const [openLogoutSnackbar, setOpenLogoutSnackbar] = useState(false);
-
-  // Invite dialog states
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [copied, setCopied] = useState(false);
@@ -71,12 +72,6 @@ export default function TeamsAndUsers() {
     fetchUser();
   }, []);
 
-  /**
-   * Handle logout:
-   * - Signs out the user
-   * - Shows snackbar "Logging out..."
-   * - Redirects to /login after 1.5s
-   */
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setOpenLogoutSnackbar(true);
@@ -86,9 +81,8 @@ export default function TeamsAndUsers() {
     }, 1500);
   };
 
-  // Generate a random password for new user
   const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123 thoughtfulness9!@#$%^&*';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -96,7 +90,7 @@ export default function TeamsAndUsers() {
     setGeneratedPassword(password);
     return password;
   };
-
+  
   const handleOpenInviteDialog = () => {
     setGeneratedPassword(generatePassword());
     setOpenInviteDialog(true);
@@ -117,9 +111,10 @@ export default function TeamsAndUsers() {
     setInvitedEmail(inviteEmail);
     handleInviteUser(selectedRole, generatedPassword);
     setOpenInviteDialog(false);
-    setInviteEmail('');
     setOpenInviteSuccess(true);
   };
+  
+  const isInviteDisabled = !inviteEmail || (selectedRole === 'Client' && (!clientName || !contactPerson));
 
   return (
     <Box sx={styles.mainContainer}>
@@ -195,13 +190,13 @@ export default function TeamsAndUsers() {
 
         {/* Invite new user */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12}>
             <Card sx={styles.inviteCard}>
               <CardContent>
                 <Typography variant="h6" sx={styles.inviteCardHeader}>
                   Invite New User
                 </Typography>
-                <Stack direction="row" spacing={2}>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: selectedRole === 'Client' ? 2 : 0 }}>
                   <TextField
                     fullWidth
                     variant="outlined"
@@ -239,11 +234,70 @@ export default function TeamsAndUsers() {
                     startIcon={<GroupAddIcon />}
                     onClick={handleOpenInviteDialog}
                     sx={styles.inviteButton}
-                    disabled={!inviteEmail}
+                    disabled={isInviteDisabled}
                   >
                     Invite
                   </Button>
                 </Stack>
+                
+                {/* Conditionally rendered client details form */}
+                {selectedRole === 'Client' && (
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        required
+                        label="Client Name"
+                        variant="outlined"
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <BusinessIcon sx={styles.emailIcon} />
+                            </InputAdornment>
+                          ),
+                          sx: styles.emailInput,
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        required
+                        label="Contact Person"
+                        variant="outlined"
+                        value={contactPerson}
+                        onChange={(e) => setContactPerson(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PersonIcon sx={styles.emailIcon} />
+                            </InputAdornment>
+                          ),
+                          sx: styles.emailInput,
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Logo URL (Optional)"
+                        variant="outlined"
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                         InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LinkIcon sx={styles.emailIcon} />
+                            </InputAdornment>
+                          ),
+                          sx: styles.emailInput,
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                )}
               </CardContent>
             </Card>
           </Grid>
@@ -334,6 +388,19 @@ export default function TeamsAndUsers() {
               </Typography>
               <Typography textTransform="capitalize">{selectedRole}</Typography>
             </Box>
+            {/* Show client details in confirmation dialog */}
+            {selectedRole === 'Client' && (
+                <>
+                    <Box>
+                        <Typography variant="subtitle2" color="text.secondary">Client Name</Typography>
+                        <Typography>{clientName}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="subtitle2" color="text.secondary">Contact Person</Typography>
+                        <Typography>{contactPerson}</Typography>
+                    </Box>
+                </>
+            )}
             <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Temporary Password
