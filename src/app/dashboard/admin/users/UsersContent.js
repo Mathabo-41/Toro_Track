@@ -307,7 +307,7 @@ export default function TeamsAndUsers() {
         <Card sx={styles.usersCard}>
           <CardContent>
             <Typography variant="h6" sx={styles.usersCardHeader}>
-              Team Members
+              Users Table
             </Typography>
             <TableContainer component={Paper} sx={styles.tableContainer}>
               <Table>
