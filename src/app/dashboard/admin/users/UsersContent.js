@@ -21,18 +21,16 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import {
   Security as SecurityIcon,
-  People as PeopleIcon,
   Groups as TeamsIcon,
   MoreVert as MoreVertIcon,
   Email as EmailIcon,
-  Assignment as AssignmentIcon,
   GroupAdd as GroupAddIcon,
   Logout as LogoutIcon,
   Delete as DeleteIcon,
   WarningAmber as WarningAmberIcon,
   Business as BusinessIcon,
-  Person as PersonIcon,
-  Link as LinkIcon,
+  Apartment as ApartmentIcon, // Icon for Company Name
+  Phone as PhoneIcon, // Icon for Contact Number
 } from '@mui/icons-material';
 
 import { styles } from './styles';
@@ -47,10 +45,10 @@ export default function TeamsAndUsers() {
     handleMenuOpen, handleMenuClose,
     handleRemoveUser, isConfirmDialogOpen,
     handleCloseConfirmDialog, handleConfirmRemove,
-    // Import new state and setters for the client form
+    // Import updated state and setters for the client form
     clientName, setClientName,
-    contactPerson, setContactPerson,
-    logoUrl, setLogoUrl,
+    contactNumber, setContactNumber,
+    companyName, setCompanyName,
   } = useUsers();
 
   const router = useRouter();
@@ -114,7 +112,8 @@ export default function TeamsAndUsers() {
     setOpenInviteSuccess(true);
   };
   
-  const isInviteDisabled = !inviteEmail || (selectedRole === 'Client' && (!clientName || !contactPerson));
+  // Updated validation logic for the new fields
+  const isInviteDisabled = !inviteEmail || (selectedRole === 'Client' && (!clientName || !contactNumber));
 
   return (
     <Box sx={styles.mainContainer}>
@@ -265,14 +264,15 @@ export default function TeamsAndUsers() {
                       <TextField
                         fullWidth
                         required
-                        label="Contact Person"
+                        label="Contact Number"
+                        type="number"
                         variant="outlined"
-                        value={contactPerson}
-                        onChange={(e) => setContactPerson(e.target.value)}
+                        value={contactNumber}
+                        onChange={(e) => setContactNumber(e.target.value)}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <PersonIcon sx={styles.emailIcon} />
+                              <PhoneIcon sx={styles.emailIcon} />
                             </InputAdornment>
                           ),
                           sx: styles.emailInput,
@@ -282,14 +282,14 @@ export default function TeamsAndUsers() {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label="Logo URL (Optional)"
+                        label="Company Name (Optional)"
                         variant="outlined"
-                        value={logoUrl}
-                        onChange={(e) => setLogoUrl(e.target.value)}
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
                          InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <LinkIcon sx={styles.emailIcon} />
+                              <ApartmentIcon sx={styles.emailIcon} />
                             </InputAdornment>
                           ),
                           sx: styles.emailInput,
@@ -388,7 +388,7 @@ export default function TeamsAndUsers() {
               </Typography>
               <Typography textTransform="capitalize">{selectedRole}</Typography>
             </Box>
-            {/* Show client details in confirmation dialog */}
+            {/* Show updated client details in confirmation dialog */}
             {selectedRole === 'Client' && (
                 <>
                     <Box>
@@ -396,8 +396,12 @@ export default function TeamsAndUsers() {
                         <Typography>{clientName}</Typography>
                     </Box>
                     <Box>
-                        <Typography variant="subtitle2" color="text.secondary">Contact Person</Typography>
-                        <Typography>{contactPerson}</Typography>
+                        <Typography variant="subtitle2" color="text.secondary">Contact Number</Typography>
+                        <Typography>{contactNumber}</Typography>
+                    </Box>
+                    <Box>
+                        <Typography variant="subtitle2" color="text.secondary">Company Name</Typography>
+                        <Typography>{companyName || 'N/A'}</Typography>
                     </Box>
                 </>
             )}

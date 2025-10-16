@@ -102,7 +102,7 @@ export const assignTask = async (userId, taskDescription) => {
     return { error };
 };
 
-// Static data for the sidebar navigation menu
+// Static data for the sidebar navigation menu - updated for clarity
 export const adminMenuData = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
   { name: 'Projects', path: '/dashboard/admin/projects' },

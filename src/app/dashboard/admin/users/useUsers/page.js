@@ -24,10 +24,10 @@ export const useUsers = () => {
   const [menuUserId, setMenuUserId] = useState(null);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-  // New state for client details
+  // Updated state for client details to match new schema
   const [clientName, setClientName] = useState('');
-  const [contactPerson, setContactPerson] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [companyName, setCompanyName] = useState('');
 
   const isMenuOpen = Boolean(anchorEl);
   
@@ -41,7 +41,6 @@ export const useUsers = () => {
       setTasks(tasks || []);
     } catch (error) {
         console.error("Failed to load initial data:", error);
-        // Optionally, set an error state to show in the UI
     }
   };
 
@@ -58,9 +57,14 @@ const handleInviteUser = async (role, password) => {
     if (!inviteEmail) return;
 
     try {
-      // Package client data if the role is 'Client'
+      // Package client data with updated field names for the API
       const clientData = role === 'Client' 
-        ? { client_name: clientName, contact_person: contactPerson, logo_url: logoUrl, contact_email: inviteEmail } 
+        ? { 
+            client_name: clientName, 
+            contact_number: contactNumber, 
+            company_name: companyName, 
+            contact_email: inviteEmail 
+          } 
         : null;
 
       const { error } = await inviteUser(inviteEmail, role, password, clientData);
@@ -69,12 +73,10 @@ const handleInviteUser = async (role, password) => {
         // Reset all form fields on success
         setInviteEmail('');
         setClientName('');
-        setContactPerson('');
-        setLogoUrl('');
+        setContactNumber('');
+        setCompanyName('');
         loadInitialData(); // Refresh the user list
       } else {
-        // Handle API errors by logging the actual message from the backend.
-        // This provides a much clearer error in the console.
         console.error("Invitation failed:", error.message || error);
       }
     } catch (error) {
@@ -136,8 +138,8 @@ const handleInviteUser = async (role, password) => {
     isMenuOpen, menuUserId, isConfirmDialogOpen,
     // Export new state and setters
     clientName, setClientName,
-    contactPerson, setContactPerson,
-    logoUrl, setLogoUrl,
+    contactNumber, setContactNumber,
+    companyName, setCompanyName,
     handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
     handleAssignTask, handleRemoveUser, handleUpdateRole,
     handleCloseConfirmDialog, handleConfirmRemove,
