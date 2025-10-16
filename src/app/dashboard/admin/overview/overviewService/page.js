@@ -1,5 +1,5 @@
 // This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
-import { createSupabaseClient } from '@/lib/supabase/client'; 
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   People as PeopleIcon,
   Assignment as ProjectsIcon,
@@ -20,31 +20,11 @@ function getWeekStartDate() {
 }
 
 /*
-  Formats a timestamp into a human-readable "time ago" string.
-*/
-function formatTime(timestamp) {
-  const now = new Date();
-  const past = new Date(timestamp);
-  const diff = Math.floor((now - past) / 1000);
-
-  if (diff < 60) return `${diff} seconds ago`;
-
-  const minutes = Math.floor(diff / 60);
-  if (minutes < 60) return `${minutes} minutes ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hours ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} days ago`;
-}
-
-/*
   Fetches key metrics for the dashboard overview.
   It gets counts for clients, projects, and team members.
-  It also calculates the activity trend for the current week compared to the last.
 */
 export async function fetchMetrics() {
+  const supabase = createSupabaseClient();
   const start = getWeekStartDate();
 
   // Use the dedicated RPC function for main metrics for efficiency and accuracy
@@ -69,10 +49,7 @@ export async function fetchMetrics() {
 
   const overviewMetrics = metricsData[0];
   const thisWeekActivity = overviewMetrics.this_week_activity || 0;
-  
-  // Note: Trend for This Week Activity requires a separate historical query if needed.
-  // For now, we display the count as provided by the function.
-  
+
   return [{
       title: 'Total Clients',
       value: overviewMetrics.total_clients || 0,
@@ -104,17 +81,37 @@ export async function fetchMetrics() {
   ];
 }
 
-/*
-  Fetches the 5 most recent activities from the database.
-*/
-export async function fetchActivities() {
-  // This function is already defined in your database and is more efficient.
-  const { data, error } = await supabase.rpc('get_recent_system_activities', { limit_count: 5 });
+/**
+ * Fetches all client queries for the admin overview.
+ * @returns {Promise<Array>} A promise that resolves with the list of queries.
+ */
+export async function fetchQueries() {
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase.rpc('get_all_client_queries');
 
   if (error) {
-    console.error("Error fetching activities:", error);
-    throw new Error('Could not fetch recent activities.');
+    console.error("Error fetching queries:", error);
+    throw new Error('Could not fetch raised queries.');
   }
 
   return data || [];
+}
+
+/**
+ * Submits an admin's response to a query.
+ * @param {number} queryId - The ID of the query being responded to.
+ * @param {string} responseText - The text of the admin's response.
+ * @returns {Promise<void>}
+ */
+export async function postQueryResponse(queryId, responseText) {
+  const supabase = createSupabaseClient();
+  const { error } = await supabase.rpc('admin_respond_to_query', {
+    p_query_id: queryId,
+    p_response_text: responseText,
+  });
+
+  if (error) {
+    console.error("Error posting query response:", error);
+    throw new Error('Could not submit the response.');
+  }
 }

@@ -5,11 +5,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { createSupabaseClient } from '@/lib/supabase/client'; 
+import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, Grid, Card, CardContent,
   Stack, Avatar, List, ListItem, ListItemText,
-  Divider, Button, Drawer, ListItemButton, Snackbar, Alert, IconButton
+  Divider, Button, Drawer, ListItemButton, Snackbar, Alert, IconButton,
+  TextField, Collapse, Chip, CircularProgress
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -17,7 +18,9 @@ import {
   Assessment as AssessmentIcon,
   TrendingUp as TrendUpIcon,
   TrendingDown as TrendDownIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  Send as SendIcon,
+  ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
@@ -29,13 +32,15 @@ import * as styles from './styles';
 export default function AdminOverviewContent() {
   const router = useRouter();
   const supabase = createSupabaseClient(); // Create client instance
-  const { metrics, activities } = useOverview();
+  const { metrics, queries, loading, handleResponseSubmit } = useOverview();
   const { setSelectedMenu } = useAdminStore();
-  
+
   const [currentUser, setCurrentUser] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
+  const [expandedQuery, setExpandedQuery] = useState(null);
+  const [responseText, setResponseText] = useState('');
 
   /*
   Fetches the current user's data when the component loads.
@@ -56,7 +61,7 @@ export default function AdminOverviewContent() {
     setSnackbarMessage('Logging out...');
     setIsLogoutSnackbar(true);
     setOpenSnackbar(true);
-    
+
     setTimeout(async () => {
       await supabase.auth.signOut();
       router.push('/login');
@@ -74,10 +79,30 @@ export default function AdminOverviewContent() {
     setSnackbarMessage(`Redirecting to ${destination.split('/').pop()} to ${actionName}`);
     setIsLogoutSnackbar(false); // This is not a logout action
     setOpenSnackbar(true);
-    
+
     setTimeout(() => {
       router.push(destination);
     }, 1500);
+  };
+
+  const handleToggleQuery = (queryId) => {
+    setExpandedQuery(expandedQuery === queryId ? null : queryId);
+    setResponseText(''); // Reset response text when toggling
+  };
+
+  const handleSubmit = (queryId) => {
+    if (responseText.trim()) {
+      handleResponseSubmit(queryId, responseText);
+      setSnackbarMessage('Response sent successfully!');
+      setIsLogoutSnackbar(false);
+      setOpenSnackbar(true);
+      setResponseText('');
+      setExpandedQuery(null); // Close after submitting
+    } else {
+        setSnackbarMessage('Response cannot be empty.');
+        setIsLogoutSnackbar(false); // Not a logout action, but we can use the same snackbar logic
+        setOpenSnackbar(true);
+    }
   };
 
   return (
@@ -88,7 +113,7 @@ export default function AdminOverviewContent() {
           <Link href="/dashboard/admin/overview" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Admin Portal</Typography>
         </Box>
-        
+
         <List>
           {adminMenu.map((item) => (
             <ListItem key={item.path} disablePadding>
@@ -147,16 +172,72 @@ export default function AdminOverviewContent() {
           <Grid item xs={12} md={8}>
             <Card sx={styles.activityCard}>
               <CardContent>
-                <Typography variant="h6" sx={{ color: 'text.secondary', mb: 2, fontWeight: 700 }}>Recent Activity</Typography>
-                <List>
-                  {activities.map(({ action, time }, i) => (
-                    <React.Fragment key={i}>
-                      <ListItem alignItems="flex-start">
-                        <ListItemText primary={<Typography color="text.secondary">{action}</Typography>} secondary={<Typography color="text.primary">{time}</Typography>} />
-                      </ListItem>
-                      {i < activities.length - 1 && <Divider variant="inset" component="li" />}
-                    </React.Fragment>
-                  ))}
+                <Typography variant="h6" sx={{ color: '#525252', mb: 2, fontWeight: 700 }}>Raised Queries</Typography>
+                <List sx={{ p: 0 }}>
+                  {loading.queries ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                      <CircularProgress sx={{ color: '#283618' }} />
+                    </Box>
+                  ) : queries && queries.length > 0 ? (
+                    queries.map((query, i) => (
+                      <React.Fragment key={i}>
+                        <ListItem
+                          alignItems="flex-start"
+                          sx={styles.queryListItem}
+                          onClick={() => handleToggleQuery(query.query_id)}
+                        >
+                          <ListItemText
+                            primary={
+                              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant="body1" sx={{ color: '#283618', fontWeight: 500 }}>{query.title}</Typography>
+                                <Chip label={query.status} sx={styles.queryStatusChip(query.status)} />
+                              </Stack>
+                            }
+                            secondary={
+                              <Typography variant="body2" sx={{ color: '#525252', mt: 0.5 }}>
+                                From: {query.client_name} - {new Date(query.date).toLocaleDateString()}
+                              </Typography>
+                            }
+                          />
+                          <ExpandMoreIcon sx={{
+                              color: '#6b705c',
+                              transform: expandedQuery === query.query_id ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: 'transform 0.2s',
+                          }}/>
+                        </ListItem>
+                        <Collapse in={expandedQuery === query.query_id} timeout="auto" unmountOnExit>
+                          <Box sx={styles.responseBox}>
+                              <Typography variant="body2" sx={{ mb: 2, color: '#283618' }}>
+                                  {query.description}
+                              </Typography>
+                              <TextField
+                                  fullWidth
+                                  multiline
+                                  rows={3}
+                                  variant="outlined"
+                                  label="Write your response..."
+                                  value={responseText}
+                                  onChange={(e) => setResponseText(e.target.value)}
+                                  sx={styles.responseTextField}
+                              />
+                              <Button
+                                  variant="contained"
+                                  endIcon={<SendIcon />}
+                                  onClick={() => handleSubmit(query.query_id)}
+                                  sx={styles.sendButton}
+                              >
+                                  Send Response
+                              </Button>
+                          </Box>
+                        </Collapse>
+                        {i < queries.length - 1 && <Divider component="li" />}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <ListItem>
+                      <ListItemText primary="No new queries found." />
+                    </ListItem>
+                  )}
                 </List>
               </CardContent>
             </Card>
@@ -177,20 +258,20 @@ export default function AdminOverviewContent() {
       </Box>
 
       {/* Snackbar for logout (green) and other actions (info) */}
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={1500} 
-        onClose={() => setOpenSnackbar(false)} 
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1500}
+        onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          severity={isLogoutSnackbar ? "success" : "info"} 
-          sx={{ 
-            width: '100%', 
-            fontWeight: 'bold', 
+        <Alert
+          severity={isLogoutSnackbar ? "success" : "info"}
+          sx={{
+            width: '100%',
+            fontWeight: 'bold',
             fontSize: '1.2rem',
             ...(isLogoutSnackbar && {
-               width: '100%', 
+               width: '100%',
             backgroundColor: '#5caa93ff',
             color: 'black',
               '& .MuiAlert-icon': {

@@ -85,3 +85,68 @@ export const sidebarHeader = {
   gap: 1,
   color: '#fefae0',
 };
+
+// New styles for the Raised Queries section
+export const queryListItem = {
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: 'rgba(40, 54, 24, 0.05)',
+  },
+  py: 1.5,
+};
+
+export const queryStatusChip = (status) => {
+  let backgroundColor, color, border;
+  if (status === 'resolved') {
+    backgroundColor = 'rgba(46, 125, 50, 0.2)';
+    color = '#2e7d32';
+    border = '1px solid #2e7d32';
+  } else if (status === 'in-progress') {
+    backgroundColor = 'rgba(255, 152, 0, 0.2)';
+    color = '#ff9800';
+    border = '1px solid #ff9800';
+  } else {
+    backgroundColor = 'rgba(97, 97, 97, 0.2)';
+    color = '#616161';
+    border = '1px solid #616161';
+  }
+  return {
+    backgroundColor,
+    color,
+    border,
+    fontWeight: 'bold',
+    borderRadius: '16px',
+    height: '24px',
+    fontSize: '0.75rem',
+  };
+};
+
+export const responseBox = {
+  p: 2,
+  backgroundColor: '#f5f5f5', // A slightly different background for the response area
+  borderTop: '1px solid #e0e0e0',
+  mt: 1,
+};
+
+export const responseTextField = {
+  '& .MuiInputLabel-root': { color: '#525252' },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: '#6b705c',
+    },
+    '&:hover fieldset': {
+      borderColor: '#283618',
+    },
+    backgroundColor: '#fff',
+  },
+  '& .MuiInputBase-input': { color: '#283618' },
+  mb: 1,
+};
+
+export const sendButton = {
+  backgroundColor: '#f3722c',
+  color: '#fefae0',
+  '&:hover': {
+    backgroundColor: '#e65c19',
+  },
+};
