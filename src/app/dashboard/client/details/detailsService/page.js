@@ -8,27 +8,27 @@ import { createSupabaseClient } from '@/lib/supabase/client';
  */
 export const fetchProjectData = async (projectId) => {
   const supabase = createSupabaseClient();
-  const { data, error } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      project_milestones(*),
-      project_files(*),
-      project_team_members:profiles(*)
-    `)
-    .eq('id', projectId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        project_milestones(*),
+        project_files(*)
+      `)
+      .eq('id', projectId)
+      .single();
 
-  if (error) throw new Error(error.message);
-  
-  // Re-shape the team data to match the frontend's expectation
-  const formattedData = {
-    ...data,
-    team: data.project_team_members
-  };
-  delete formattedData.project_team_members;
+    if (error) {
+      console.error('Error fetching project data:', error.message);
+      throw new Error(error.message);
+    }
 
-  return formattedData;
+    return data;
+  } catch (error) {
+    console.error('Unexpected error in fetchProjectData:', error);
+    throw error;
+  }
 };
 
 /**
@@ -38,11 +38,19 @@ export const fetchProjectData = async (projectId) => {
  */
 export const fetchComments = async (projectId) => {
   const supabase = createSupabaseClient();
-  const { data, error } = await supabase
-    .rpc('get_project_comments', { p_project_id: projectId });
+  try {
+    const { data, error } = await supabase
+      .rpc('get_project_comments', { p_project_id: projectId });
 
-  if (error) throw new Error(error.message);
-  return data;
+    if (error) {
+      console.error('Error fetching comments:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  } catch (error) {
+    console.error('Unexpected error in fetchComments:', error);
+    throw error;
+  }
 };
 
 /**
@@ -52,12 +60,20 @@ export const fetchComments = async (projectId) => {
  */
 export const postComment = async ({ projectId, commentText }) => {
   const supabase = createSupabaseClient();
-  const { data, error } = await supabase
-    .rpc('add_project_comment', { 
-      p_project_id: projectId, 
-      p_comment_text: commentText 
-    });
+  try {
+    const { data, error } = await supabase
+      .rpc('add_project_comment', {
+        p_project_id: projectId,
+        p_comment_text: commentText
+      });
 
-  if (error) throw new Error(error.message);
-  return data;
+    if (error) {
+      console.error('Error posting comment:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  } catch (error) {
+    console.error('Unexpected error in postComment:', error);
+    throw error;
+  }
 };

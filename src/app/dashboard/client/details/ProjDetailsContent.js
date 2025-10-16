@@ -83,7 +83,7 @@ const getUserProfilePicture = async (supabase, user) => {
 
   try {
     console.log('🖼️ Fetching profile picture for user:', user.id);
-    
+
     // SOURCE 1: Check client_profiles table first
     const { data: clientProfile, error: clientError } = await supabase
       .from('client_profiles')
@@ -137,7 +137,7 @@ export default function ProjDetailsContent() {
   const supabase = createSupabaseClient();
   const router = useRouter();
   const { profile, fetchProfile } = useClientStore();
-  
+
   // State management
   const [projects, setProjects] = useState([]);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
@@ -150,12 +150,11 @@ export default function ProjDetailsContent() {
   const [currentColumnId, setCurrentColumnId] = useState('backlog');
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [teamMembers, setTeamMembers] = useState([]);
   const [projectFiles, setProjectFiles] = useState([]);
   const [clientProfile, setClientProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
   const [sidebarOpen] = React.useState(true);
-  
+
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
   // Custom hook for tab management
@@ -195,7 +194,7 @@ export default function ProjDetailsContent() {
 
         // 1. Get current authenticated user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError) {
           console.error('❌ Auth error:', userError);
           setSnackbarMessage('Authentication error. Please log in again.');
@@ -330,10 +329,10 @@ export default function ProjDetailsContent() {
         if (projectsData.length > 0) {
           setProjects(projectsData);
           console.log(`🎉 Successfully loaded ${projectsData.length} project(s)`);
-          
+
           // Fetch additional data for the first project
           await fetchAdditionalProjectData(projectsData[0].id);
-          
+
           // Don't show success message here - only show loading message initially
         } else {
           console.log('📭 No projects found for user');
@@ -366,13 +365,10 @@ export default function ProjDetailsContent() {
     try {
       // Fetch tasks
       await fetchTasksForProject(projectId);
-      
-      // Fetch team members
-      await fetchTeamMembers(projectId);
-      
+
       // Fetch project files
       await fetchProjectFiles(projectId);
-      
+
     } catch (error) {
       console.error('Error fetching additional project data:', error);
     }
@@ -388,44 +384,17 @@ export default function ProjDetailsContent() {
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: true });
-      
+
       if (error) {
         console.error('Error fetching tasks:', error);
         initializeEmptyColumns();
         return;
       }
-      
+
       organizeTasksIntoColumns(tasks || []);
     } catch (error) {
       console.error('Error in fetchTasksForProject:', error);
       initializeEmptyColumns();
-    }
-  };
-
-  /**
-   * Fetch team members for a project
-   */
-  const fetchTeamMembers = async (projectId) => {
-    try {
-      // Try different table names for team members
-      const { data: members, error } = await supabase
-        .from('project_team_members')
-        .select(`
-          *,
-          profiles (*)
-        `)
-        .eq('project_id', projectId);
-
-      if (error) {
-        console.log('Error fetching team members:', error);
-        return;
-      }
-
-      if (members) {
-        setTeamMembers(members);
-      }
-    } catch (error) {
-      console.error('Error fetching team members:', error);
     }
   };
 
@@ -458,33 +427,33 @@ export default function ProjDetailsContent() {
    */
   const organizeTasksIntoColumns = (tasks) => {
     const columns = {
-      backlog: { 
-        id: 'backlog', 
-        title: 'Backlog', 
-        color: COLUMN_COLORS.backlog, 
-        icon: <BacklogIcon />, 
-        tasks: [] 
+      backlog: {
+        id: 'backlog',
+        title: 'Backlog',
+        color: COLUMN_COLORS.backlog,
+        icon: <BacklogIcon />,
+        tasks: []
       },
-      in_progress: { 
-        id: 'in_progress', 
-        title: 'In Progress', 
-        color: COLUMN_COLORS.in_progress, 
-        icon: <InProgressIcon />, 
-        tasks: [] 
+      in_progress: {
+        id: 'in_progress',
+        title: 'In Progress',
+        color: COLUMN_COLORS.in_progress,
+        icon: <InProgressIcon />,
+        tasks: []
       },
-      done: { 
-        id: 'done', 
-        title: 'Done', 
-        color: COLUMN_COLORS.done, 
-        icon: <DoneIcon />, 
-        tasks: [] 
+      done: {
+        id: 'done',
+        title: 'Done',
+        color: COLUMN_COLORS.done,
+        icon: <DoneIcon />,
+        tasks: []
       }
     };
-    
+
     if (tasks && tasks.length > 0) {
       tasks.forEach(task => {
         let columnId = 'backlog';
-        
+
         if (task.status === 'in_progress' || task.status === 'in progress') {
           columnId = 'in_progress';
         } else if (task.status === 'done' || task.status === 'completed') {
@@ -492,13 +461,13 @@ export default function ProjDetailsContent() {
         } else if (task.status === 'backlog' || task.status === 'todo') {
           columnId = 'backlog';
         }
-        
+
         if (columns[columnId]) {
           columns[columnId].tasks.push(task);
         }
       });
     }
-    
+
     setKanbanColumns(columns);
   };
 
@@ -538,7 +507,7 @@ export default function ProjDetailsContent() {
         // Refetch profile picture
         const userAvatar = await getUserProfilePicture(supabase, user);
         setProfilePicture(userAvatar);
-        
+
         // Refetch projects
         const { data: projectsData, error } = await supabase
           .from('projects')
@@ -585,21 +554,17 @@ export default function ProjDetailsContent() {
    */
   const formatStatus = (status) => {
     if (!status) return '';
-    return status.split('_').map(word => 
+    return status.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
 
   /**
-   * Calculate project progress from tasks
+   * Get project progress directly from the project data.
    */
-  const calculateProjectProgress = () => {
-    if (!kanbanColumns || !currentProject) return currentProject?.progress || 0;
-    
-    const totalTasks = Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0);
-    const completedTasks = kanbanColumns.done.tasks.length;
-    
-    return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const getProjectProgress = () => {
+    if (!currentProject) return 0;
+    return currentProject.progress || 0;
   };
 
   /**
@@ -613,16 +578,16 @@ export default function ProjDetailsContent() {
         </Box>
       );
     }
-    
-    const progress = calculateProjectProgress();
-    
+
+    const progress = getProjectProgress();
+
     return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <KanbanIcon />
           Project Kanban Board
         </Typography>
-        
+
         {/* Progress Summary */}
         <Paper sx={{ p: 2, mb: 3, backgroundColor: COLORS.lightBackground }}>
           <Grid container spacing={2} alignItems="center">
@@ -630,11 +595,11 @@ export default function ProjDetailsContent() {
               <Typography variant="body2" sx={{ color: COLORS.text, mb: 1 }}>
                 Overall Progress: {progress}%
               </Typography>
-              <LinearProgress 
-                variant="determinate" 
-                value={progress} 
-                sx={{ 
-                  height: 8, 
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{
+                  height: 8,
                   borderRadius: 4,
                   backgroundColor: COLORS.border,
                   '& .MuiLinearProgress-bar': {
@@ -650,18 +615,18 @@ export default function ProjDetailsContent() {
             </Grid>
           </Grid>
         </Paper>
-        
+
         {/* Kanban Board */}
         <Box sx={{ display: 'flex', overflowX: 'auto', p: 1, gap: 2 }}>
           {Object.values(kanbanColumns).map(column => (
-            <Box 
+            <Box
               key={column.id}
-              sx={{ 
-                flex: 1, 
-                minWidth: 300, 
-                p: 2, 
-                borderRadius: 2, 
-                backgroundColor: COLORS.background, 
+              sx={{
+                flex: 1,
+                minWidth: 300,
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: COLORS.background,
                 borderTop: `4px solid ${column.color}`,
                 boxShadow: 2
               }}
@@ -671,29 +636,29 @@ export default function ProjDetailsContent() {
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: COLORS.text }}>
                   {column.title}
                 </Typography>
-                <Chip 
-                  label={column.tasks.length} 
-                  size="small" 
-                  sx={{ 
-                    ml: 'auto', 
-                    backgroundColor: column.color, 
+                <Chip
+                  label={column.tasks.length}
+                  size="small"
+                  sx={{
+                    ml: 'auto',
+                    backgroundColor: column.color,
                     color: 'white',
                     fontWeight: 'bold'
-                  }} 
+                  }}
                 />
               </Box>
-              
+
               {column.tasks.length === 0 ? (
                 <Typography variant="body2" sx={{ textAlign: 'center', color: COLORS.border, fontStyle: 'italic', py: 3 }}>
                   No tasks in {column.title.toLowerCase()}
                 </Typography>
               ) : (
                 column.tasks.map((task) => (
-                  <Paper 
+                  <Paper
                     key={task.id}
-                    sx={{ 
-                      p: 2, 
-                      mb: 2, 
+                    sx={{
+                      p: 2,
+                      mb: 2,
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       borderLeft: `4px solid ${column.color}`,
@@ -701,7 +666,7 @@ export default function ProjDetailsContent() {
                         boxShadow: 3,
                         transform: 'translateY(-2px)'
                       }
-                    }} 
+                    }}
                     onClick={() => handleViewTask(task, column.id)}
                   >
                     <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, mb: 1 }}>
@@ -709,8 +674,8 @@ export default function ProjDetailsContent() {
                     </Typography>
                     {task.description && (
                       <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                        {task.description.length > 80 
-                          ? `${task.description.substring(0, 80)}...` 
+                        {task.description.length > 80
+                          ? `${task.description.substring(0, 80)}...`
                           : task.description
                         }
                       </Typography>
@@ -720,11 +685,11 @@ export default function ProjDetailsContent() {
                         {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
                       </Typography>
                       {task.priority && (
-                        <Chip 
-                          label={task.priority} 
-                          size="small" 
+                        <Chip
+                          label={task.priority}
+                          size="small"
                           variant="outlined"
-                          sx={{ 
+                          sx={{
                             height: '20px',
                             fontSize: '0.6rem'
                           }}
@@ -746,9 +711,9 @@ export default function ProjDetailsContent() {
    */
   const renderOverviewTab = () => {
     if (!currentProject) return null;
-    
-    const progress = calculateProjectProgress();
-    
+
+    const progress = getProjectProgress();
+
     return (
       <Grid container spacing={3} sx={{ p: 2 }}>
         {/* Project Details */}
@@ -780,23 +745,23 @@ export default function ProjDetailsContent() {
                   <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     STATUS
                   </Typography>
-                  <Chip 
-                    label={formatStatus(currentProject.status)} 
-                    sx={{ 
-                      backgroundColor: 
+                  <Chip
+                    label={formatStatus(currentProject.status)}
+                    sx={{
+                      backgroundColor:
                         currentProject.status === 'active' ? COLORS.success :
                         currentProject.status === 'completed' ? COLUMN_COLORS.done :
                         currentProject.status === 'on_hold' ? COLUMN_COLORS.in_progress :
                         COLUMN_COLORS.backlog,
                       color: 'white'
-                    }} 
+                    }}
                   />
                 </Box>
               </Stack>
             </CardContent>
           </Card>
         </Grid>
-        
+
         {/* Project Information */}
         <Grid item xs={12} md={6}>
           <Card sx={{ backgroundColor: COLORS.background, boxShadow: 2 }}>
@@ -811,12 +776,12 @@ export default function ProjDetailsContent() {
                     PROGRESS
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={progress} 
-                      sx={{ 
-                        flexGrow: 1, 
-                        height: 8, 
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{
+                        flexGrow: 1,
+                        height: 8,
                         borderRadius: 4,
                         backgroundColor: COLORS.border,
                         '& .MuiLinearProgress-bar': {
@@ -922,30 +887,25 @@ export default function ProjDetailsContent() {
    * Render Team Tab
    */
   const renderTeamTab = () => {
+    const teamMembers = currentProject?.assigned_team || [];
     return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <PersonIcon />
-          Team Members
+          Team
         </Typography>
-        
+
         {teamMembers.length > 0 ? (
           <Grid container spacing={2}>
             {teamMembers.map((member, index) => (
-              <Grid item xs={12} md={6} lg={4} key={member.id || index}>
+              <Grid item xs={12} md={6} lg={4} key={index}>
                 <Card sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ width: 50, height: 50, borderRadius: '50%', overflow: 'hidden', backgroundColor: COLORS.border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <PersonIcon sx={{ color: COLORS.background }} />
                   </Box>
                   <Box>
                     <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.text }}>
-                      {member.profiles?.full_name || member.name || `Team Member ${index + 1}`}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.border }}>
-                      {member.role || 'Team Member'}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: COLORS.border }}>
-                      {member.profiles?.email || member.email || ''}
+                      {member}
                     </Typography>
                   </Box>
                 </Card>
@@ -956,10 +916,10 @@ export default function ProjDetailsContent() {
           <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
             <PersonIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
             <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
-              No Team Members Assigned
+              No Team Assigned
             </Typography>
             <Typography variant="body2" sx={{ color: COLORS.border }}>
-              Team members will appear here once they are assigned to this project.
+              The teams will appear here once they are assigned to this project.
             </Typography>
           </Paper>
         )}
@@ -977,7 +937,7 @@ export default function ProjDetailsContent() {
           <FolderIcon />
           Project Files
         </Typography>
-        
+
         {projectFiles.length > 0 ? (
           <Grid container spacing={2}>
             {projectFiles.map((file) => (
@@ -1082,7 +1042,7 @@ export default function ProjDetailsContent() {
               onClick={() => handleProjectChange(project.id)}
               color={index === currentProjectIndex ? "primary" : "default"}
               variant={index === currentProjectIndex ? "filled" : "outlined"}
-              sx={{ 
+              sx={{
                 backgroundColor: index === currentProjectIndex ? COLORS.primary : 'transparent',
                 color: index === currentProjectIndex ? COLORS.background : COLORS.text,
                 borderColor: COLORS.primary,
@@ -1123,10 +1083,10 @@ export default function ProjDetailsContent() {
  if (loading) {
   return (
     <Box sx={globalStyles.rootBox}>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '100vh',
         backgroundColor: COLORS.background
       }}>
@@ -1169,7 +1129,7 @@ export default function ProjDetailsContent() {
             </ListItem>
           ))}
         </List>
-        
+
         {/* Profile Section - EXACT SAME AS SETTINGS SCREEN */}
         <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
@@ -1198,20 +1158,20 @@ export default function ProjDetailsContent() {
           <Button
             onClick={handleLogout}
             fullWidth
-            sx={{ 
-              padding: '0.75rem', 
-              background: 'transparent', 
-              border: '1px solid #fefae0', 
-              borderRadius: '8px', 
-              color: '#fefae0', 
-              cursor: 'pointer', 
-              transition: 'all 0.3s ease', 
-              fontWeight: '600', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '0.5rem', 
-              '&:hover': { background: '#6b705c' } 
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              '&:hover': { background: '#6b705c' }
             }}
           >
             {sidebarOpen ? 'Logout' : <LogoutIcon />}
@@ -1244,7 +1204,7 @@ export default function ProjDetailsContent() {
 
             {/* Project Selector */}
             {renderProjectSelector()}
-            
+
             {/* Navigation Tabs */}
             <Paper sx={{ mb: 2 }}>
               <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
@@ -1256,7 +1216,7 @@ export default function ProjDetailsContent() {
                 <Tab label="Kanban Board" icon={<KanbanIcon />} iconPosition="start" sx={tabsStyles.tab} />
               </Tabs>
             </Paper>
-            
+
             {/* Tab Content */}
             <Box>{renderTabContent()}</Box>
           </>
@@ -1269,18 +1229,18 @@ export default function ProjDetailsContent() {
                 No Projects Found
               </Typography>
               <Typography variant="body1" sx={{ color: COLORS.border, mb: 3 }}>
-                {clientProfile 
+                {clientProfile
                   ? `No projects found for ${clientProfile.name}`
                   : 'No projects found for your account'
                 }
               </Typography>
             </Box>
             <Stack direction="row" spacing={2}>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={handleRefresh}
                 startIcon={<RefreshIcon />}
-                sx={{ 
+                sx={{
                   backgroundColor: COLORS.primary,
                   '&:hover': {
                     backgroundColor: COLORS.secondary
@@ -1289,10 +1249,10 @@ export default function ProjDetailsContent() {
               >
                 Refresh
               </Button>
-              <Button 
+              <Button
                 variant="outlined"
                 onClick={() => router.push('/dashboard/client')}
-                sx={{ 
+                sx={{
                   color: COLORS.primary,
                   borderColor: COLORS.primary
                 }}
@@ -1305,10 +1265,10 @@ export default function ProjDetailsContent() {
       </Box>
 
       {/* Task Details Dialog */}
-      <Dialog 
-        open={openTaskDialog} 
-        onClose={() => setOpenTaskDialog(false)} 
-        fullWidth 
+      <Dialog
+        open={openTaskDialog}
+        onClose={() => setOpenTaskDialog(false)}
+        fullWidth
         maxWidth="sm"
         sx={{
           '& .MuiDialog-paper': {
@@ -1321,7 +1281,7 @@ export default function ProjDetailsContent() {
         <DialogTitle sx={{ backgroundColor: COLORS.primary, color: COLORS.background }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h6">Task Details</Typography>
-            <IconButton 
+            <IconButton
               onClick={() => setOpenTaskDialog(false)}
               sx={{ color: COLORS.background }}
             >
@@ -1340,7 +1300,7 @@ export default function ProjDetailsContent() {
                   {currentTask.title}
                 </Typography>
               </Box>
-              
+
               <Box>
                 <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   DESCRIPTION
@@ -1349,7 +1309,7 @@ export default function ProjDetailsContent() {
                   {currentTask.description || 'No description provided'}
                 </Typography>
               </Box>
-              
+
               <Box>
                 <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   DUE DATE
@@ -1358,18 +1318,18 @@ export default function ProjDetailsContent() {
                   {currentTask.due_date ? new Date(currentTask.due_date).toLocaleDateString("en-GB") : 'No due date'}
                 </Typography>
               </Box>
-              
+
               <Box>
                 <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                   STATUS
                 </Typography>
-                <Chip 
-                  label={currentColumnId.replace('_', ' ').toUpperCase()} 
-                  sx={{ 
+                <Chip
+                  label={currentColumnId.replace('_', ' ').toUpperCase()}
+                  sx={{
                     mt: 1,
                     backgroundColor: COLUMN_COLORS[currentColumnId],
                     color: 'white'
-                  }} 
+                  }}
                 />
               </Box>
 
@@ -1378,16 +1338,16 @@ export default function ProjDetailsContent() {
                   <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
                     PRIORITY
                   </Typography>
-                  <Chip 
-                    label={currentTask.priority.toUpperCase()} 
-                    sx={{ 
+                  <Chip
+                    label={currentTask.priority.toUpperCase()}
+                    sx={{
                       mt: 1,
-                      backgroundColor: 
+                      backgroundColor:
                         currentTask.priority === 'high' ? COLORS.error :
                         currentTask.priority === 'medium' ? COLUMN_COLORS.in_progress :
                         COLUMN_COLORS.backlog,
                       color: 'white'
-                    }} 
+                    }}
                   />
                 </Box>
               )}
@@ -1395,9 +1355,9 @@ export default function ProjDetailsContent() {
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, backgroundColor: COLORS.lightBackground }}>
-          <Button 
+          <Button
             onClick={() => setOpenTaskDialog(false)}
-            sx={{ 
+            sx={{
               color: COLORS.primary,
               '&:hover': {
                 backgroundColor: COLORS.lightBackground
