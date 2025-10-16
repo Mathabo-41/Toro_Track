@@ -407,7 +407,7 @@ export default function TeamsAndUsers() {
             )}
             <Box>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Temporary Password
+                Auto-generated Password
               </Typography>
               <Paper variant="outlined" sx={{ p: 1.5, position: 'relative' }}>
                 <Typography fontFamily="monospace" fontSize={16}>
@@ -432,7 +432,7 @@ export default function TeamsAndUsers() {
                 color="text.secondary"
                 sx={{ mt: 1, display: 'block' }}
               >
-                This password will be required for the user's first login
+                This password will be required for the user's login
               </Typography>
             </Box>
             <Box>
@@ -440,8 +440,8 @@ export default function TeamsAndUsers() {
                 Instructions
               </Typography>
               <Typography variant="body2">
-                Share these credentials securely with the {selectedRole.toLowerCase()}. They will be
-                prompted to change their password upon first login.
+                Share these login credentials securely with the {selectedRole.toLowerCase()}. They will be
+                prompted to enter the Email Address and Password to login.
               </Typography>
             </Box>
           </Stack>

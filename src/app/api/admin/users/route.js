@@ -45,7 +45,7 @@ export async function POST(request) {
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm email as this is an admin action
+      email_confirm: true,
     });
     if (authError) {
       if (authError.message.includes('duplicate key value')) {
@@ -54,11 +54,23 @@ export async function POST(request) {
       throw authError;
     }
     newUserId = authData.user.id;
+    
+    // Step 2: Prepare and execute the profile update.
+    const profileUpdatePayload = {
+      role: role.toLowerCase(),
+      email: email,
+    };
 
-    // Step 2: UPDATE the auto-created profile with the correct role.
+    // If the new user is a client, populate their profile with all available client data.
+    if (role === 'Client' && clientData) {
+      profileUpdatePayload.full_name = clientData.client_name;
+      profileUpdatePayload.company = clientData.company_name;
+      profileUpdatePayload.phone_number = clientData.contact_number;
+    }
+    
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({ role: role.toLowerCase() }) // Use update, not insert
+      .update(profileUpdatePayload)
       .eq('id', newUserId);
 
     if (profileError) throw profileError;
@@ -69,7 +81,7 @@ export async function POST(request) {
             .from('clients')
             .insert({
                 ...clientData,
-                managed_by: newUserId, // Link the new client to the new user
+                managed_by: newUserId,
             });
         
         if (clientError) throw clientError;
@@ -89,12 +101,13 @@ export async function POST(request) {
   }
 }
 
+
 /*
 * Handles DELETE requests to remove a user from the system.
 */
 export async function DELETE(request) {
-  const supabase = createSupabaseServerClient(); // For checking permissions
-  const supabaseAdmin = createSupabaseAdminClient(); // For the delete action
+  const supabase = createSupabaseServerClient();
+  const supabaseAdmin = createSupabaseAdminClient();
 
   const { searchParams } = new URL(request.url);
   const userIdToDelete = searchParams.get('userId');
@@ -104,7 +117,6 @@ export async function DELETE(request) {
   }
 
   try {
-    // Verify that the user making the request is an authenticated admin.
     const { data: { user: requester } } = await supabase.auth.getUser();
     if (!requester) {
       return NextResponse.json({ error: 'Authentication failed.' }, { status: 401 });
@@ -120,7 +132,6 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Permission denied. Admin role required.' }, { status: 403 });
     }
 
-    // Perform the deletion.
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userIdToDelete);
     if (deleteError) throw deleteError;
 
