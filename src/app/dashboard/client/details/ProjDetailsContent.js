@@ -735,15 +735,15 @@ export default function ProjDetailsContent() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
-                    DESCRIPTION
+                    DUE DATE
                   </Typography>
                   <Typography variant="body1" sx={{ color: COLORS.text }}>
-                    {currentProject.description || 'No description provided'}
+                    {currentProject.end_date ? new Date(currentProject.end_date).toLocaleDateString() : 'Not set'}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
-                    STATUS
+                    STATUS:
                   </Typography>
                   <Chip
                     label={formatStatus(currentProject.status)}
