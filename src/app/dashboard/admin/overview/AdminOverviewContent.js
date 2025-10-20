@@ -42,29 +42,36 @@ export default function AdminOverviewContent() {
   const [expandedQuery, setExpandedQuery] = useState(null);
   const [responseText, setResponseText] = useState('');
 
-  /*
-  Fetches the current user's data when the component loads.
-  */
+  /**
+   * Fetches the current user's data when the component loads.
+   */
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setCurrentUser(user);
+      } catch (error) {
+          console.error("Error fetching user:", error.message);
+      }
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
-  /*
-  Signs out the current user and redirects to the login page.
-  */
+  /**
+   * Signs out the current user and redirects to the login page.
+   */
   const handleLogout = async () => {
-    // Show green logout snackbar
     setSnackbarMessage('Logging out...');
     setIsLogoutSnackbar(true);
     setOpenSnackbar(true);
 
     setTimeout(async () => {
-      await supabase.auth.signOut();
-      router.push('/login');
+        try {
+            await supabase.auth.signOut();
+            router.push('/login');
+        } catch(error) {
+            console.error("Error logging out:", error.message);
+        }
     }, 1500);
   };
 
@@ -75,9 +82,10 @@ export default function AdminOverviewContent() {
       'Projects Progress': '/dashboard/admin/reports'
     };
     const destination = destinations[actionName];
+    if (!destination) return;
 
-    setSnackbarMessage(`Redirecting to ${destination.split('/').pop()} to ${actionName}`);
-    setIsLogoutSnackbar(false); // This is not a logout action
+    setSnackbarMessage(`Redirecting to ${destination.split('/').pop()}...`);
+    setIsLogoutSnackbar(false);
     setOpenSnackbar(true);
 
     setTimeout(() => {
@@ -86,31 +94,39 @@ export default function AdminOverviewContent() {
   };
 
   const handleToggleQuery = (queryId) => {
-    setExpandedQuery(expandedQuery === queryId ? null : queryId);
+    setExpandedQuery(prevExpanded => (prevExpanded === queryId ? null : queryId));
     setResponseText(''); // Reset response text when toggling
   };
 
   const handleSubmit = (queryId) => {
-    if (responseText.trim()) {
-      handleResponseSubmit(queryId, responseText);
-      setSnackbarMessage('Response sent successfully!');
-      setIsLogoutSnackbar(false);
-      setOpenSnackbar(true);
-      setResponseText('');
-      setExpandedQuery(null); // Close after submitting
-    } else {
+    if (!responseText.trim()) {
         setSnackbarMessage('Response cannot be empty.');
-        setIsLogoutSnackbar(false); // Not a logout action, but we can use the same snackbar logic
+        setIsLogoutSnackbar(false);
         setOpenSnackbar(true);
+        return;
+    }
+    try {
+        handleResponseSubmit(queryId, responseText);
+        setSnackbarMessage('Response sent successfully!');
+        setIsLogoutSnackbar(false);
+        setOpenSnackbar(true);
+        setResponseText('');
+        setExpandedQuery(null); // Close after submitting
+    } catch(error) {
+        setSnackbarMessage('Failed to send response. Please try again.');
+        setIsLogoutSnackbar(false);
+        setOpenSnackbar(true);
+        console.error("Submission Error:", error.message);
     }
   };
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* --- Your existing JSX for Drawer, Main Content, etc. --- */}
-       <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
+      <Drawer variant="permanent" anchor="left" sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}>
         <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex',  alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard/admin/overview" passHref><IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton></Link>
+          <Link href="/dashboard/admin/overview" passHref>
+            <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
+          </Link>
           <Typography variant="h5" sx={{ color: '#fefae0'}}>Admin Portal</Typography>
         </Box>
 
@@ -146,7 +162,7 @@ export default function AdminOverviewContent() {
 
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {metrics.map(({ title, value, change, icon, trend }, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
+            <Grid item xs={12} sm={6} md={4} key={i}>
               <Card sx={styles.summaryCard}>
                 <CardContent>
                   <Stack direction="row" spacing={2} alignItems="center">
@@ -257,7 +273,6 @@ export default function AdminOverviewContent() {
         </Grid>
       </Box>
 
-      {/* Snackbar for logout (green) and other actions (info) */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}
@@ -271,9 +286,8 @@ export default function AdminOverviewContent() {
             fontWeight: 'bold',
             fontSize: '1.2rem',
             ...(isLogoutSnackbar && {
-               width: '100%',
-            backgroundColor: '#5caa93ff',
-            color: 'black',
+                backgroundColor: '#5caa93ff',
+                color: 'black',
               '& .MuiAlert-icon': {
                 color: 'white'
               }
