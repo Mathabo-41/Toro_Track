@@ -38,6 +38,7 @@ import {
 import { mainContentStyles, headerStyles, tabsStyles } from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
+import LoadingScreen from '../common/LoadingScreen';
 
 // Kanban board column colors
 const COLUMN_COLORS = {
@@ -1080,29 +1081,9 @@ export default function ProjDetailsContent() {
   };
 
   // Show loading state
- if (loading) {
-  return (
-    <Box sx={globalStyles.rootBox}>
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: COLORS.background
-      }}>
-        <Stack spacing={3} alignItems="center">
-          <CircularProgress size={50} sx={{ color: COLORS.primary }} />
-          <Typography variant="h5" sx={{ color: COLORS.primary }}>
-            Loading Project Details...
-          </Typography>
-          <Typography variant="body2" sx={{ color: COLORS.text }}>
-            Please wait while we load your projects
-          </Typography>
-        </Stack>
-      </Box>
-    </Box>
-  );
-}
+  if (loading) {
+    return <LoadingScreen message="Loading Project Details..." />;
+  }
 
   return (
     <Box sx={globalStyles.rootBox}>

@@ -36,6 +36,7 @@ import * as globalStyles from '../common/styles';
 import { clientSettingsStyles } from './styles';
 import { useClientStore } from '../common/clientStore';
 import { clientMenu } from '../common/clientStore';
+import LoadingScreen from '../common/LoadingScreen';
 
 // Remove router prop and use useRouter hook instead
 export default function SettingsContent() {
@@ -80,11 +81,7 @@ export default function SettingsContent() {
     };
 
     if (isLoading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <CircularProgress />
-            </Box>
-        );
+        return <LoadingScreen message="Loading Settings..." />;
     }
 
     if (isError) {

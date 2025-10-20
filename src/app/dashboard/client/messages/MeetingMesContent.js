@@ -33,6 +33,7 @@ import { useMeetingMes } from './useMeetingMes/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
+import LoadingScreen from '../common/LoadingScreen';
 
 // Color theme constants
 const COLORS = {
@@ -309,27 +310,7 @@ export default function MeetingMesContent() {
 
   // Show loading state
   if (loading) {
-    return (
-      <Box sx={globalStyles.rootBox}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '100vh',
-          backgroundColor: COLORS.background
-        }}>
-          <Stack spacing={3} alignItems="center">
-            <CircularProgress size={50} sx={{ color: COLORS.primary }} />
-            <Typography variant="h5" sx={{ color: COLORS.primary }}>
-              Loading Agenda...
-            </Typography>
-            <Typography variant="body2" sx={{ color: COLORS.text }}>
-              Please wait while we load your meetings and notifications
-            </Typography>
-          </Stack>
-        </Box>
-      </Box>
-    );
+    return <LoadingScreen message="Loading Agenda..." />;
   }
 
   return (
