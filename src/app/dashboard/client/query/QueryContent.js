@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import {
   Box, Typography, Card, CardContent,
   Stack, Button, Drawer, ListItemButton,
@@ -25,18 +25,18 @@ import {
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
-// Import Supabase client
 import { createSupabaseClient } from '@/lib/supabase/client';
-
 import { useRaiseQuery } from './useRaiseQuery/page';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';
 
-export default function QueryContent() { // Remove router prop
+export default function QueryContent() {
   const supabase = createSupabaseClient();
-  const router = useRouter(); // Use useRouter hook
-  
+  const router = useRouter();
+
+  const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'info' });
+
   const {
     activeQuery,
     setActiveQuery,
@@ -47,14 +47,16 @@ export default function QueryContent() { // Remove router prop
     handleRemoveFile,
     handleSubmitQuery,
     queries,
-  } = useRaiseQuery();
+    isSubmitting,
+  } = useRaiseQuery({
+    onSuccess: (message) => setSnackbar({ open: true, message, severity: 'success' }),
+    onError: (message) => setSnackbar({ open: true, message, severity: 'error' }),
+  });
 
   const { profile, fetchProfile } = useClientStore();
   const [sidebarOpen] = React.useState(true);
-  const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState(null);
 
-  // Fetch current user from Supabase
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -70,11 +72,23 @@ export default function QueryContent() { // Remove router prop
   }, [profile, fetchProfile]);
 
   const handleLogout = async () => {
-    setOpenSnackbar(true);
+    setSnackbar({ open: true, message: 'Logging out...', severity: 'success' });
     setTimeout(async () => {
       await supabase.auth.signOut();
-      router.push('/login'); // Now router is properly defined
+      router.push('/login');
     }, 1500);
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+  
+  const renderChip = (status) => {
+    const props = styles.detailChip(status);
+    return <Chip label={status} sx={props.sx} icon={props.icon} size="small" />;
   };
 
   return (
@@ -155,7 +169,7 @@ export default function QueryContent() { // Remove router prop
               </Button>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
                 <Typography variant="h5" sx={styles.detailTitle}>{activeQuery.title}</Typography>
-                <Chip label={activeQuery.status} sx={styles.detailChip(activeQuery.status).sx} />
+                {renderChip(activeQuery.status)}
               </Stack>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="body2" sx={styles.detailSectionTitle}>Category</Typography>
@@ -232,7 +246,9 @@ export default function QueryContent() { // Remove router prop
                           </Box>
                         )}
                       </Box>
-                      <Button type="submit" variant="contained" startIcon={<SendIcon />} fullWidth sx={styles.submitButton}>Submit Query</Button>
+                      <Button type="submit" variant="contained" startIcon={<SendIcon />} fullWidth sx={styles.submitButton} disabled={isSubmitting}>
+                        {isSubmitting ? 'Submitting...' : 'Submit Query'}
+                      </Button>
                     </Stack>
                   </Box>
                 </CardContent>
@@ -259,7 +275,7 @@ export default function QueryContent() { // Remove router prop
                             <TableRow key={query.id} hover onClick={() => setActiveQuery(query)} sx={styles.queriesTableRow}>
                               <TableCell sx={styles.queriesTableCell}>{query.title}</TableCell>
                               <TableCell sx={styles.queriesTableCell}>{query.category}</TableCell>
-                              <TableCell><Chip label={query.status} sx={styles.queriesStatusChip(query.status).sx}/></TableCell>
+                              <TableCell><Chip label={query.status} sx={styles.queriesStatusChip(query.status)} size="small"/></TableCell>
                               <TableCell sx={styles.queriesTableCell}>{query.date}</TableCell>
                             </TableRow>
                           ))}
@@ -277,8 +293,10 @@ export default function QueryContent() { // Remove router prop
           </Grid>
         )}
       </Box>
-      <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>Logging out...</Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%', fontWeight: 'bold' }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

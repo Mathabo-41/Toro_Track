@@ -1,4 +1,4 @@
-// This file combines logic and styles for the reports screen.
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -11,7 +11,7 @@ import {
   ListItemButton, ListItemText, Drawer, Grid, Paper, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, TextField,
   Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Select, MenuItem,
-  FormControl, InputLabel, Menu, Tabs, Tab, CircularProgress
+  FormControl, InputLabel, Menu, Tabs, Tab
 } from '@mui/material';
 import {
   Assessment as ReportsIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon,
@@ -23,6 +23,7 @@ import {
 import { Snackbar, Alert } from '@mui/material';
 
 import { styles } from './styles';
+import LoadingScreen from '../common/LoadingScreen';
 
 export default function PerformanceReports() {
   const router = useRouter();
@@ -50,14 +51,13 @@ export default function PerformanceReports() {
   const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
 
   // Menu data
- const menu = [
-  { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-  { name: 'Projects', path: '/dashboard/admin/projects' },
-  { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Invite Users', path: '/dashboard/admin/users' },
-  { name: 'Settings', path: '/dashboard/admin/settings' }
-];
-
+  const menu = [
+    { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+    { name: 'Projects', path: '/dashboard/admin/projects' },
+    { name: 'Performance Reports', path: '/dashboard/admin/reports' },
+    { name: 'Invite Users', path: '/dashboard/admin/users' },
+    { name: 'Settings', path: '/dashboard/admin/settings' }
+  ];
 
   // Current project
   const currentProject = projects[currentProjectIndex];
@@ -95,24 +95,21 @@ export default function PerformanceReports() {
           return;
         }
 
-        // Try to fetch tasks for each project, but handle cases where tasks table might not exist
+        // Try to fetch tasks for each project
         const projectsWithTasks = await Promise.all(
           projectsData.map(async (project) => {
             try {
-              // Check if tasks table exists by making a simple query
               const { data: tasks, error: tasksError } = await supabase
                 .from('project_tasks')
                 .select('*')
                 .eq('project_id', project.id)
                 .limit(1);
 
-              // If tasks table doesn't exist or has error, create empty columns
               if (tasksError) {
                 console.warn(`Tasks table not accessible for project ${project.id}:`, tasksError.message);
                 return createProjectWithEmptyTasks(project);
               }
 
-              // If tasks table exists, fetch all tasks for this project
               const { data: allTasks, error: allTasksError } = await supabase
                 .from('project_tasks')
                 .select('*')
@@ -123,13 +120,12 @@ export default function PerformanceReports() {
                 return createProjectWithEmptyTasks(project);
               }
 
-              // Organize tasks into columns
               const columns = {
                 backlog: {
                   title: 'Backlog',
                   tasks: allTasks?.filter(task => task.status === 'backlog' || !task.status) || []
                 },
-                in_progress: { // CHANGE THIS KEY
+                in_progress: {
                   title: 'In Progress',
                   tasks: allTasks?.filter(task => task.status === 'in_progress') || [] 
                 },
@@ -139,7 +135,6 @@ export default function PerformanceReports() {
                 }
               };
 
-              // Calculate progress
               const totalTasks = allTasks?.length || 0;
               const completedTasks = columns.done.tasks.length;
               const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -172,7 +167,6 @@ export default function PerformanceReports() {
             console.warn('Error fetching team members:', membersError.message);
           }
 
-          // Format team members with colors
           formattedMembers = (membersData || []).map((member, index) => ({
             id: member.id,
             name: member.name || member.email,
@@ -183,7 +177,6 @@ export default function PerformanceReports() {
           console.warn('Error processing team members:', err);
         }
 
-        // Create report metrics based on actual data
         const metricsData = createMetricsData(projectsWithTasks, formattedMembers);
 
         setReports(metricsData);
@@ -202,7 +195,7 @@ export default function PerformanceReports() {
     fetchData();
   }, []);
 
-  // Helper function to create empty metrics when no projects exist
+  // Helper function to create empty metrics
   const createEmptyMetrics = () => ({
     totalProjects: {
       title: 'Total Projects',
@@ -241,7 +234,7 @@ export default function PerformanceReports() {
     }
   });
 
-  // Helper function to create metrics data from projects and team members
+  // Helper function to create metrics data
   const createMetricsData = (projects, members) => {
     const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
     const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
@@ -287,7 +280,7 @@ export default function PerformanceReports() {
     };
   };
 
-  // Helper function to create project with empty task columns
+  // Helper function to create project with empty tasks
   const createProjectWithEmptyTasks = (project) => {
     return {
       id: project.id,
@@ -319,7 +312,6 @@ export default function PerformanceReports() {
   };
 
   const getAssigneeName = (task) => {
-    // Prioritize the new team name, but fall back to the old user name for existing tasks
     if (task.assignee_team) return task.assignee_team;
     if (task.assignee_id) {
         const member = teamMembers.find(m => m.id === task.assignee_id);
@@ -329,7 +321,6 @@ export default function PerformanceReports() {
   };
 
   const getAssigneeRole = (task) => {
-    // This is now simpler: if there's a team, that's the role.
     if (task.assignee_team) return 'Team';
     if (task.assignee_id) {
         const member = teamMembers.find(m => m.id === task.assignee_id);
@@ -365,7 +356,6 @@ export default function PerformanceReports() {
 
   // Event handlers
   const handleLogout = async () => {
-    // Show green logout snackbar
     setSnackbarMessage('Logging out...');
     setSnackbarSeverity('success');
     setIsLogoutSnackbar(true);
@@ -426,7 +416,6 @@ export default function PerformanceReports() {
 
   const handleDeleteTaskClick = async (taskId, columnId) => {
     try {
-      // Try to delete from database if tasks table exists
       try {
         const { error } = await supabase
           .from('project_tasks')
@@ -440,7 +429,6 @@ export default function PerformanceReports() {
         console.warn('Tasks table might not exist:', dbError);
       }
       
-      // Update local state regardless
       const updatedProjects = [...projects];
       const column = updatedProjects[currentProjectIndex].columns[columnId];
       column.tasks = column.tasks.filter(task => task.id !== taskId);
@@ -453,83 +441,76 @@ export default function PerformanceReports() {
   };
 
   const handleSaveTask = async () => {
-      if (!currentTask || !currentTask.title) {
-        showSnackbar('Task title is required', 'error');
-        return;
+    if (!currentTask || !currentTask.title) {
+      showSnackbar('Task title is required', 'error');
+      return;
+    }
+
+    if (!currentProject) {
+      showSnackbar('No project selected', 'error');
+      return;
+    }
+
+    try {
+      if (isEditing) {
+        const { data: updatedTask, error } = await supabase
+            .from('project_tasks')
+            .update({
+              title: currentTask.title,
+              description: currentTask.description,
+              due_date: currentTask.dueDate,
+              status: currentColumn,
+              assignee_team: currentTask.assignee_team,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentTask.id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        const updatedProjects = [...projects];
+        const project = updatedProjects[currentProjectIndex];
+        
+        Object.keys(project.columns).forEach(key => {
+            project.columns[key].tasks = project.columns[key].tasks.filter(t => t.id !== updatedTask.id);
+        });
+        
+        project.columns[currentColumn].tasks.push(updatedTask);
+        setProjects(updatedProjects);
+        showSnackbar('Task updated successfully');
+
+      } else {
+        const { data: savedTask, error } = await supabase
+            .from('project_tasks')
+            .insert({
+              title: currentTask.title,
+              description: currentTask.description,
+              due_date: currentTask.dueDate,
+              status: 'backlog',
+              project_id: currentProject.id,
+              assignee_team: currentTask.assignee_team
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        const updatedProjects = [...projects];
+        updatedProjects[currentProjectIndex].columns.backlog.tasks.push(savedTask);
+        setProjects(updatedProjects);
+        showSnackbar('Task added successfully');
       }
 
-      if (!currentProject) {
-        showSnackbar('No project selected', 'error');
-        return;
-      }
+      setOpenTaskDialog(false);
 
-      // The logic to find a user ID is no longer needed. We save the team string directly.
-
-      try {
-        if (isEditing) {
-          // Logic for updating an existing task
-          const { data: updatedTask, error } = await supabase
-              .from('project_tasks')
-              .update({
-                title: currentTask.title,
-                description: currentTask.description,
-                due_date: currentTask.dueDate,
-                status: currentColumn,
-                assignee_team: currentTask.assignee_team, // Save the team name
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', currentTask.id)
-              .select()
-              .single();
-
-          if (error) throw error;
-
-          // Refresh local state to show the update
-          const updatedProjects = [...projects];
-          const project = updatedProjects[currentProjectIndex];
-          
-          Object.keys(project.columns).forEach(key => {
-              project.columns[key].tasks = project.columns[key].tasks.filter(t => t.id !== updatedTask.id);
-          });
-          
-          project.columns[currentColumn].tasks.push(updatedTask);
-          setProjects(updatedProjects);
-          showSnackbar('Task updated successfully');
-
-        } else {
-          // Logic for creating a new task
-          const { data: savedTask, error } = await supabase
-              .from('project_tasks')
-              .insert({
-                title: currentTask.title,
-                description: currentTask.description,
-                due_date: currentTask.dueDate,
-                status: 'backlog',
-                project_id: currentProject.id,
-                assignee_team: currentTask.assignee_team // Save the team name
-              })
-              .select()
-              .single();
-
-          if (error) throw error;
-
-          // Add the newly created task (returned from DB) to our local state
-          const updatedProjects = [...projects];
-          updatedProjects[currentProjectIndex].columns.backlog.tasks.push(savedTask);
-          setProjects(updatedProjects);
-          showSnackbar('Task added successfully');
-        }
-
-        setOpenTaskDialog(false);
-
-      } catch (err) {
-        console.error(`Error saving task:`, err);
-        showSnackbar(`Error: ${err.message}`, 'error');
-      }
-    };
+    } catch (err) {
+      console.error(`Error saving task:`, err);
+      showSnackbar(`Error: ${err.message}`, 'error');
+    }
+  };
 
   const moveTask = async (taskId, fromColumn, toColumn) => {
-    // This makes the app feel fast and responsive. We optimistically update the UI first.
     const updatedProjects = JSON.parse(JSON.stringify(projects)); 
     const projectToUpdate = updatedProjects[currentProjectIndex];
     const fromCol = projectToUpdate.columns[fromColumn];
@@ -540,13 +521,11 @@ export default function PerformanceReports() {
       return;
     }
 
-    // Remove the task from its original column and add it to the new one
     const [movedTask] = fromCol.tasks.splice(taskIndex, 1);
-    movedTask.status = toColumn; // Updates the task's status property
+    movedTask.status = toColumn;
     projectToUpdate.columns[toColumn].tasks.push(movedTask);
-    setProjects(updatedProjects); // Applies the UI change immediately
+    setProjects(updatedProjects);
 
-    // Attempt to update the database
     try {
       const { error } = await supabase
         .from('project_tasks')
@@ -556,20 +535,15 @@ export default function PerformanceReports() {
         })
         .eq('id', taskId);
 
-      // If the database update fails, throw an error to trigger the catch block
       if (error) {
         throw error;
       }
       
-      // success message on every status move
-       showSnackbar('Task status updated!', 'success');
+      showSnackbar('Task status updated!', 'success');
 
     } catch (err) {
-      // Handle failure by reverting the UI change
       console.error('Failed to move task in database:', err);
       showSnackbar(`Error: Could not update task status. Reverting.`, 'error');
-
-      // If the database call fails, we set the state back to how it was before the move.
       setProjects(projects); 
     }
   };
@@ -603,13 +577,19 @@ export default function PerformanceReports() {
     }
   });
 
+  // REPLACE DEFAULT LOADING WITH CUSTOM LOADING SCREEN
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
+    return <LoadingScreen message="Loading Reports..." />;
   }
 
   if (error) {
-    return <Box sx={{ p: 3 }}><Alert severity="error">{error}</Alert></Box>;
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
+
 
   return (
     <Box sx={styles.mainContainer}>

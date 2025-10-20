@@ -12,21 +12,29 @@ const useRaiseQueryStore = create((set) => ({
     title: '',
     category: '',
     description: '',
-    attachments: []
   },
-  fileToUpload: null,
+  fileToUpload: null, // This will now store the File object directly
   setActiveQuery: (query) => set({ activeQuery: query }),
   setNewQuery: (query) => set({ newQuery: query }),
   setFileToUpload: (file) => set({ fileToUpload: file }),
+  resetForm: () => set({
+    newQuery: { title: '', category: '', description: '' },
+    fileToUpload: null
+  }),
 }));
 
 /**
- *  managing the state and logic of the Raise Query screen. It uses Zustand for local UI state and React Query for server state.
+ * Manages the state and logic of the Raise Query screen.
+ * @param {Object} options - Configuration options.
+ * @param {Function} options.onSuccess - Callback for successful mutation.
+ * @param {Function} options.onError - Callback for failed mutation.
  */
-export const useRaiseQuery = () => {
+export const useRaiseQuery = ({ onSuccess, onError } = {}) => {
   const queryClient = useQueryClient();
-  const { activeQuery, newQuery, fileToUpload,
-          setActiveQuery, setNewQuery, setFileToUpload } = useRaiseQueryStore();
+  const { 
+    activeQuery, newQuery, fileToUpload,
+    setActiveQuery, setNewQuery, setFileToUpload, resetForm
+  } = useRaiseQueryStore();
 
   // React Query hook for fetching server state (list of queries)
   const { data: queries = [], isLoading: isLoadingQueries } = useQuery({
@@ -38,19 +46,24 @@ export const useRaiseQuery = () => {
   const submitQueryMutation = useMutation({
     mutationFn: raiseQueryService.submitQuery,
     onSuccess: () => {
-      // Invalidate the queries cache to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ['queries'] });
+      resetForm();
+      if (onSuccess) {
+        onSuccess('Query submitted successfully!');
+      }
+    },
+    onError: (error) => {
+      console.error("Mutation Error:", error);
+      if (onError) {
+        onError(error.message || 'Failed to submit query. Please try again.');
+      }
     },
   });
 
   // Handlers
   const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFileToUpload({
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-      });
+    if (e.target.files && e.target.files.length > 0) {
+      setFileToUpload(e.target.files[0]);
     }
   };
 
@@ -60,21 +73,10 @@ export const useRaiseQuery = () => {
 
   const handleSubmitQuery = (e) => {
     e.preventDefault();
-    // Where we send the form data and file to the database
     submitQueryMutation.mutate({
       ...newQuery,
-      attachments: fileToUpload ? [fileToUpload] : [],
-      date: new Date().toISOString().slice(0, 10),
-      status: 'pending'
+      fileToUpload: fileToUpload,
     });
-    setNewQuery({
-      title: '',
-      category: '',
-      description: '',
-      attachments: []
-    });
-    setFileToUpload(null);
-    alert('Query submitted successfully!');
   };
 
   return {
@@ -87,6 +89,7 @@ export const useRaiseQuery = () => {
     handleRemoveFile,
     handleSubmitQuery,
     queries,
-    isLoadingQueries
+    isLoadingQueries,
+    isSubmitting: submitQueryMutation.isPending,
   };
 };

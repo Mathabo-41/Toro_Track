@@ -1,4 +1,5 @@
 // Contains the inline styles and sx overrides for the raise query screen
+import { CheckCircleOutline as ResolvedIcon, HourglassEmpty as PendingIcon } from '@mui/icons-material';
 
 export const mainContentBox = {
   flexGrow: 1,
@@ -61,10 +62,11 @@ export const detailChip = (status) => {
     border = '1px solid #616161';
   }
   return {
-    backgroundColor,
-    color,
-    border,
-    size: 'small',
+    sx: {
+      backgroundColor,
+      color,
+      border,
+    },
     icon: status === 'resolved' ? <ResolvedIcon /> : <PendingIcon />
   };
 };
@@ -159,7 +161,7 @@ export const attachButton = {
   borderColor: '#606c38',
   '&:hover': {
     border: '#283618',
-    backgroundColor: '#283618',
+    backgroundColor: 'rgba(40, 54, 24, 0.1)',
   }
 };
 
@@ -186,6 +188,10 @@ export const submitButton = {
   color: '#fefae0',
   '&:hover': {
     backgroundColor: '#e65c19'
+  },
+  '&.Mui-disabled': {
+    backgroundColor: '#a3a699',
+    color: '#6b705c'
   }
 };
 
@@ -241,7 +247,6 @@ export const queriesStatusChip = (status) => {
     backgroundColor,
     color,
     border,
-    size: 'small'
   };
 };
 

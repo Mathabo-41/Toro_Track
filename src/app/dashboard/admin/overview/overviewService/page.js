@@ -3,7 +3,6 @@ import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   People as PeopleIcon,
   Assignment as ProjectsIcon,
-  Groups as TeamsIcon,
   Timeline as ActivityIcon,
 } from '@mui/icons-material';
 
@@ -33,14 +32,12 @@ export async function fetchMetrics() {
   const [
     newClientsData,
     newProjectsData,
-    totalTeamsData
   ] = await Promise.all([
     supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', start),
     supabase.from('projects').select('id', { count: 'exact', head: true }).gte('created_at', start),
-    supabase.from('teams').select('id', { count: 'exact', head: true })
   ]);
 
-  const allErrors = [metricsError, newClientsData.error, newProjectsData.error, totalTeamsData.error].filter(Boolean);
+  const allErrors = [metricsError, newClientsData.error, newProjectsData.error].filter(Boolean);
 
   if (allErrors.length > 0) {
     console.error("Error fetching metrics:", allErrors);
@@ -64,13 +61,7 @@ export async function fetchMetrics() {
       icon: <ProjectsIcon color="secondary" fontSize="large" />,
       trend: 'up'
     },
-    {
-      title: 'Team Members',
-      value: overviewMetrics.team_members || 0,
-      change: `${totalTeamsData.count || 0} Teams`,
-      icon: <TeamsIcon color="success" fontSize="large" />,
-      trend: 'up'
-    },
+    // The "Team Members" card and its logic have been completely removed.
     {
       title: 'This Week Activity',
       value: thisWeekActivity,
