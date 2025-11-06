@@ -157,7 +157,7 @@ export default function AdminOverviewContent() {
       <Box component="main" sx={globalStyles.mainContentBox}>
         <Box sx={globalStyles.pageHeader}>
           <Typography variant="h4" sx={globalStyles.pageHeaderText}>Dashboard Overview</Typography>
-          <Typography variant="body1" sx={globalStyles.pageHeaderText}>Welcome back! Here's what's happening today.</Typography>
+          <Typography variant="body1" sx={globalStyles.pageHeaderText}>Welcome back! Here&apos;s what&apos;s happening today.</Typography>
         </Box>
 
         <Grid container spacing={3} sx={{ mb: 4 }}>

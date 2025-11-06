@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Image from 'next/image';
 import {
   mainContainer,
   videoBackground,
@@ -39,10 +40,13 @@ export default function Welcome() {
       <div style={subtleOverlay}></div>
 
       {/* Logo Image */}
-      <img
+      <Image
         src="/appImages/logo.png"
         alt="Logo"
         style={logoImage}
+        width={500}
+        height={150}
+        priority
       />
 
       {/* Continue Button */}

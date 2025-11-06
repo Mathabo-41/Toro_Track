@@ -310,7 +310,7 @@ export default function SystemSettings() {
       }
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   // Simulate system status check 
   const simulateSystemStatusCheck = () => {

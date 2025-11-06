@@ -191,7 +191,7 @@ export default function LicenseConfigContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   const handleLogout = () => {
     setOpenSnackbar(true);

@@ -68,7 +68,7 @@ export default function TeamsAndUsers() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -432,7 +432,7 @@ export default function TeamsAndUsers() {
                 color="text.secondary"
                 sx={{ mt: 1, display: 'block' }}
               >
-                This password will be required for the user's login
+                This password will be required for the user&apos;s login
               </Typography>
             </Box>
             <Box>

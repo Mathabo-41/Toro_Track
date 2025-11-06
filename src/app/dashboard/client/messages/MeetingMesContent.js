@@ -641,7 +641,7 @@ export default function MeetingMesContent() {
                     No notifications
                   </Typography>
                   <Typography variant="body2" sx={{ color: COLORS.border, mt: 1 }}>
-                    You're all caught up!
+                    You&apos;re all caught up!!
                   </Typography>
                 </Box>
               )}

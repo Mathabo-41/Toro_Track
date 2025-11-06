@@ -357,12 +357,12 @@ export default function ProjDetailsContent() {
     };
 
     initializeData();
-  }, [supabase, router]);
+  }, [supabase, router,fetchAdditionalProjectData]);
 
   /**
    * Fetch additional project data (tasks, team, files)
    */
-  const fetchAdditionalProjectData = async (projectId) => {
+  const fetchAdditionalProjectData = React.useCallback(async (projectId) => {
     try {
       // Fetch tasks
       await fetchTasksForProject(projectId);
@@ -373,12 +373,12 @@ export default function ProjDetailsContent() {
     } catch (error) {
       console.error('Error fetching additional project data:', error);
     }
-  };
+  }, [fetchTasksForProject, fetchProjectFiles]);
 
   /**
    * Fetch tasks for a specific project
    */
-  const fetchTasksForProject = async (projectId) => {
+  const fetchTasksForProject = React.useCallback(async (projectId) => {
     try {
       const { data: tasks, error } = await supabase
         .from('project_tasks')
@@ -397,12 +397,12 @@ export default function ProjDetailsContent() {
       console.error('Error in fetchTasksForProject:', error);
       initializeEmptyColumns();
     }
-  };
+  }, [organizeTasksIntoColumns, initializeEmptyColumns]);
 
   /**
    * Fetch project files
    */
-  const fetchProjectFiles = async (projectId) => {
+  const fetchProjectFiles = React.useCallback(async (projectId) => {
     try {
       const { data: files, error } = await supabase
         .from('project_files')
@@ -421,12 +421,12 @@ export default function ProjDetailsContent() {
     } catch (error) {
       console.error('Error fetching project files:', error);
     }
-  };
+  }, [supabase]);
 
   /**
    * Organize tasks into Kanban columns
    */
-  const organizeTasksIntoColumns = (tasks) => {
+  const organizeTasksIntoColumns = React.useCallback((tasks) => {
     const columns = {
       backlog: {
         id: 'backlog',
@@ -470,19 +470,19 @@ export default function ProjDetailsContent() {
     }
 
     setKanbanColumns(columns);
-  };
+  }, []);
 
   /**
    * Initialize empty columns
    */
-  const initializeEmptyColumns = () => {
+  const initializeEmptyColumns = React.useCallback(() => {
     const emptyColumns = {
       backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
       in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
       done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
     };
     setKanbanColumns(emptyColumns);
-  };
+  }, []);
 
   /**
    * Handle project change

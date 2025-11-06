@@ -65,7 +65,7 @@ export default function CompliAlertContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   /*
   Handles user logout and redirects to the login page.

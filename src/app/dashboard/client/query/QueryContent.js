@@ -284,7 +284,7 @@ export default function QueryContent() {
                     </TableContainer>
                   ) : (
                     <Box sx={styles.noQueriesBox}>
-                      <Typography variant="body1" sx={styles.noQueriesText}>You haven't submitted any queries yet.</Typography>
+                      <Typography variant="body1" sx={styles.noQueriesText}>You haven&apos;t submitted any queries yet.</Typography>
                     </Box>
                   )}
                 </CardContent>

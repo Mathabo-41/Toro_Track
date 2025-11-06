@@ -45,7 +45,7 @@ export default function SettingsContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
  /*
     Logout with Snackbar effect

@@ -193,10 +193,10 @@ export default function PerformanceReports() {
     };
 
     fetchData();
-  }, []);
+  }, [supabase, createEmptyMetrics, createProjectWithEmptyTasks, createMetricsData]);
 
   // Helper function to create empty metrics
-  const createEmptyMetrics = () => ({
+  const createEmptyMetrics = React.useCallback(() => ({
     totalProjects: {
       title: 'Total Projects',
       value: 0,
@@ -232,10 +232,10 @@ export default function PerformanceReports() {
       change: '0%',
       icon: <BacklogIcon />
     }
-  });
+  }), []);
 
   // Helper function to create metrics data
-  const createMetricsData = (projects, members) => {
+  const createMetricsData = React.useCallback((projects, members) => {
     const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
     const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
     const inProgressTasks = projects.reduce((total, project) => total + (project.columns?.inProgress?.tasks?.length || 0), 0);
@@ -278,10 +278,10 @@ export default function PerformanceReports() {
         icon: <BacklogIcon />
       }
     };
-  };
+  }, [getTotalTasks]);
 
   // Helper function to create project with empty tasks
-  const createProjectWithEmptyTasks = (project) => {
+  const createProjectWithEmptyTasks = React.useCallback((project) => {
     return {
       id: project.id,
       name: project.project_name || 'Unnamed Project',
@@ -295,7 +295,7 @@ export default function PerformanceReports() {
       created_at: project.created_at,
       updated_at: project.updated_at
     };
-  };
+  }, []);
 
   // Helper functions
   const showSnackbar = (message, severity = 'success') => {
@@ -329,12 +329,12 @@ export default function PerformanceReports() {
     return 'unassigned';
   };
 
-  const getTotalTasks = (project) => {
+  const getTotalTasks = React.useCallback((project) => {
     if (!project?.columns) return 0;
     return Object.values(project.columns).reduce((total, column) => {
       return total + (column?.tasks?.length || 0);
     }, 0);
-  };
+  }, []);
 
   const getColumnColor = (columnId) => {
     const colors = {

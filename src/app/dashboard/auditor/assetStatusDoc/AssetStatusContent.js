@@ -73,7 +73,7 @@ const Header = ({ search, handleSearchChange }) => {
           Asset Status & Documentation
         </Typography>
         <Typography variant="subtitle1" sx={styles.assetStatusSubtitle}>
-          A clear view of each asset's lifecycle and associated paperwork.
+          A clear view of each asset&apos;s lifecycle and associated paperwork.
         </Typography>
       </Box>
       <Box sx={styles.headerRightSectionStyles}>
@@ -104,7 +104,7 @@ export default function AssetStatusContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   const handleLogout = () => {
     setOpenSnackbar(true);

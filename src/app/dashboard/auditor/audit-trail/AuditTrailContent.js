@@ -116,7 +116,7 @@ export default function AuditTrailContent() {
       }
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   /*
    * Populates the form with data when a log entry is being edited.
@@ -133,7 +133,7 @@ export default function AuditTrailContent() {
     } else {
       setFormState(initialFormState);
     }
-  }, [editingLog, isModalOpen]);
+  }, [editingLog, isModalOpen, initialFormState]);
 
   /**
    * Handles form field changes

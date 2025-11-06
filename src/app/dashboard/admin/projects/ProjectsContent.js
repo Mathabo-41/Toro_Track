@@ -102,7 +102,7 @@ export default function ProjectsContent() {
       setCurrentUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   // ----------------------------
   // Helper functions

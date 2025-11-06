@@ -43,3 +43,20 @@ export const noContentText = { color: '#525252' };
 export const notificationNewChip = { backgroundColor: 'rgba(243, 114, 44, 0.2)', color: '#f3722c', border: '1px solid #f3722c' };
 export const notificationText = (isRead) => ({ color: isRead ? '#525252' : '#283618', fontWeight: isRead ? 'normal' : 'bold' });
 export const notificationTime = { color: 'rgba(40, 54, 24, 0.5)' };
+
+export const joinButton = {
+  textTransform: 'none',
+  borderRadius: '4px',
+  marginRight: '8px'
+};
+
+export const meetingDescription = {
+  color: 'rgba(40, 54, 24, 0.7)',
+  fontSize: '0.8rem',
+  marginTop: '4px'
+};
+
+export const markAllReadButton = {
+  textTransform: 'none',
+  borderRadius: '4px'
+};

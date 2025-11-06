@@ -140,7 +140,7 @@ export default function RepoExportContent() {
       }
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   /**
    * Enhanced PDF export handler with validation and user feedback
