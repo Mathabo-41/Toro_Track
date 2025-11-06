@@ -3,9 +3,6 @@
 'use client';
 
 import React, { Suspense, lazy } from 'react';
-// Removed unused imports if they are not needed elsewhere
-// import { Box, CircularProgress } from '@mui/material';
-// import * as globalStyles from '../common/styles';
 
 // Import LoadingScreen component
 import LoadingScreen from '../common/LoadingScreen';
