@@ -1,11 +1,6 @@
 /* This file ensures that the screen loads and opens immediately by wrapping the content with lazy loading and suspense fallback to display a loading message */
 
-'use client';
-
 import React, { Suspense, lazy } from 'react';
-// Removed unused imports if they are not needed elsewhere
-// import { Box, CircularProgress } from '@mui/material';
-// import * as globalStyles from '../common/styles';
 
 // This line forces the page to be dynamic and skips pre-rendering
 export const dynamic = 'force-dynamic';
