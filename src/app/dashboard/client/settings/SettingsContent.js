@@ -31,7 +31,7 @@ import {
     Close as CloseIcon
 } from '@mui/icons-material';
 
-import { useSettings } from './useSettings/page';
+import { useSettings } from './useSettings/useSettings';
 import * as globalStyles from '../common/styles';
 import { clientSettingsStyles } from './styles';
 import { useClientStore } from '../common/clientStore';

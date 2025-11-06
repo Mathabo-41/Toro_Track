@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
-import { fetchSettings, updateSettings } from '../settingsService/page';
+import { fetchSettings, updateSettings } from '../settingsService/service';
 
 /**
  * Zustand Store for global state.

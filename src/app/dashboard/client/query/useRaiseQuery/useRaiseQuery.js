@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
-import * as raiseQueryService from '../raiseQueryService/page';
+import * as raiseQueryService from '../raiseQueryService/service';
 
 // Zustand Store for UI state (active query, new query form)
 const useRaiseQueryStore = create((set) => ({

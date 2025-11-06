@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchActiveAlerts, fetchSecurityChecks, exportComplianceReport } from '../complianceService/page';
+import { fetchActiveAlerts, fetchSecurityChecks, exportComplianceReport } from '../complianceService/service';
 
 export function useCompliance() {
   const [search, setSearch] = useState('');

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchProjectData, fetchComments, postComment } from '../detailsService/page';
+import { fetchProjectData, fetchComments, postComment } from '../detailsService/service';
 
 /**
  * Custom hook to manage state and data fetching for the Project Details page.

@@ -10,7 +10,7 @@ import {
   exportCsvReport, 
   setReportSchedule, 
   generateAuditSnapshot 
-} from '../reportingExService/page';
+} from '../reportingExService/service';
 
 const useFormStore = create((set) => ({
   fromDate: '',

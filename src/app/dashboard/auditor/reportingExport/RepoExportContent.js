@@ -30,7 +30,7 @@ import {
   TableChart as CsvIcon
 } from '@mui/icons-material';
 
-import { useReportExport } from './useReportExport/page';
+import { useReportExport } from './useReportExport/useReportExport';
 import {
   mainContentBoxStyles,
   headerBoxStyles,

@@ -26,7 +26,7 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import { createSupabaseClient } from '@/lib/supabase/client';
-import { useRaiseQuery } from './useRaiseQuery/page';
+import { useRaiseQuery } from './useRaiseQuery/useRaiseQuery';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';

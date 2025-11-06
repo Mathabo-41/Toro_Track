@@ -20,7 +20,7 @@ import {
   Dashboard as DashboardIcon, TrendingUp as ProgressIcon
 } from '@mui/icons-material';
 
-import { useProjects } from './useProjects/page';
+import { useProjects } from './useProjects/useProjects';
 import { styles } from './styles';
 import LoadingScreen from '../common/LoadingScreen';
 // ----------------------------

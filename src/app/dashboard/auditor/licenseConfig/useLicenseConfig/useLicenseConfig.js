@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { getDashboardData, getLicenseRegisterByClient, addNewLicense } from '../licenseConfigService/page';
+import { getDashboardData, getLicenseRegisterByClient, addNewLicense } from '../licenseConfigService/service';
 
 /**
  * Manages all state and handlers for the License Configuration page.

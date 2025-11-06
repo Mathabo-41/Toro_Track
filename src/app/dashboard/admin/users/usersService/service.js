@@ -5,17 +5,17 @@ import { createSupabaseClient } from '@/lib/supabase/client';
 * Fetches all user, team, and task data from our secure API route.
 */
 export const fetchAllData = async () => {
-  const supabase = createSupabaseClient();
-  try {
-    const response = await fetch('/api/admin/users');
-    if (!response.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching all data:', error);
-    return { users: [], tasks: [] };
-  }
+  const supabase = createSupabaseClient();
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/users`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching all data:', error);
+    return { users: [], tasks: [] };
+  }
 };
 
 /**
@@ -27,23 +27,23 @@ export const fetchAllData = async () => {
 */
 
 export const inviteUser = async (email, role, password, clientData) => {
-  try {
-    const response = await fetch('/api/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, role, password, clientData }),
-    });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, role, password, clientData }),
+    });
 
-    const result = await response.json();
-    if (!response.ok) {
-      const errorMessage = result.error || 'An unexpected error occurred.';
-      throw new Error(errorMessage);
-    }
-    return { user: result.user };
-  } catch (error) {
-    console.error('Error inviting user:', error.message);
-    return { error: { message: error.message } };
-  }
+    const result = await response.json();
+    if (!response.ok) {
+      const errorMessage = result.error || 'An unexpected error occurred.';
+      throw new Error(errorMessage);
+    }
+    return { user: result.user };
+  } catch (error) {
+    console.error('Error inviting user:', error.message);
+    return { error: { message: error.message } };
+  }
 };
 
 /**

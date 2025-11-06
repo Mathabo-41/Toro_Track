@@ -32,7 +32,7 @@ const DataGrid = dynamic(() => import('@mui/x-data-grid').then((datagrid) => dat
 import { mainContentBoxStyles, headerBoxStyles, pageTitleStyles, headerRightSectionStyles, perClientLicenseRegisterStyles, expiryRenewalAlertsStyles, licenseUsageEntitlementDashboardStyles, licenseTotalsBoxStyles, overUsageAlertStyles } from './styles';
 import { auditorMenu } from '../common/auditorStore';
 import * as globalStyles from '../common/styles';
-import * as LicenseConfigHook from './useLicenseConfig/page';
+import * as LicenseConfigHook from './useLicenseConfig/useLicenseConfig';
 
 /*
 * This component shows upcoming license renewals.

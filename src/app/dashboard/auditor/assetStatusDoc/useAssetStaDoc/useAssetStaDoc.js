@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { create } from 'zustand';
-import { getAssetStatusDocData } from '../assetStatusDocService/page';
+import { getAssetStatusDocData } from '../assetStatusDocService/service';
 
 const useAssetStatusDocStore = create((set) => ({
   search: "",

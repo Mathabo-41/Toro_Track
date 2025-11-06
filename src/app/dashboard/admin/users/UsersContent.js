@@ -34,8 +34,8 @@ import {
 } from '@mui/icons-material';
 
 import { styles } from './styles';
-import { useUsers } from './useUsers/page';
-import { adminMenuData } from './usersService/page';
+import { useUsers } from './useUsers/useUsers';
+import { adminMenuData } from './usersService/service';
 
 export default function TeamsAndUsers() {
   const supabase = createSupabaseClient();

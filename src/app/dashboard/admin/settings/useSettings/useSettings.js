@@ -14,7 +14,7 @@ import {
     fetchSettingsCategories,
     fetchRolePermissions,
     saveRolePermissions
-} from '../settingsService/page';
+} from '../settingsService/service';
 
 // Defines a mapping from category name to its corresponding icon component.
 const iconMap = {

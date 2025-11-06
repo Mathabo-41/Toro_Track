@@ -10,7 +10,7 @@ import {
     deleteAuditLogEntry,
     uploadDocument,
     addDocumentRecord
-} from '../audit-trailService/page';
+} from '../audit-trailService/service';
 
 // Manage state and logic for the audit trail screen
 const useAuditTrail = () => {

@@ -17,7 +17,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import { Snackbar, Alert } from '@mui/material';
 
-import useAssetStatusDoc from './useAssetStaDoc/page';
+import useAssetStatusDoc from './useAssetStaDoc/useAssetStaDoc';
 import * as globalStyles from '../common/styles';
 import * as styles from './styles';
 import { auditorMenu } from '../common/auditorStore';

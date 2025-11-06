@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import * as service from '../reportsService/page';
+import * as service from '../reportsService/service';
 
 export const useReports = () => {
   const [reports, setReports] = useState({});

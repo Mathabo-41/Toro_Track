@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
-import useOverview from './useOverview/page';
+import useOverview from './useOverview/useOverview';
 import { useAdminStore, adminMenu } from '../common/adminStore';
 import * as globalStyles from '../common/styles';
 import * as styles from './styles';

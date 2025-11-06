@@ -30,7 +30,7 @@ import {
   tableCellBodyStyles,
   modalStyles,
 } from './styles';
-import useAuditTrail from './useAudit-Trail/page';
+import useAuditTrail from './useAudit-Trail/useAudit-Trail';
 
 export default function AuditTrailContent() {
   const supabase = createSupabaseClient();

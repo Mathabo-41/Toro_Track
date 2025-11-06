@@ -8,7 +8,7 @@ import {
   removeUser as removeUserService,
   updateUserRole,
   assignTask,
-} from '../usersService/page';
+} from '../usersService/service.js';
 
 /**
 * Manages state and logic for the users screen.

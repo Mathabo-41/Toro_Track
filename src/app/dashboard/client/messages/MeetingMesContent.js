@@ -29,7 +29,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 // Import Supabase client
 import { createSupabaseClient } from '@/lib/supabase/client';
 
-import { useMeetingMes } from './useMeetingMes/page';
+import { useMeetingMes } from './useMeetingMes/useMeetingMes';
 import * as styles from './styles';
 import * as globalStyles from '../common/styles';
 import { useClientStore, clientMenu } from '../common/clientStore';

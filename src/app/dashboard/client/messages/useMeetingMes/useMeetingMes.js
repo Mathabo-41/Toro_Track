@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
-import * as meetingMesService from '../meetingMesService/page';
+import * as meetingMesService from '../meetingMesService/service';
 
 // MODIFIED: Zustand Store - removed message/conversation state
 const useMeetingMesStore = create((set) => ({

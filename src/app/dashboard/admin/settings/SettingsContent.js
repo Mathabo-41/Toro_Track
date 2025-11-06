@@ -27,7 +27,7 @@ import {
   Schedule as ScheduleIcon, CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 
-import { useSettings } from './useSettings/page';
+import { useSettings } from './useSettings/useSettings';
 import { styles } from './styles';
 
 export default function SystemSettings() {

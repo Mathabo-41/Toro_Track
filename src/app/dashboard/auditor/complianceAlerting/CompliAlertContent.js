@@ -34,7 +34,7 @@ import {
   exportButtonStyles, activeAlertsTableContainerStyles, tableHeaderCellStyles,
   getSeverityChipColor, securityComplianceSectionStyles, securityListItemStyles
 } from './styles';
-import { useCompliance } from './useCompliance/page';
+import { useCompliance } from './useCompliance/useCompliance';
 
 // Import global styles for layout and navigation
 import * as globalStyles from '../common/styles';

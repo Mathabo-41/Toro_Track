@@ -23,7 +23,7 @@ import { Snackbar, Alert } from '@mui/material';
 
 import LoadingScreen from '../common/LoadingScreen'; 
 
-import { useSettings } from './useSettings/page';
+import { useSettings } from './useSettings/useSettings';
 import * as globalStyles from '../common/styles';
 import { auditorMenu } from '../common/auditorStore';
 

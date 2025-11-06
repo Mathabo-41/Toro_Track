@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { create } from 'zustand';
-import { useGetSettingsQuery, useUpdateSettingsMutation, uploadAvatar } from '../settingsService/page';
+import { useGetSettingsQuery, useUpdateSettingsMutation, uploadAvatar } from '../settingsService/service';
 
 // Zustand store for managing local form state
 const useFormStore = create((set) => ({

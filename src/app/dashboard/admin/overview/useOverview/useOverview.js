@@ -1,7 +1,7 @@
 "use client";
 // Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 import { useState, useEffect, useCallback } from 'react';
-import * as service from '../overviewService/page';
+import * as service from '../overviewService/service';
 
 //manage state and logic for this screen
 export default function useOverview() {

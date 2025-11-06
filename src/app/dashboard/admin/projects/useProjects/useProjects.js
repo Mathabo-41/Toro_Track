@@ -11,7 +11,7 @@ import {
   changeProjectStatus,
   updateProjectDetails,
   updateProjectProgress, // Import the new function
-} from '../projectsService/page';
+} from '../projectsService/service';
 
 // This hook manages state and logic for the projects screen.
 export const useProjects = () => {
