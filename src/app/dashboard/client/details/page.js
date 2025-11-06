@@ -7,6 +7,9 @@ import React, { Suspense, lazy } from 'react';
 // import { Box, CircularProgress } from '@mui/material';
 // import * as globalStyles from '../common/styles';
 
+// This line forces the page to be dynamic and skips pre-rendering
+export const dynamic = 'force-dynamic';
+
 // Import LoadingScreen component
 import LoadingScreen from '../common/LoadingScreen';
 
