@@ -6,8 +6,11 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata = {
-  title: "Toro Track",
-  description: "A Customer Relationship Management",
+  title: 'Toro Track',
+  description: 'Client Collaboration & Internal Tracking Tool',
+  icons: {
+    icon: '/appImages/toro-icon.png', 
+  },
 };
 
 export default function RootLayout({ children }) {
