@@ -10,9 +10,9 @@ import {
   Stack, Button, Drawer, ListItemButton,
   List, ListItem, ListItemText, Divider,
   Tabs, Tab, IconButton, Chip, Snackbar, Alert,
-  Avatar, Badge, Dialog, DialogTitle, DialogContent,
+  Badge, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, MenuItem, Select,
-  FormControl, InputLabel, CircularProgress
+  FormControl, InputLabel, AppBar, Toolbar
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -22,7 +22,8 @@ import {
   Videocam as VideoIcon,
   Person as PersonIcon,
   AccessTime as TimeIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Menu as MenuIcon
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
@@ -49,27 +50,32 @@ const COLORS = {
   error: '#d32f2f'
 };
 
+// Define drawer width for responsiveness
+const drawerWidth = 260;
+
 export default function MeetingMesContent() {
   const supabase = createSupabaseClient();
   const router = useRouter();
-  
+
   const {
     activeTab,
     setActiveTab,
     meetings,
     notifications,
-    handleNewMeeting,
+    handleNewMeeting, // This seems unused, but we'll keep it as it's from the hook
     handleMarkAsRead
   } = useMeetingMes();
 
   const { profile, fetchProfile } = useClientStore();
-  const [sidebarOpen] = React.useState(true);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState('success');
   const [currentUser, setCurrentUser] = React.useState(null);
   const [loading, setLoading] = useState(true);
-  
+
+  // State for responsive drawer
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   // New state for meeting scheduling
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState('google-meet');
@@ -78,128 +84,155 @@ export default function MeetingMesContent() {
   const [meetingDate, setMeetingDate] = useState('');
   const [meetingTime, setMeetingTime] = useState('');
 
+  /**
+   * Toggles the mobile drawer
+   */
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  /**
+   * Displays a snackbar notification
+   */
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  /**
+   * Closes the snackbar
+   */
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
   // Fetch current user from Supabase
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
     };
     fetchUser();
   }, [supabase]);
 
+  // Initialize profile and set loading state
   useEffect(() => {
     const initializeData = async () => {
       try {
         setLoading(true);
-        setSnackbarMessage('Screen Done Loading...');
-        setSnackbarSeverity('info');
-        setOpenSnackbar(true);
+        showSnackbar('Screen Done Loading...', 'info');
 
         if (!profile) {
           await fetchProfile();
         }
-
-        // Simulate loading time for better UX
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
       } catch (error) {
         console.error('Error initializing data:', error);
-        setSnackbarMessage('Error loading agenda');
-        setSnackbarSeverity('error');
-        setOpenSnackbar(true);
+        showSnackbar('Error loading agenda', 'error');
       } finally {
         setLoading(false);
-        setTimeout(() => {
-          setOpenSnackbar(false);
-        }, 1000);
+        setTimeout(() => setOpenSnackbar(false), 1000); // Hide loading snackbar
       }
     };
 
     initializeData();
   }, [profile, fetchProfile]);
 
-  // Updated logout function to match Settings screen exactly
+  /**
+   * Handles user logout
+   */
   const handleLogout = async () => {
-    setSnackbarMessage('Logging out...');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
-    
+    showSnackbar('Logging out...', 'success');
     setTimeout(async () => {
-      await supabase.auth.signOut();
-      router.push('/login');
+      try {
+        await supabase.auth.signOut();
+        router.push('/login');
+      } catch (error) {
+        console.error('Error during logout:', error);
+        showSnackbar('Logout failed. Please try again.', 'error');
+      }
     }, 1500);
   };
 
-  // Enhanced meeting scheduling function
+  /**
+   * Opens the schedule meeting dialog
+   */
   const handleScheduleMeeting = () => {
     setScheduleDialogOpen(true);
   };
 
+  /**
+   * Generates a meeting link based on the selected platform
+   */
   const createMeetingLink = () => {
     const subject = encodeURIComponent(meetingTitle || 'Meeting with Client');
-    const description = encodeURIComponent(meetingDescription || 'Meeting scheduled through client portal');
     
-    let meetingUrl = '';
-
     switch (selectedPlatform) {
-      case 'google-meet':
-        meetingUrl = `https://meet.google.com/new`;
-        break;
-      
       case 'microsoft-teams':
-        meetingUrl = `https://teams.microsoft.com/l/meeting/new?subject=${subject}`;
-        break;
-      
+        return `https://teams.microsoft.com/l/meeting/new?subject=${subject}`;
       case 'zoom':
-        meetingUrl = `https://zoom.us/start?confno=123456789`;
-        break;
-      
+        // Zoom links are typically generated via API, this is a placeholder
+        return `https://zoom.us/start?confno=123456789`;
+      case 'google-meet':
       default:
-        meetingUrl = `https://meet.google.com/new`;
+        return `https://meet.google.com/new`;
     }
-
-    return meetingUrl;
   };
 
+  /**
+   * Validates form and creates a new meeting
+   */
   const handleCreateMeeting = () => {
+    // Handle failure case first
     if (!meetingTitle.trim()) {
-      setSnackbarMessage('Please enter a meeting title');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+      showSnackbar('Please enter a meeting title', 'error');
       return;
     }
 
-    const meetingLink = createMeetingLink();
-    
-    //  save the meeting to our database
-    const newMeeting = {
-      id: Date.now().toString(),
-      title: meetingTitle,
-      description: meetingDescription,
-      date: meetingDate || new Date().toISOString().split('T')[0],
-      time: meetingTime || '10:00',
-      type: 'video',
-      status: 'scheduled',
-      participants: ['Admin', profile?.name || 'Client'],
-      meetingLink: meetingLink,
-      platform: selectedPlatform
-    };
+    try {
+      const meetingLink = createMeetingLink();
+      
+      // This is where you would typically call a hook or service to save to Supabase
+      const newMeeting = {
+        id: Date.now().toString(),
+        title: meetingTitle,
+        description: meetingDescription,
+        date: meetingDate || new Date().toISOString().split('T')[0],
+        time: meetingTime || '10:00',
+        type: 'video',
+        status: 'scheduled',
+        participants: ['Admin', profile?.name || 'Client'],
+        meetingLink: meetingLink,
+        platform: selectedPlatform
+      };
 
-    console.log('New meeting created:', newMeeting);
-    
-    // Open the meeting link in a new tab
-    window.open(meetingLink, '_blank', 'noopener,noreferrer');
-    
-    // Show success message
-    setSnackbarMessage('Meeting created successfully! Opening meeting platform...');
-    setSnackbarSeverity('success');
-    setOpenSnackbar(true);
-    
-    // Close dialog and reset form
-    setScheduleDialogOpen(false);
-    resetForm();
+      console.log('New meeting created:', newMeeting);
+      
+      // Open the meeting link in a new tab
+      window.open(meetingLink, '_blank', 'noopener,noreferrer');
+      
+      showSnackbar('Meeting created successfully! Opening meeting platform...', 'success');
+      
+      setScheduleDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error("Error creating meeting:", error);
+      showSnackbar('Failed to create meeting link. Please try again.', 'error');
+    }
   };
 
+  /**
+   * Resets the schedule meeting form
+   */
   const resetForm = () => {
     setMeetingTitle('');
     setMeetingDescription('');
@@ -208,12 +241,19 @@ export default function MeetingMesContent() {
     setSelectedPlatform('google-meet');
   };
 
-  // Enhanced join meeting function
+  /**
+   * Joins an existing meeting
+   */
   const handleJoinMeetingEnhanced = (meetingId) => {
     const meeting = meetings.find(m => m.id === meetingId);
-    if (meeting && meeting.meetingLink) {
+    
+    // Use "everyday grammar" for conditional
+    const meetingLinkExists = meeting && meeting.meetingLink;
+    
+    if (meetingLinkExists) {
       window.open(meeting.meetingLink, '_blank', 'noopener,noreferrer');
     } else {
+      // Fallback for older or improperly created meetings
       const fallbackLink = createMeetingLink();
       window.open(fallbackLink, '_blank', 'noopener,noreferrer');
     }
@@ -230,7 +270,20 @@ export default function MeetingMesContent() {
   };
 
   const formatMeetingTime = (date, time) => {
-    return `${new Date(date).toLocaleDateString()} at ${time}`;
+    try {
+      const formattedDate = new Date(date).toLocaleDateString();
+      // Simple time formatting if time is 'HH:MM'
+      if (time && /^\d{2}:\d{2}$/.test(time)) {
+        const [hours, minutes] = time.split(':');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12; // Convert 00 to 12
+        return `${formattedDate} at ${formattedHours}:${minutes} ${ampm}`;
+      }
+      return `${formattedDate}${time ? ` at ${time}` : ''}`; // Fallback
+    } catch (error) {
+      console.error("Error formatting date/time:", error);
+      return "Invalid date"; // Handle invalid date strings
+    }
   };
 
   // Custom styles for dialog components
@@ -239,7 +292,9 @@ export default function MeetingMesContent() {
       '& .MuiDialog-paper': {
         backgroundColor: COLORS.background,
         border: `2px solid ${COLORS.border}`,
-        borderRadius: '12px'
+        borderRadius: '12px',
+        width: '100%',
+        maxWidth: '500px', // Responsive max width
       }
     },
     title: {
@@ -250,7 +305,7 @@ export default function MeetingMesContent() {
     },
     content: {
       backgroundColor: COLORS.background,
-      padding: '24px'
+      padding: { xs: '16px', sm: '24px' } // Responsive padding
     },
     actions: {
       backgroundColor: COLORS.lightBackground,
@@ -308,86 +363,160 @@ export default function MeetingMesContent() {
     }
   };
 
+  // Reusable Drawer Content
+  const drawerContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard/client/details" passHref>
+          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: COLORS.background }}>
+          Client Portal
+        </Typography>
+      </Box>
+      <List>
+        {clientMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={globalStyles.listItemButton}
+              onClick={() => mobileOpen && handleDrawerToggle()} // Close mobile drawer on nav
+            >
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: `2px solid ${COLORS.accent}` }}>
+            <Image
+              src={profile?.avatar_url || currentUser?.user_metadata?.avatar_url || "/toroLogo.jpg"}
+              alt="User Profile"
+              fill
+              style={{ objectFit: 'cover' }}
+              onError={(e) => { e.target.src = "/toroLogo.jpg"; }} // Fallback
+            />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: COLORS.background }}>
+              {profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+            </Typography>
+            <Typography noWrap sx={{ fontSize: '0.8rem', opacity: 0.8, color: COLORS.textLight }}>
+              {profile?.email || currentUser?.email || 'client@email.com'}
+            </Typography>
+          </Box>
+        </Box>
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          variant="outlined"
+          startIcon={<LogoutIcon />}
+          sx={{
+            color: COLORS.background,
+            borderColor: COLORS.background,
+            '&:hover': {
+              background: COLORS.border,
+              borderColor: COLORS.background,
+            }
+          }}
+        >
+          Logout
+        </Button>
+      </Box>
+    </Box>
+  );
+
   // Show loading state
   if (loading) {
     return <LoadingScreen message="Loading Agenda..." />;
   }
 
   return (
-    <Box sx={globalStyles.rootBox}>
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+    <Box sx={{ ...globalStyles.rootBox, display: 'flex' }}>
+      {/* Navigation */}
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        aria-label="client menu"
       >
-        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard/client/details" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-              <DashboardIcon />
-            </IconButton>
-          </Link>
-          <Typography variant="h5" sx={{ color: COLORS.background }}>
-            Client Portal
-          </Typography>
-        </Box>
-        <List>
-          {clientMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton 
-                component={Link} 
-                href={item.path} 
-                sx={globalStyles.listItemButton}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: `2px solid ${COLORS.accent}` }}>
-              <Image 
-                src={profile?.avatar_url || currentUser?.user_metadata?.avatar_url || "/toroLogo.jpg"} 
-                alt="User Profile" 
-                fill 
-                style={{ objectFit: 'cover' }} 
-              />
-            </Box>
-            {sidebarOpen && (
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: '600', color: COLORS.background }}>
-                  {profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, color: COLORS.textLight }}>
-                  {profile?.email || currentUser?.email || 'client@email.com'}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-          <Button 
-            onClick={handleLogout} 
-            fullWidth 
-            sx={{ 
-              padding: '0.75rem', 
-              background: 'transparent', 
-              border: `1px solid ${COLORS.background}`, 
-              borderRadius: '8px', 
-              color: COLORS.background, 
-              transition: 'all 0.3s ease', 
-              fontWeight: '600', 
-              display: 'flex', 
-              justifyContent: 'center', 
-              gap: '0.5rem', 
-              '&:hover': { background: COLORS.border } 
-            }}
-          >
-            {sidebarOpen ? 'Logout' : <LogoutIcon />}
-          </Button>
-        </Box>
-      </Drawer>
+        {/* Temporary Drawer for Mobile */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              ...globalStyles.drawerPaper,
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            }
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+        
+        {/* Permanent Drawer for Desktop */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              ...globalStyles.drawerPaper,
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            }
+          }}
+          open
+        >
+          {drawerContent}
+        </Drawer>
+      </Box>
 
-      <Box component="main" sx={styles.mainContentBox}>
-        <Box sx={styles.pageHeader}>
+      {/* Main Content Area */}
+      <Box
+        component="main"
+        sx={{
+          ...styles.mainContentBox,
+          flexGrow: 1,
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          ml: { xs: 0, md: `${drawerWidth}px` }, // No margin on mobile
+          p: 0 // Remove default padding, will be handled by inner containers
+        }}
+      >
+        {/* Responsive App Bar for Mobile */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, // Only show on mobile
+            backgroundColor: COLORS.primary,
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: COLORS.background }}>
+              Agenda
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        {/* Page Header for Desktop */}
+        <Box sx={{ ...styles.pageHeader, display: { xs: 'none', md: 'flex' } }}>
           <Typography variant="h4" sx={styles.pageHeaderText}>
             <MeetingsIcon sx={styles.pageHeaderIcon} />
             Agenda
@@ -397,67 +526,130 @@ export default function MeetingMesContent() {
           </Typography>
         </Box>
 
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          sx={styles.tabs}
-        >
-          <Tab 
-            label="Meetings" 
-            icon={<MeetingsIcon />} 
-            iconPosition="start" 
-            sx={styles.tab} 
-          />
-          <Tab 
-            label={
-              <Badge badgeContent={unreadNotifications} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem', height: '16px', minWidth: '16px' } }}>
-                Notifications
-              </Badge>
-            } 
-            icon={<NotificationsIcon />} 
-            iconPosition="start" 
-            sx={styles.tab} 
-          />
-        </Tabs>
+        {/* Responsive content padding */}
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Tabs
+            value={activeTab}
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={styles.tabs}
+            variant="fullWidth" // Ensure tabs take full width on mobile
+          >
+            <Tab
+              label="Meetings"
+              icon={<MeetingsIcon />}
+              iconPosition="start"
+              sx={styles.tab}
+            />
+            <Tab
+              label={
+                <Badge badgeContent={unreadNotifications} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem', height: '16px', minWidth: '16px' } }}>
+                  Notifications
+                </Badge>
+              }
+              icon={<NotificationsIcon />}
+              iconPosition="start"
+              sx={styles.tab}
+            />
+          </Tabs>
 
-        {activeTab === 0 && (
-          <Card sx={styles.card}>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={styles.meetingHeader}>
-                <Typography variant="h6" sx={{ color: COLORS.primary }}>
-                  Upcoming Meetings ({meetings.length})
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  startIcon={<NewMeetingIcon />} 
-                  onClick={handleScheduleMeeting}
-                  sx={{
-                    ...styles.newMeetingButton,
-                    backgroundColor: COLORS.primary,
-                    '&:hover': {
-                      backgroundColor: COLORS.secondary
-                    }
-                  }}
+          {/* Meetings Tab Content */}
+          {activeTab === 0 && (
+            <Card sx={styles.card}>
+              <CardContent>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }} // Stack on mobile
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  sx={styles.meetingHeader}
+                  spacing={{ xs: 2, sm: 1 }}
                 >
-                  Schedule Meeting
-                </Button>
-              </Stack>
-              {meetings.length > 0 ? (
-                <List sx={styles.meetingsList}>
-                  {meetings.map((meeting) => (
-                    <div key={meeting.id}>
-                      <ListItem
-                        secondaryAction={
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Chip 
-                              label={meeting.status} 
-                              size="small" 
-                              sx={styles.meetingStatusChip(meeting.status)} 
+                  <Typography variant="h6" sx={{ color: COLORS.primary }}>
+                    Upcoming Meetings ({meetings.length})
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<NewMeetingIcon />}
+                    onClick={handleScheduleMeeting}
+                    sx={{
+                      ...styles.newMeetingButton,
+                      backgroundColor: COLORS.primary,
+                      '&:hover': {
+                        backgroundColor: COLORS.secondary
+                      },
+                      width: { xs: '100%', sm: 'auto' } // Full width on mobile
+                    }}
+                  >
+                    Schedule Meeting
+                  </Button>
+                </Stack>
+                {meetings.length > 0 ? (
+                  <List sx={styles.meetingsList}>
+                    {meetings.map((meeting) => (
+                      <React.Fragment key={meeting.id}>
+                        <ListItem
+                          sx={{
+                            flexDirection: 'column', // Stack vertically on small screens
+                            alignItems: 'flex-start',
+                            gap: 1,
+                            pb: 2
+                          }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+                                {getMeetingIcon(meeting.type)}
+                                <Typography variant="subtitle1" sx={styles.meetingTitle}>
+                                  {meeting.title}
+                                </Typography>
+                                {meeting.platform && (
+                                  <Chip
+                                    label={meeting.platform}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      ml: 1,
+                                      borderColor: COLORS.border,
+                                      color: COLORS.text
+                                    }}
+                                  />
+                                )}
+                              </Stack>
+                            }
+                            secondary={
+                              <Stack spacing={0.5} sx={{ mt: 1 }}>
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                  <TimeIcon fontSize="small" sx={{ color: COLORS.border }} />
+                                  <Typography variant="body2" sx={styles.meetingDate}>
+                                    {formatMeetingTime(meeting.date, meeting.time)}
+                                  </Typography>
+                                </Stack>
+                                <Typography variant="caption" sx={styles.meetingParticipants}>
+                                  With: {meeting.participants.join(', ')}
+                                </Typography>
+                                {meeting.description && (
+                                  <Typography variant="caption" sx={styles.meetingDescription}>
+                                    {meeting.description}
+                                  </Typography>
+                                )}
+                              </Stack>
+                            }
+                            sx={{ width: '100%', mb: { xs: 2, sm: 0 } }} // Add margin bottom on mobile
+                          />
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            sx={{ width: '100%', justifyContent: 'flex-start' }} // Align actions
+                          >
+                            <Chip
+                              label={meeting.status}
+                              size="small"
+                              sx={styles.meetingStatusChip(meeting.status)}
                             />
                             {meeting.status === 'scheduled' && (
-                              <Button 
-                                variant="outlined" 
-                                size="small" 
+                              <Button
+                                variant="outlined"
+                                size="small"
                                 startIcon={<VideoIcon />}
                                 onClick={() => handleJoinMeetingEnhanced(meeting.id)}
                                 sx={{
@@ -474,185 +666,153 @@ export default function MeetingMesContent() {
                               </Button>
                             )}
                           </Stack>
+                        </ListItem>
+                        <Divider sx={styles.listDivider} />
+                      </React.Fragment>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={styles.noContentBox}>
+                    <MeetingsIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+                    <Typography variant="body1" sx={styles.noContentText}>
+                      No upcoming meetings scheduled
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border, mt: 1, textAlign: 'center' }}>
+                      Schedule a meeting to get started
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      startIcon={<NewMeetingIcon />}
+                      onClick={handleScheduleMeeting}
+                      sx={{
+                        mt: 2,
+                        color: COLORS.primary,
+                        borderColor: COLORS.primary,
+                        '&:hover': {
+                          backgroundColor: COLORS.lightBackground,
+                          borderColor: COLORS.secondary
                         }
-                      >
-                        <ListItemText
-                          primary={
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              {getMeetingIcon(meeting.type)}
-                              <Typography variant="subtitle1" sx={styles.meetingTitle}>
-                                {meeting.title}
-                              </Typography>
-                              {meeting.platform && (
-                                <Chip 
-                                  label={meeting.platform} 
-                                  size="small" 
-                                  variant="outlined"
-                                  sx={{ 
-                                    ml: 1,
-                                    borderColor: COLORS.border,
-                                    color: COLORS.text
-                                  }}
-                                />
-                              )}
-                            </Stack>
-                          }
-                          secondary={
-                            <Stack spacing={0.5} sx={{ mt: 1 }}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <TimeIcon fontSize="small" sx={{ color: COLORS.border }} />
-                                <Typography variant="body2" sx={styles.meetingDate}>
-                                  {formatMeetingTime(meeting.date, meeting.time)}
-                                </Typography>
-                              </Stack>
-                              <Typography variant="caption" sx={styles.meetingParticipants}>
-                                With: {meeting.participants.join(', ')}
-                              </Typography>
-                              {meeting.description && (
-                                <Typography variant="caption" sx={styles.meetingDescription}>
-                                  {meeting.description}
-                                </Typography>
-                              )}
-                            </Stack>
-                          }
-                        />
-                      </ListItem>
-                      <Divider sx={styles.listDivider} />
-                    </div>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={styles.noContentBox}>
-                  <MeetingsIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
-                  <Typography variant="body1" sx={styles.noContentText}>
-                    No upcoming meetings scheduled
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.border, mt: 1 }}>
-                    Schedule a meeting to get started
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<NewMeetingIcon />} 
-                    onClick={handleScheduleMeeting}
-                    sx={{ 
-                      mt: 2,
-                      color: COLORS.primary,
-                      borderColor: COLORS.primary,
-                      '&:hover': {
-                        backgroundColor: COLORS.lightBackground,
-                        borderColor: COLORS.secondary
-                      }
-                    }}
-                  >
-                    Schedule Your First Meeting
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {activeTab === 1 && (
-          <Card sx={styles.card}>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ color: COLORS.primary }}>
-                  Recent Notifications
-                </Typography>
-                {unreadNotifications > 0 && (
-                  <Button 
-                    variant="outlined" 
-                    size="small"
-                    onClick={() => notifications.forEach(n => !n.read && handleMarkAsRead(n.id))}
-                    sx={{
-                      ...styles.markAllReadButton,
-                      color: COLORS.primary,
-                      borderColor: COLORS.primary,
-                      '&:hover': {
-                        backgroundColor: COLORS.lightBackground,
-                        borderColor: COLORS.secondary
-                      }
-                    }}
-                  >
-                    Mark All as Read
-                  </Button>
+                      }}
+                    >
+                      Schedule Your First Meeting
+                    </Button>
+                  </Box>
                 )}
-              </Stack>
-              {notifications.length > 0 ? (
-                <List sx={styles.meetingsList}>
-                  {notifications.map((notification) => (
-                    <div key={notification.id}>
-                      <ListItem
-                        onClick={() => !notification.read && handleMarkAsRead(notification.id)}
-                        sx={{ 
-                          cursor: notification.read ? 'default' : 'pointer',
-                          backgroundColor: notification.read ? 'transparent' : 'rgba(107, 112, 92, 0.05)',
-                          '&:hover': { backgroundColor: notification.read ? 'transparent' : 'rgba(107, 112, 92, 0.1)' }
-                        }}
-                        secondaryAction={
-                          !notification.read && (
-                            <Chip 
-                              label="New" 
-                              size="small" 
-                              sx={styles.notificationNewChip} 
-                            />
-                          )
-                        }
-                      >
-                        <ListItemText
-                          primary={
-                            <Typography 
-                              variant="subtitle1" 
-                              sx={styles.notificationText(notification.read)}
-                            >
-                              {notification.text}
-                            </Typography>
-                          }
-                          secondary={
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-                              <Typography variant="caption" sx={styles.notificationTime}>
-                                {notification.time}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Notifications Tab Content */}
+          {activeTab === 1 && (
+            <Card sx={styles.card}>
+              <CardContent>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }} // Stack on mobile
+                  justifyContent="space-between"
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  sx={{ mb: 3 }}
+                  spacing={1}
+                >
+                  <Typography variant="h6" sx={{ color: COLORS.primary }}>
+                    Recent Notifications
+                  </Typography>
+                  {unreadNotifications > 0 && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => notifications.forEach(n => !n.read && handleMarkAsRead(n.id))}
+                      sx={{
+                        ...styles.markAllReadButton,
+                        color: COLORS.primary,
+                        borderColor: COLORS.primary,
+                        '&:hover': {
+                          backgroundColor: COLORS.lightBackground,
+                          borderColor: COLORS.secondary
+                        },
+                        width: { xs: '100%', sm: 'auto' } // Full width on mobile
+                      }}
+                    >
+                      Mark All as Read
+                    </Button>
+                  )}
+                </Stack>
+                {notifications.length > 0 ? (
+                  <List sx={styles.meetingsList}>
+                    {notifications.map((notification) => (
+                      <React.Fragment key={notification.id}>
+                        <ListItem
+                          onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                          sx={{
+                            cursor: notification.read ? 'default' : 'pointer',
+                            backgroundColor: notification.read ? 'transparent' : 'rgba(107, 112, 92, 0.05)',
+                            '&:hover': { backgroundColor: notification.read ? 'transparent' : 'rgba(107, 112, 92, 0.1)' },
+                            flexDirection: 'column', // Stack vertically
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          <ListItemText
+                            primary={
+                              <Typography
+                                variant="subtitle1"
+                                sx={styles.notificationText(notification.read)}
+                              >
+                                {notification.text}
                               </Typography>
-                              {notification.type && (
-                                <Chip 
-                                  label={notification.type} 
-                                  size="small" 
-                                  variant="outlined"
-                                  sx={{ 
-                                    height: '20px', 
-                                    fontSize: '0.7rem',
-                                    borderColor: COLORS.border,
-                                    color: COLORS.text
-                                  }}
-                                />
-                              )}
-                            </Stack>
-                          }
-                        />
-                      </ListItem>
-                      <Divider sx={styles.listDivider} />
-                    </div>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={styles.noContentBox}>
-                  <NotificationsIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
-                  <Typography variant="body1" sx={styles.noContentText}>
-                    No notifications
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.border, mt: 1 }}>
-                    You&apos;re all caught up!!
-                  </Typography>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                            }
+                            secondary={
+                              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                                <Typography variant="caption" sx={styles.notificationTime}>
+                                  {notification.time}
+                                </Typography>
+                                {notification.type && (
+                                  <Chip
+                                    label={notification.type}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      height: '20px',
+                                      fontSize: '0.7rem',
+                                      borderColor: COLORS.border,
+                                      color: COLORS.text
+                                    }}
+                                  />
+                                )}
+                              </Stack>
+                            }
+                            sx={{ width: '100%', mb: 1 }}
+                          />
+                          {!notification.read && (
+                            <Chip
+                              label="New"
+                              size="small"
+                              sx={styles.notificationNewChip}
+                            />
+                          )}
+                        </ListItem>
+                        <Divider sx={styles.listDivider} />
+                      </React.Fragment>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={styles.noContentBox}>
+                    <NotificationsIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+                    <Typography variant="body1" sx={styles.noContentText}>
+                      No notifications
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.border, mt: 1 }}>
+                      You&apos;re all caught up!
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </Box>
       </Box>
 
       {/* Schedule Meeting Dialog */}
-      <Dialog 
-        open={scheduleDialogOpen} 
+      <Dialog
+        open={scheduleDialogOpen}
         onClose={() => setScheduleDialogOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -661,7 +821,7 @@ export default function MeetingMesContent() {
         <DialogTitle sx={dialogStyles.title}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h6">Schedule New Meeting</Typography>
-            <IconButton 
+            <IconButton
               onClick={() => setScheduleDialogOpen(false)}
               sx={{ color: COLORS.background }}
             >
@@ -706,7 +866,7 @@ export default function MeetingMesContent() {
               onChange={(e) => setMeetingTitle(e.target.value)}
               fullWidth
               required
-              placeholder="e.g., Project Discussion with Admin"
+              placeholder="e.g., Project Discussion"
               sx={dialogStyles.textField}
             />
 
@@ -717,11 +877,11 @@ export default function MeetingMesContent() {
               fullWidth
               multiline
               rows={3}
-              placeholder="Brief description of what you'd like to discuss..."
+              placeholder="Brief description of discussion topics..."
               sx={dialogStyles.textField}
             />
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 label="Date"
                 type="date"
@@ -730,6 +890,9 @@ export default function MeetingMesContent() {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 sx={dialogStyles.textField}
+                inputProps={{
+                  min: new Date().toISOString().split('T')[0] // Prevent past dates
+                }}
               />
               <TextField
                 label="Time"
@@ -742,21 +905,19 @@ export default function MeetingMesContent() {
               />
             </Stack>
 
-            <Typography variant="body2" sx={{ color: COLORS.border, fontStyle: 'italic' }}>
-              This will create a new {selectedPlatform === 'google-meet' ? 'Google Meet ' : 
-              selectedPlatform === 'microsoft-teams' ? 'Microsoft Teams ' : 'Zoom '} 
-               meeting and open it in a new tab where you can invite the admin.
+            <Typography variant="caption" sx={{ color: COLORS.border, fontStyle: 'italic', textAlign: 'center' }}>
+              This will generate a meeting link for you to share.
             </Typography>
           </Stack>
         </DialogContent>
         <DialogActions sx={dialogStyles.actions}>
-          <Button 
+          <Button
             onClick={() => setScheduleDialogOpen(false)}
             sx={dialogStyles.cancelButton}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleCreateMeeting}
             variant="contained"
             disabled={!meetingTitle.trim()}
@@ -767,26 +928,27 @@ export default function MeetingMesContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Updated Snackbar to match Settings screen exactly */}
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={1500} 
-        onClose={() => setOpenSnackbar(false)} 
+      {/* Snackbar */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1500}
+        onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          severity={snackbarSeverity} 
-          sx={{ 
-            width: '100%', 
-            fontWeight: 'bold', 
+        <Alert
+          severity={snackbarSeverity}
+          sx={{
+            width: '100%',
+            fontWeight: 'bold',
             fontSize: '1.2rem',
-            backgroundColor: 
+            backgroundColor:
               snackbarSeverity === 'success' ? COLORS.success :
-              snackbarSeverity === 'error' ? COLORS.error :
-              snackbarSeverity === 'info' ? COLORS.primary : 
-              snackbarSeverity === 'warning' ? '#ed6c02' : COLORS.secondary,
+                snackbarSeverity === 'error' ? COLORS.error :
+                  snackbarSeverity === 'info' ? COLORS.primary :
+                    snackbarSeverity === 'warning' ? '#ed6c02' : COLORS.secondary,
             color: COLORS.background
           }}
+          onClose={handleCloseSnackbar}
         >
           {snackbarMessage}
         </Alert>

@@ -13,11 +13,12 @@ import {
   Table, TableBody, TableHead,
   TableRow, TableCell, TextField,
   Button, IconButton, Modal,
-  MenuItem, Snackbar, Alert
+  MenuItem, Snackbar, Alert, 
+  useTheme, useMediaQuery,Tooltip
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { Logout as LogoutIcon, Edit as EditIcon, Delete as DeleteIcon, AttachFile as AttachFileIcon } from '@mui/icons-material';
+import { Logout as LogoutIcon, Edit as EditIcon, Delete as DeleteIcon, AttachFile as AttachFileIcon, Menu as MenuIcon } from '@mui/icons-material';
 import * as commonStyles from '../common/styles';
 import {
   headerBoxStyles,
@@ -53,6 +54,16 @@ export default function AuditTrailContent() {
   const [currentUser, setCurrentUser] = useState(null);
   const fileInputRef = useRef(null);
   const [uploadTargetLogId, setUploadTargetLogId] = useState(null);
+
+  // Responsive drawer state
+  const drawerWidth = 260; // Define your drawer width
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
   
   // Snackbar states
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -271,36 +282,33 @@ export default function AuditTrailContent() {
     event.target.value = null;
   };
 
-  return (
-    <Box sx={commonStyles.rootBox}>
-      {/* Sidebar */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ '& .MuiDrawer-paper': commonStyles.drawerPaper }}
+  const drawerContent = (
+    <>
+      <Box
+        sx={{
+          p: 1,
+          borderBottom: '2px solid #6b705c',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
       >
-        <Box
-          sx={{
-            p: 1,
-            borderBottom: '2px solid #6b705c',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
+        <Tooltip title="Go to Audit Trail" arrow>
           <Link href="/dashboard/auditor/audit-trail" passHref>
             <IconButton sx={{ color: 'green' }}>
               <DashboardIcon />
             </IconButton>
           </Link>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Auditor Portal
-          </Typography>
-        </Box>
+        </Tooltip>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>
+          Auditor Portal
+        </Typography>
+      </Box>
 
-        <List>
-          {auditTrailMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
+      <List>
+        {auditTrailMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <Tooltip title={item.name} arrow placement="right">
               <ListItemButton
                 component={Link}
                 href={item.path}
@@ -308,43 +316,45 @@ export default function AuditTrailContent() {
               >
                 <ListItemText primary={item.name} />
               </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+            </Tooltip>
+          </ListItem>
+        ))}
+      </List>
 
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              mb: 2,
-              gap: 1.5,
-            }}
-          >
-            <Image
-              src="/toroLogo.jpg"
-              alt="User Profile"
-              width={40}
-              height={40}
-              style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
-            />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                noWrap
-                sx={{ fontWeight: '600', color: '#fefae0' }}
-              >
-                {currentUser?.email}
-              </Typography>
-              <Typography
-                variant="caption"
-                noWrap
-                sx={{ color: 'rgba(254, 250, 224, 0.7)' }}
-              >
-                Auditor
-              </Typography>
-            </Box>
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: 2,
+            gap: 1.5,
+          }}
+        >
+          <Image
+            src="/toroLogo.jpg"
+            alt="User Profile"
+            width={40}
+            height={40}
+            style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
+          />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              noWrap
+              sx={{ fontWeight: '600', color: '#fefae0' }}
+            >
+              {currentUser?.email}
+            </Typography>
+            <Typography
+              variant="caption"
+              noWrap
+              sx={{ color: 'rgba(254, 250, 224, 0.7)' }}
+            >
+              Auditor
+            </Typography>
           </Box>
+        </Box>
 
+        <Tooltip title="Logout from auditor portal" arrow>
           <Button
             onClick={handleLogout}
             fullWidth
@@ -353,7 +363,7 @@ export default function AuditTrailContent() {
             sx={{
               color: '#fefae0',
               borderColor: '#fefae0',
-              '&:hover': { 
+              '&:hover': {
                 background: '#6b705c',
                 borderColor: '#fefae0'
               },
@@ -361,35 +371,101 @@ export default function AuditTrailContent() {
           >
             Logout
           </Button>
-        </Box>
+        </Tooltip>
+      </Box>
+    </>
+  );
+
+  return (
+    <Box sx={commonStyles.rootBox}>
+      {/* Sidebar */}
+      <Drawer
+        variant={isMobile ? 'temporary' : 'permanent'}
+        anchor="left"
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            ...commonStyles.drawerPaper,
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+      >
+        {drawerContent}
       </Drawer>
 
       {/* Main content */}
-      <Box component="main" sx={commonStyles.mainContentBox}>
-        {/* Hidden file input for uploads */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-          accept=".pdf,.png,.csv"
-        />
+      <Box
+        component="main"
+        sx={{
+          ...commonStyles.mainContentBox,
+          ml: { xs: 0, md: `${drawerWidth}px` }, // Apply margin only on desktop
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, // Adjust width
+        }}
+      >
 
         {/* Header */}
-        <Box sx={headerBoxStyles}>
-          <Typography variant="h4" sx={pageTitleStyles}>
-            Audit Trail & Logging
-          </Typography>
-          <Box sx={headerRightSectionStyles}>
+        <Box
+          sx={{
+            ...headerBoxStyles,
+            flexDirection: { xs: 'column', md: 'row' }, // Stack on mobile
+            alignItems: { xs: 'flex-start', md: 'center' }, // Align items
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{
+                mr: 2,
+                color: '#fefae0',
+                display: { md: 'none' }, // Only show on mobile
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              variant="h4"
+              sx={{
+                ...pageTitleStyles,
+                fontSize: { xs: '1.75rem', md: '2.125rem' }, // Smaller font on mobile
+              }}
+            >
+              Audit Trail & Logging
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              ...headerRightSectionStyles,
+              flexDirection: { xs: 'column', md: 'row' }, // Stack on mobile
+              width: { xs: '100%', md: 'auto' }, // Full width on mobile
+              gap: 1.5, // Add gap for stacked items
+            }}
+          >
             <TextField
               variant="outlined"
               placeholder="Search Order ID"
               value={search}
               onChange={handleSearchChange}
-              sx={searchFieldStyles}
+              sx={{
+                ...searchFieldStyles,
+                width: { xs: '100%', md: 'auto' }, // Full width on mobile
+              }}
             />
-            <Button 
-              sx={addButtonStyles} 
+            <Button
+              sx={{
+                ...addButtonStyles,
+                width: { xs: '100%', md: 'auto' }, // Full width on mobile
+              }}
               onClick={() => handleOpenModal()}
               disabled={isSubmitting}
             >
@@ -399,7 +475,10 @@ export default function AuditTrailContent() {
         </Box>
 
         {/* Table */}
-        <Box component={Paper} sx={tablePaperStyles}>
+        <Box
+          component={Paper}
+          sx={{ ...tablePaperStyles, overflowX: 'auto' }} // Allows horizontal scroll
+        >
           <Table>
             <TableHead>
               <TableRow>
@@ -483,7 +562,14 @@ export default function AuditTrailContent() {
 
       {/* Modal */}
       <Modal open={isModalOpen} onClose={handleCloseModal}>
-        <Box sx={modalStyles}>
+        <Box
+          sx={{
+            ...modalStyles,
+            width: { xs: '90%', md: 600 }, // Responsive width
+            maxHeight: '90vh', // Prevent overflow on small screens
+            overflowY: 'auto', // Allow modal content to scroll
+          }}
+        >
           <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
             {editingLog ? 'Edit Audit Log Entry' : 'Add New Audit Log Entry'}
           </Typography>

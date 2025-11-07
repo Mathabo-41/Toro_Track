@@ -18,7 +18,7 @@ export default function Sidebar() {
         px: 2,
         py: 3,
         boxShadow: 1,
-        display: 'flex',
+        display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on desktop
         flexDirection: 'column',
         color: '#fefae0' // Light text color
       }}

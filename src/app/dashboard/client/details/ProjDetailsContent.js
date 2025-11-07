@@ -15,6 +15,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Snackbar, Alert,
   Paper,
+  Menu as MenuIcon,
   LinearProgress
 } from '@mui/material';
 import {
@@ -155,6 +156,12 @@ export default function ProjDetailsContent() {
   const [clientProfile, setClientProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
   const [sidebarOpen] = React.useState(true);
+
+  // mobile drawer
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
@@ -582,7 +589,78 @@ export default function ProjDetailsContent() {
 
     const progress = getProjectProgress();
 
-    return (
+    // ADD THIS REUSABLE DRAWER CONTENT
+  const drawerContent = (
+    <>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard/client/details" passHref>
+          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
+      </Box>
+      <List>
+        {clientMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      {/* Profile Section */}
+      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+            <Image
+              src={profilePicture}
+              alt="User Profile"
+              fill
+              style={{ objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.src = '/toroLogo.jpg';
+              }}
+            />
+          </Box>
+          {sidebarOpen && ( 
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+              </Typography>
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          sx={{
+            padding: '0.75rem',
+            background: 'transparent',
+            border: '1px solid #fefae0',
+            borderRadius: '8px',
+            color: '#fefae0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            '&:hover': { background: '#6b705c' }
+          }}
+        >
+          {sidebarOpen ? 'Logout' : <LogoutIcon />}
+        </Button>
+      </Box>
+    </>
+  );
+
+      return (
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <KanbanIcon />
@@ -1087,81 +1165,54 @@ export default function ProjDetailsContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation - EXACT SAME AS SETTINGS SCREEN */}
+      {/* Sidebar Navigation */}
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { ...globalStyles.drawerPaper, boxSizing: 'border-box' }
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Desktop Drawer */}
       <Drawer
         variant="permanent"
         anchor="left"
-        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          '& .MuiDrawer-paper': globalStyles.drawerPaper
+        }}
       >
-        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard/client/details" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-              <DashboardIcon />
-            </IconButton>
-          </Link>
-          <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
-        </Box>
-        <List>
-          {clientMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-
-        {/* Profile Section - EXACT SAME AS SETTINGS SCREEN */}
-        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-              <Image
-                src={profilePicture}
-                alt="User Profile"
-                fill
-                style={{ objectFit: 'cover' }}
-                onError={(e) => {
-                  e.target.src = '/toroLogo.jpg';
-                }}
-              />
-            </Box>
-            {sidebarOpen && (
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                  {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                  {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-          <Button
-            onClick={handleLogout}
-            fullWidth
-            sx={{
-              padding: '0.75rem',
-              background: 'transparent',
-              border: '1px solid #fefae0',
-              borderRadius: '8px',
-              color: '#fefae0',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              '&:hover': { background: '#6b705c' }
-            }}
-          >
-            {sidebarOpen ? 'Logout' : <LogoutIcon />}
-          </Button>
-        </Box>
+        {drawerContent}
       </Drawer>
 
       {/* Main Content Area */}
       <Box component="main" sx={mainContentStyles.mainBox}>
+        
+        {/* ADD THIS IconButton FOR MOBILE */}
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{
+            mr: 2,
+            display: { md: 'none' },
+            color: '#283618',
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 1 // Ensure it's above content
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
         {currentProject ? (
           <>
             {/* Project Header with Refresh Button */}

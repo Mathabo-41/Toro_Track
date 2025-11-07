@@ -24,7 +24,7 @@ import {
   Security as SecurityIcon, Build as BuildIcon, Storage as StorageIcon,
   Notifications as NotificationsIcon, People as PeopleIcon,
   Backup as BackupIcon, Delete as DeleteIcon, Refresh as RefreshIcon,
-  Schedule as ScheduleIcon, CloudUpload as CloudUploadIcon
+  Schedule as ScheduleIcon, CloudUpload as CloudUploadIcon,Menu as MenuIcon
 } from '@mui/icons-material';
 
 import { useSettings } from './useSettings/useSettings';
@@ -33,6 +33,12 @@ import { styles } from './styles';
 export default function SystemSettings() {
   const supabase = createSupabaseClient();
   const router = useRouter();
+
+  // mobile drawer
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   const { settingsCategories, menu, roles, setRoles, isLoading, handleConfigure, handleMaintenance, handleSavePermissions } = useSettings();
 
@@ -513,78 +519,126 @@ export default function SystemSettings() {
     </Tooltip>
   );
 
+const drawerContent = (
+    <>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Tooltip title="Go to Dashboard Overview" arrow>
+          <Link href="/dashboard/admin/overview" passHref>
+            <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
+          </Link>
+        </Tooltip>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
+      </Box>
+      
+      <List>
+        {menu.map((item, index) => (
+          <ListItem key={index} disablePadding>
+            <Tooltip title={`Maps to ${item.name}`} arrow placement="right">
+              <ListItemButton 
+                component={Link} 
+                href={item.path} 
+                sx={styles.sidebarListItemButton(item.name)}
+              >
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </Tooltip>
+          </ListItem>
+        ))}
+      </List>
+      
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Image 
+            src="/toroLogo.jpg" 
+            alt="User Profile" 
+            width={40} 
+            height={40}
+            style={{ borderRadius: '50%', border: '2px solid #f3722c' }} 
+          />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
+              {currentUser?.email || 'Loading...'}
+            </Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
+              Administrator
+            </Typography>
+          </Box>
+        </Box>
+        
+        <Tooltip title="Logout from admin portal" arrow>
+          <Button 
+            onClick={handleLogout} 
+            fullWidth 
+            variant="outlined"
+            startIcon={<LogoutIcon />}
+            sx={{ 
+              color: '#fefae0', 
+              borderColor: '#fefae0', 
+              '&:hover': { 
+                background: '#6b705c',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Logout
+          </Button>
+        </Tooltip>
+      </Box>
+    </>
+  );
+  
   return (
     <Box sx={styles.mainContainer}>
-      {/* Sidebar - KEEPING ORIGINAL STYLES */}
-      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title="Go to Dashboard Overview" arrow>
-            <Link href="/dashboard/admin/overview" passHref>
-              <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
-            </Link>
-          </Tooltip>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
-        </Box>
-        
-        <List>
-          {menu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <Tooltip title={`Navigate to ${item.name}`} arrow placement="right">
-                <ListItemButton 
-                  component={Link} 
-                  href={item.path} 
-                  sx={styles.sidebarListItemButton(item.name)}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </Tooltip>
-            </ListItem>
-          ))}
-        </List>
-        
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-            <Image 
-              src="/toroLogo.jpg" 
-              alt="User Profile" 
-              width={40} 
-              height={40}
-              style={{ borderRadius: '50%', border: '2px solid #f3722c' }} 
-            />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
-                {currentUser?.email || 'Loading...'}
-              </Typography>
-              <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
-                Administrator
-              </Typography>
-            </Box>
-          </Box>
-          
-          <Tooltip title="Logout from admin portal" arrow>
-            <Button 
-              onClick={handleLogout} 
-              fullWidth 
-              variant="outlined"
-              startIcon={<LogoutIcon />}
-              sx={{ 
-                color: '#fefae0', 
-                borderColor: '#fefae0', 
-                '&:hover': { 
-                  background: '#6b705c',
-                  transform: 'translateY(-1px)'
-                },
-                transition: 'all 0.2s ease-in-out'
-              }}
-            >
-              Logout
-            </Button>
-          </Tooltip>
-        </Box>
+      {/* Sidebar - REPLACE THIS: */}
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { ...styles.sidebarDrawer['& .MuiDrawer-paper'], boxSizing: 'border-box' }
+        }}
+      >
+        {drawerContent}
       </Drawer>
 
-      {/* Main content - KEEPING ORIGINAL STYLES */}
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          ...styles.sidebarDrawer
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Main content */}
       <Box component="main" sx={styles.mainContent}>
+
+        {/* IconButton FOR MOBILE */}
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{
+            mr: 2,
+            display: { md: 'none' },
+            color: '#283618',
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 1 // Ensure it's above content
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+
         {/* Page Header */}
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageTitle}>

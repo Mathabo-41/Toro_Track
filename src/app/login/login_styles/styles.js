@@ -7,7 +7,7 @@ export const mainContainer = {
   justifyContent: "center",
   alignItems: "center",
   minHeight: "100vh",
-  padding: "2rem",
+  padding: { xs: "1rem", md: "2rem" }, // Responsive padding
   flexDirection: "column",
   overflow: 'hidden',
 };
@@ -35,20 +35,20 @@ export const subtleOverlay = {
 
 export const mainContentContainer = {
   textAlign: "center",
-  maxWidth: "500px",
-  width: "100%",
+  maxWidth: "500px", // MaxWidth is good
+  width: "100%", // Ensures it scales down
   zIndex: 1,
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: "2rem",
+  padding: { xs: "1rem", md: "2rem" }, // Responsive padding
   borderRadius: "16px",
 };
 
 export const formContainer = {
   backgroundColor: "rgba(253, 255, 252, 0.1)",
-  padding: "2rem",
+  padding: { xs: "1.5rem", md: "2rem" }, // Responsive padding
   borderRadius: "16px",
   backdropFilter: "blur(10px)",
   border: "1px solid rgba(253, 255, 252, 0.2)",
@@ -61,12 +61,12 @@ export const loginTitle = {
   color: "#283618",
   marginBottom: "1rem",
   textAlign: "center",
-  fontSize: "2rem",
+  fontSize: { xs: "1.75rem", md: "2rem" }, // Responsive font size
   fontWeight: "bold",
 };
 
 export const formStyle = {
-  width: "80%",
+  width: { xs: "95%", md: "80%" }, // Responsive width
   margin: "0 auto",
 };
 
@@ -92,7 +92,7 @@ export const passwordField = {
 
 export const loginButton = {
   display: "inline-block",
-  backgroundColor: "#283618", 
+  backgroundColor: "#283618",
   color: "#606c38",
   padding: "1rem 2.5rem",
   borderRadius: "8px",
@@ -102,7 +102,7 @@ export const loginButton = {
   cursor: "pointer",
   transition: "all 0.3s ease",
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-  width: "80%",
+  width: { xs: "95%", md: "80%" }, // Responsive width
   transform: "scale(0.9)",
   transformOrigin: "center",
   marginBottom: "1.5rem",

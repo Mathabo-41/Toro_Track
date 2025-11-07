@@ -10,11 +10,12 @@ import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Grid, MenuItem, Button, Select, Box, Typography, Paper, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, List,
-  ListItem, ListItemText, Drawer, ListItemButton, Card, TextField, FormControl, InputLabel
+  ListItem, ListItemText, Drawer, ListItemButton, Card, TextField, FormControl, InputLabel,
+  useTheme, useMediaQuery
 } from '@mui/material';
 import {
   Add as AddIcon, Download as DownloadIcon, Close as CloseIcon, WarningAmber as WarningAmberIcon,
-  Logout as LogoutIcon,
+  Logout as LogoutIcon, Menu as MenuIcon
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { Snackbar, Alert } from '@mui/material';
@@ -34,13 +35,15 @@ import { auditorMenu } from '../common/auditorStore';
 import * as globalStyles from '../common/styles';
 import * as LicenseConfigHook from './useLicenseConfig/useLicenseConfig';
 
+const drawerWidth = 260; // Define drawer width
+
 /*
 * This component shows upcoming license renewals.
 */
 function RenewalCard() {
   const supabase = createSupabaseClient();
   const { renewalData, loading } = LicenseConfigHook.useLicenseConfig();
-  
+
   if (loading) {
     return (
       <Card sx={{ p: 2, height: '100%', backgroundColor: '#fefae0' }}>
@@ -97,24 +100,29 @@ function PerClientLicenseRegister({ clientName = 'All Clients' }) {
 
   const handleRowClick = (params) => setSelected(params.row);
   const handleClose = () => setSelected(null);
-  
+
   const exportCsv = () => {
-    const headers = ['License Name,License Key,Status'];
-    const rows = licenseRows.map(r => `${r.licenseName},${r.licenseKey},${r.status}`);
-    const csv = headers.concat(rows).join('\n');
-    const uri = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-    const link = document.createElement('a');
-    link.href = uri;
-    link.download = `${clientName}_licenses.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const headers = ['License Name,License Key,Status'];
+      const rows = licenseRows.map(r => `${r.licenseName},${r.licenseKey},${r.status}`);
+      const csv = headers.concat(rows).join('\n');
+      const uri = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+      const link = document.createElement('a');
+      link.href = uri;
+      link.download = `${clientName}_licenses.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      // You could show a snackbar error here
+    }
   };
 
   const columns = [
-    { field: 'licenseName', headerName: 'License Name', flex: 1, sortable: true },
-    { field: 'licenseKey', headerName: 'License Key', flex: 1, sortable: true },
-    { field: 'status', headerName: 'Status', flex: 1, sortable: true },
+    { field: 'licenseName', headerName: 'License Name', flex: 1, sortable: true, minWidth: 150 },
+    { field: 'licenseKey', headerName: 'License Key', flex: 1, sortable: true, minWidth: 150 },
+    { field: 'status', headerName: 'Status', flex: 1, sortable: true, minWidth: 100 },
   ];
 
   return (
@@ -125,7 +133,7 @@ function PerClientLicenseRegister({ clientName = 'All Clients' }) {
           <IconButton onClick={exportCsv} size="small" color="primary"><DownloadIcon /></IconButton>
         </Tooltip>
       </Box>
-      <Box sx={{ flexGrow: 1, width: '100%', minHeight: 0 }}>
+      <Box sx={{ flexGrow: 1, width: '100%', minHeight: 400 }}>
         <DataGrid
           rows={licenseRows}
           columns={columns}
@@ -162,7 +170,7 @@ function PerClientLicenseRegister({ clientName = 'All Clients' }) {
 
 
 export default function LicenseConfigContent() {
-  const supabase = createSupabaseClient(); 
+  const supabase = createSupabaseClient();
   const {
     client,
     clients,
@@ -176,94 +184,204 @@ export default function LicenseConfigContent() {
     handleNewLicenseChange,
     handleSaveLicense,
   } = LicenseConfigHook.useLicenseConfig();
-  
-  const [sidebarOpen] = React.useState(true);
+
   const router = useRouter();
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Responsive drawer state
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   /*
   This effect fetches the current authenticated user's data when the component first loads.
   */
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
     };
     fetchUser();
   }, [supabase.auth]);
 
   const handleLogout = () => {
     setOpenSnackbar(true);
-    setTimeout(() => {
-      router.push('/login');
+    setTimeout(async () => {
+      try {
+        await supabase.auth.signOut();
+        router.push('/login');
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
     }, 1500);
   };
 
-  return (
-    <Box sx={globalStyles.rootBox}>
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
-      >
-        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+  // Reusable Sidebar Content
+  const drawerContent = (
+    <>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Tooltip title="Go to Audit Trail" arrow>
           <Link href="/dashboard/auditor/audit-trail" passHref>
             <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
               <DashboardIcon />
             </IconButton>
           </Link>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>Auditor Portal</Typography>
-        </Box>
-        <List>
-          {auditorMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton} onMouseEnter={() => router.prefetch(item.path)}>
+        </Tooltip>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>Auditor Portal</Typography>
+      </Box>
+      <List>
+        {auditorMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <Tooltip title={item.name} arrow placement="right">
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                sx={globalStyles.listItemButton}
+                onMouseEnter={() => router.prefetch(item.path)}
+                onClick={isMobile ? handleDrawerToggle : undefined}
+              >
                 <ListItemText primary={item.name} />
               </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-                <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
-                <Box sx={{ minWidth: 0 }}>
-                    <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
-                    <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Auditor</Typography>
-                </Box>
-            </Box>
-            <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
-                Logout
-            </Button>
+            </Tooltip>
+          </ListItem>
+        ))}
+      </List>
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Auditor</Typography>
+          </Box>
         </Box>
+        <Tooltip title="Logout from auditor portal" arrow>
+          <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+            Logout
+          </Button>
+        </Tooltip>
+      </Box>
+    </>
+  );
+
+  return (
+    <Box sx={globalStyles.rootBox}>
+      <Drawer
+        variant={isMobile ? 'temporary' : 'permanent'}
+        anchor="left"
+        open={isMobile ? mobileOpen : true}
+        onClose={handleDrawerToggle}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            ...globalStyles.drawerPaper,
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+      >
+        {drawerContent}
       </Drawer>
 
-      <Box component="main" sx={mainContentBoxStyles}>
-        <Box sx={headerBoxStyles}>
-          <Typography variant="h4" sx={pageTitleStyles}>
-            License & Configuration Tracking
-          </Typography>
-          <Box sx={headerRightSectionStyles}>
-            <Select
-              value={client}
-              onChange={handleClientChange}
-              size="small"
-              displayEmpty
-              sx={{ minWidth: 150, backgroundColor: '#283618', color: '#fefae0', '& .MuiSvgIcon-root': { color: '#fefae0' } }}
+      <Box
+        component="main"
+        sx={{
+          ...mainContentBoxStyles,
+          ml: { xs: 0, md: `${drawerWidth}px` },
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          p: { xs: 2, md: 3 } // Add responsive padding
+        }}
+      >
+        <Box
+          sx={{
+            ...headerBoxStyles,
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{
+                mr: 2,
+                color: '#fefae0', // Use a visible color
+                display: { md: 'none' },
+              }}
             >
-              <MenuItem value="all">All Clients</MenuItem>
-              {clients.map((c) => (
-                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-              ))}
-            </Select>
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              variant="h4"
+              sx={{
+                ...pageTitleStyles,
+                fontSize: { xs: '1.75rem', md: '2.125rem' },
+              }}
+            >
+              License & Configuration Tracking
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              ...headerRightSectionStyles,
+              flexDirection: { xs: 'column', md: 'row' },
+              width: { xs: '100%', md: 'auto' },
+              gap: 1.5,
+            }}
+          >
+            <FormControl fullWidth sx={{ minWidth: 150 }}>
+              <InputLabel id="client-select-label" sx={{ color: '#fefae0' }}>Client</InputLabel>
+              <Select
+                labelId="client-select-label"
+                label="Client"
+                value={client}
+                onChange={handleClientChange}
+                size="small"
+                displayEmpty
+                sx={{
+                  backgroundColor: '#283618',
+                  color: '#fefae0',
+                  '& .MuiSvgIcon-root': { color: '#fefae0' },
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#fefae0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#fefae0' },
+                }}
+              >
+                <MenuItem value="all">All Clients</MenuItem>
+                {clients.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Tooltip title={client === 'all' ? 'Please select a client first' : 'Add a new license'}>
-              <span>
+              <span style={{ width: isMobile ? '100%' : 'auto' }}>
                 <Button
                   variant="outlined"
                   startIcon={<AddIcon />}
                   onClick={handleOpenDialog}
                   disabled={client === 'all'}
-                  sx={{ backgroundColor: '#283618', borderColor: '#fefae0', color: '#fefae0', '&:hover': { backgroundColor: '#6b705c' } }}
+                  sx={{
+                    backgroundColor: '#283618',
+                    borderColor: '#fefae0',
+                    color: '#fefae0',
+                    '&:hover': { backgroundColor: '#6b705c' },
+                    width: '100%'
+                  }}
                 >
                   Add License
                 </Button>
@@ -272,7 +390,7 @@ export default function LicenseConfigContent() {
           </Box>
         </Box>
 
-        <Grid container spacing={6} sx={{ mt: 4, px: 2, alignItems: 'stretch' }}>
+        <Grid container spacing={3} sx={{ mt: { xs: 0, md: 2 }, px: { xs: 0, md: 2 } }}>
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={perClientLicenseRegisterStyles}>
               <Typography variant="h4" gutterBottom>Per-Client License Register:</Typography>
@@ -285,7 +403,7 @@ export default function LicenseConfigContent() {
               <RenewalCard />
             </Paper>
           </Grid>
-          <Grid item xs={12} sx={{ mt: 4 }}>
+          <Grid item xs={12} sx={{ mt: { xs: 2, md: 4 } }}>
             <Paper elevation={1} sx={licenseUsageEntitlementDashboardStyles}>
               <Typography variant="h4" gutterBottom textAlign={'center'} sx={{ color: '#525252', fontWeight: 300 }}>
                 License Usage:
@@ -317,23 +435,23 @@ export default function LicenseConfigContent() {
       <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>Add New License</DialogTitle>
         <DialogContent>
-          <TextField 
-            name="licenseName" 
-            label="License Name" 
-            value={newLicense.licenseName} 
-            onChange={handleNewLicenseChange} 
-            fullWidth 
-            margin="normal" 
-            required 
+          <TextField
+            name="licenseName"
+            label="License Name"
+            value={newLicense.licenseName}
+            onChange={handleNewLicenseChange}
+            fullWidth
+            margin="normal"
+            required
           />
-          <TextField 
-            name="licenseKey" 
-            label="License Key" 
-            value={newLicense.licenseKey} 
-            onChange={handleNewLicenseChange} 
-            fullWidth 
-            margin="normal" 
-            required 
+          <TextField
+            name="licenseKey"
+            label="License Key"
+            value={newLicense.licenseKey}
+            onChange={handleNewLicenseChange}
+            fullWidth
+            margin="normal"
+            required
           />
           <FormControl fullWidth margin="normal" required>
             <InputLabel>Status</InputLabel>
@@ -349,7 +467,7 @@ export default function LicenseConfigContent() {
           <Button onClick={handleSaveLicense} variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
-      
+
       <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         <Alert severity="success" sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           Logging out...

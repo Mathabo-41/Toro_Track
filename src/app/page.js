@@ -1,63 +1,70 @@
 /* Welcome Screen*/
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Image from 'next/image';
+import { Box, IconButton } from '@mui/material';
 import {
-  mainContainer,
-  videoBackground,
-  subtleOverlay,
-  logoImage,
-  continueButton,
-  continueButtonHover,
+  mainContainerStyles,
+  videoBackgroundStyles,
+  subtleOverlayStyles,
+  logoContainerStyles,
+  continueButtonStyles,
 } from './welcomeStyles.js';
 
 export default function Welcome() {
   const router = useRouter();
-  const [isHovered, setIsHovered] = useState(false);
 
+  /**
+   * Navigates to the login screen.
+   */
   const handleContinue = () => {
-    router.push('/login'); // Navigate to the login screen
+    try {
+      router.push('/login'); // Navigate to the login screen
+    } catch (error) {
+      console.error("Failed to navigate:", error);
+      // Handle navigation error if needed
+    }
   };
 
   return (
-    <main style={mainContainer}>
+    <Box component="main" sx={mainContainerStyles}>
       {/* Video Background */}
       <video
         autoPlay
         loop
         muted
         playsInline
-        style={videoBackground}
+        style={videoBackgroundStyles}
       >
         <source src="/appImages/welcome_animation.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
       {/* Subtle overlay for better text readability */}
-      <div style={subtleOverlay}></div>
+      <Box sx={subtleOverlayStyles}></Box>
 
-      {/* Logo Image */}
-      <Image
-        src="/appImages/logo.png"
-        alt="Logo"
-        style={logoImage}
-        width={500}
-        height={150}
-        priority
-      />
+      {/* Logo Image Container (now responsive) */}
+      <Box sx={logoContainerStyles}>
+        <Image
+          src="/appImages/logo.png"
+          alt="Logo"
+          width={500}
+          height={150}
+          priority
+          style={{ width: '100%', height: 'auto' }} // Image scales to fit the Box
+        />
+      </Box>
 
-      {/* Continue Button */}
-      <button
+      {/* Continue Button (now an IconButton) */}
+      <IconButton
         onClick={handleContinue}
-        style={isHovered ? { ...continueButton, ...continueButtonHover } : continueButton}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        sx={continueButtonStyles}
+        aria-label="Continue to login"
       >
         <ArrowForwardIcon sx={{ color: '#606c38' }} />
-      </button>
-    </main>
+      </IconButton>
+    </Box>
   );
 }

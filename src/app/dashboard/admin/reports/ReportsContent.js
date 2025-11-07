@@ -18,7 +18,7 @@ import {
   Logout as LogoutIcon, Add as AddIcon, ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon,
   Folder as ProjectIcon, Person as PersonIcon, ViewList as ProjectListIcon, Dashboard as DashboardIcon,
   CheckCircle as DoneIcon, Build as InProgressIcon, PlaylistAdd as BacklogIcon,
-  Edit as EditIcon, Delete as DeleteIcon, Security as RoleIcon
+  Edit as EditIcon, Delete as DeleteIcon, Menu as MenuIcon, Security as RoleIcon
 } from '@mui/icons-material';
 import { Snackbar, Alert } from '@mui/material';
 
@@ -58,6 +58,12 @@ export default function PerformanceReports() {
     { name: 'Invite Users', path: '/dashboard/admin/users' },
     { name: 'Settings', path: '/dashboard/admin/settings' }
   ];
+
+  // mobile drawer
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   // Current project
   const currentProject = projects[currentProjectIndex];
@@ -590,44 +596,92 @@ export default function PerformanceReports() {
     );
   }
 
+  const drawerContent = (
+    <>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard/admin/overview" passHref>
+          <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
+      </Box>
+      
+      <List>
+        {menu.map((item, index) => (
+          <ListItem key={index} disablePadding>
+            <ListItemButton component={Link} href={item.path} sx={styles.sidebarListItemButton(item.name)}>
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Admin</Typography>
+          </Box>
+        </Box>
+        <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
+          Logout
+        </Button>
+      </Box>
+    </>
+  );
+
 
   return (
     <Box sx={styles.mainContainer}>
       {/* Sidebar Navigation */}
-      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard/admin/overview" passHref>
-            <IconButton sx={{ color: 'green' }}><DashboardIcon /></IconButton>
-          </Link>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
-        </Box>
-        
-        <List>
-          {menu.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton component={Link} href={item.path} sx={styles.sidebarListItemButton(item.name)}>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { ...styles.sidebarDrawer['& .MuiDrawer-paper'], boxSizing: 'border-box' }
+        }}
+      >
+        {drawerContent}
+      </Drawer>
 
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-            <Image src="/toroLogo.jpg" alt="User Profile" width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #f3722c' }} />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>{currentUser?.email}</Typography>
-              <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>Admin</Typography>
-            </Box>
-          </Box>
-          <Button onClick={handleLogout} fullWidth variant="outlined" startIcon={<LogoutIcon />} sx={{ color: '#fefae0', borderColor: '#fefae0', '&:hover': { background: '#6b705c' } }}>
-            Logout
-          </Button>
-        </Box>
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        anchor="left"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          ...styles.sidebarDrawer
+        }}
+      >
+        {drawerContent}
       </Drawer>
 
       {/* Main Content */}
       <Box component="main" sx={styles.mainContent}>
+        
+        {/* IconButton FOR MOBILE */}
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{
+            mr: 2,
+            display: { md: 'none' },
+            color: '#283618',
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 1 // Ensure it's above content
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+        
         {/* Page Header */}
         <Box sx={styles.pageHeader}>
           <Typography variant="h4" sx={styles.pageTitle}><ReportsIcon sx={styles.headerIcon} />Performance Reports</Typography>

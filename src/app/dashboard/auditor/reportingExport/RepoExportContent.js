@@ -12,11 +12,12 @@ import {
   ListItemButton, TextField, MenuItem,
   FormControl, InputLabel, Select,
   Button, IconButton, LinearProgress,
-  Card, CardContent, Chip
+  Card, CardContent, Chip, AppBar, Toolbar
 } from '@mui/material';
 
-// Dashboard icon import
+// Dashboard and Menu icon import
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import MenuIcon from '@mui/icons-material/Menu';
 
 // Snackbar and icons
 import { Snackbar, Alert } from '@mui/material';
@@ -51,6 +52,9 @@ import {
 // Import global styles for layout and navigation
 import * as globalStyles from '../common/styles';
 import { auditorMenu } from '../common/auditorStore';
+
+// Define drawer width for responsiveness
+const drawerWidth = 260;
 
 /**
  * Main Reporting & Export Component
@@ -87,17 +91,27 @@ export default function RepoExportContent() {
 
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
-  
+
+  // State for responsive drawer
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   // Snackbar state management
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  
+
   // Logout snackbar state
   const [logoutSnackbar, setLogoutSnackbar] = useState(false);
 
   /**
-   * Displays a snackbar notification with the specified message and severity 
+   * Toggles the mobile drawer
+   */
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  /**
+   * Displays a snackbar notification with the specified message and severity
    */
   const showSnackbar = (message, severity = 'success') => {
     setSnackbarMessage(message);
@@ -146,7 +160,7 @@ export default function RepoExportContent() {
    * Enhanced PDF export handler with validation and user feedback
    */
   const handleExportPdfEnhanced = async () => {
-    // Validate date range
+    // Handle failure case first
     if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
       showSnackbar('From date cannot be after To date', 'error');
       return;
@@ -165,7 +179,7 @@ export default function RepoExportContent() {
    * Enhanced CSV export handler with validation and user feedback
    */
   const handleExportCsvEnhanced = async () => {
-    // Validate date range
+    // Handle failure case first
     if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
       showSnackbar('From date cannot be after To date', 'error');
       return;
@@ -184,7 +198,7 @@ export default function RepoExportContent() {
    * Enhanced schedule handler with validation and user feedback
    */
   const handleSetScheduleEnhanced = async () => {
-    // Validate required fields for scheduling
+    // Handle failure cases first
     if (!scheduleFrequency) {
       showSnackbar('Please select a frequency', 'error');
       return;
@@ -194,8 +208,11 @@ export default function RepoExportContent() {
       return;
     }
 
-    // Basic email validation
-    if (sendTo.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendTo)) {
+    // Use "everyday grammar" for complex conditional
+    const isEmail = sendTo.includes('@');
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendTo);
+
+    if (isEmail && !isValidEmail) {
       showSnackbar('Please enter a valid email address', 'error');
       return;
     }
@@ -213,20 +230,27 @@ export default function RepoExportContent() {
    * Enhanced snapshot handler with validation and user feedback
    */
   const handleGenerateSnapshotEnhanced = async () => {
+    // Handle failure cases first
     if (!cutOffDate) {
       showSnackbar('Please select a cut-off date', 'error');
       return;
     }
 
-    // Validate that cut-off date is not in the future
-    if (new Date(cutOffDate) > new Date()) {
+    const cutOff = new Date(cutOffDate);
+
+    if (isNaN(cutOff.getTime())) {
+      showSnackbar('Please select a valid date', 'error');
+      return;
+    }
+
+    if (cutOff > new Date()) {
       showSnackbar('Cut-off date cannot be in the future', 'error');
       return;
     }
 
     try {
       await handleGenerateSnapshot();
-      showSnackbar(`Audit snapshot generated for ${new Date(cutOffDate).toLocaleDateString()}`, 'success');
+      showSnackbar(`Audit snapshot generated for ${cutOff.toLocaleDateString()}`, 'success');
     } catch (error) {
       console.error('Error generating snapshot:', error);
       showSnackbar('Failed to generate audit snapshot. Please try again.', 'error');
@@ -277,101 +301,189 @@ export default function RepoExportContent() {
     }
   }, [optionsError]);
 
-  // Check if any filters are active
+  // Use "everyday grammar" for active filters check
   const hasActiveFilters = fromDate || toDate || client || assetType;
 
-  return (
-    <Box sx={globalStyles.rootBox}>
-      {/* Navigation Sidebar */}
-      <Drawer
-        variant="permanent"
-        anchor="left"
-        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
-      >
-        <Box sx={{
-          p: 1,
-          borderBottom: '2px solid #6b705c',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          <Link href="/dashboard/auditor/audit-trail" passHref>
-            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-              <DashboardIcon />
-            </IconButton>
-          </Link>
-          <Typography variant="h5" sx={{ color: '#fefae0' }}>
-            Auditor Portal
-          </Typography>
-        </Box>
-        
-        {/* Navigation Menu */}
-        <List>
-          {auditorMenu.map((item) => (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                sx={globalStyles.listItemButton}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+  /**
+   * Reusable Drawer Content
+   */
+  const drawerContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{
+        p: 1,
+        borderBottom: '2px solid #6b705c',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1
+      }}>
+        <Link href="/dashboard/auditor/audit-trail" passHref>
+          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>
+          Auditor Portal
+        </Typography>
+      </Box>
 
-        {/* User Profile and Logout Section */}
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-                <Image 
-                  src="/toroLogo.jpg" 
-                  alt="User Profile" 
-                  width={40} 
-                  height={40} 
-                  style={{ borderRadius: '50%', border: '2px solid #f3722c' }} 
-                />
-                <Box sx={{ minWidth: 0 }}>
-                    <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
-                      {currentUser?.email || 'Loading...'}
-                    </Typography>
-                    <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
-                      Auditor
-                    </Typography>
-                </Box>
-            </Box>
-            <Button 
-              onClick={handleLogout} 
-              fullWidth 
-              variant="outlined" 
-              startIcon={<LogoutIcon />} 
-              sx={{ 
-                color: '#fefae0', 
-                borderColor: '#fefae0', 
-                '&:hover': { 
-                  background: '#6b705c',
-                  borderColor: '#fefae0'
-                } 
-              }}
+      {/* Navigation Menu */}
+      <List>
+        {auditorMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={globalStyles.listItemButton}
+              onClick={() => mobileOpen && handleDrawerToggle()} // Close mobile drawer on nav
             >
-              Logout
-            </Button>
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      {/* User Profile and Logout Section */}
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Image
+            src="/toroLogo.jpg"
+            alt="User Profile"
+            width={40}
+            height={40}
+            style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
+          />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
+              {currentUser?.email || 'Loading...'}
+            </Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
+              Auditor
+            </Typography>
+          </Box>
         </Box>
-      </Drawer>
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          variant="outlined"
+          startIcon={<LogoutIcon />}
+          sx={{
+            color: '#fefae0',
+            borderColor: '#fefae0',
+            '&:hover': {
+              background: '#6b705c',
+              borderColor: '#fefae0'
+            }
+          }}
+        >
+          Logout
+        </Button>
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ ...globalStyles.rootBox, display: 'flex' }}>
+      {/* Navigation Sidebar */}
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        aria-label="mailbox folders"
+      >
+        {/* Temporary Drawer for Mobile */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              ...globalStyles.drawerPaper,
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            }
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+        
+        {/* Permanent Drawer for Desktop */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              ...globalStyles.drawerPaper,
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            }
+          }}
+          open
+        >
+          {drawerContent}
+        </Drawer>
+      </Box>
 
       {/* Main Content Area */}
-      <Box component="main" sx={mainContentBoxStyles}>
+      <Box
+        component="main"
+        sx={{
+          ...mainContentBoxStyles,
+          flexGrow: 1,
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          ml: { xs: 0, md: `${drawerWidth}px` } // Remove margin on mobile
+        }}
+      >
+        {/* Responsive App Bar for Mobile */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, // Only show on mobile
+            backgroundColor: '#283618', // Match drawer header
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Reporting & Export
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        
         {/* Page Header */}
-        <Box sx={headerBoxStyles}>
-          <Typography variant="h4" sx={pageTitleStyles}>
+        <Box sx={{
+          ...headerBoxStyles,
+          flexDirection: { xs: 'column', md: 'row' }, // Stack on mobile
+          alignItems: { xs: 'flex-start', md: 'center' },
+          gap: { xs: 2, md: 0 },
+          p: { xs: 2, md: 3 } // Add padding for mobile
+        }}>
+          <Typography variant="h4" sx={{
+            ...pageTitleStyles,
+            display: { xs: 'none', md: 'block' } // Hide on mobile, shown in AppBar
+          }}>
             Reporting & Export
           </Typography>
-          <Box sx={headerRightSectionStyles}>
+          <Box sx={{
+            ...headerRightSectionStyles,
+            width: { xs: '100%', md: 'auto' } // Full width on mobile
+          }}>
             <TextField
               variant="outlined"
               placeholder="Search reports or exports..."
               value={search}
               onChange={handleSearchChange}
-              sx={searchFieldStyles}
+              sx={{ ...searchFieldStyles, width: '100%' }} // Full width
               InputProps={{
                 startAdornment: <SearchIcon sx={{ color: '#6b705c', mr: 1 }} />
               }}
@@ -381,24 +493,36 @@ export default function RepoExportContent() {
         </Box>
 
         {/* Reporting & Export Content */}
-        <Box sx={reportingExportContainerStyles}>
-          <Grid container spacing={3} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
+        <Box sx={{
+          ...reportingExportContainerStyles,
+          p: 0 // Remove container padding, will be added to grid
+        }}>
+          <Grid
+            container
+            spacing={3}
+            sx={{
+              margin: '0 auto',
+              width: '100%',
+              maxWidth: { xs: '100%', lg: 1200 }, // Use breakpoints
+              p: { xs: 2, md: 3 } // Responsive padding
+            }}
+          >
             {/* Page Header Section */}
             <Grid item xs={12}>
-              <Card sx={{ 
-                mb: 4, 
+              <Card sx={{
+                mb: 4,
                 backgroundColor: '#fefae0',
                 border: '1px solid #6b705c',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
-                <CardContent sx={{ p: 4 }}>
+                <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
                   <Typography variant="h4" sx={reportingExportTitle}>
                     Reporting & Export Center
                   </Typography>
                   <Typography variant="subtitle1" sx={reportingExportSubtitle}>
-                    Generate comprehensive reports, schedule automated deliveries, and create audit snapshots for compliance and internal reviews.
+                    Generate comprehensive reports, schedule automated deliveries, and create audit snapshots.
                   </Typography>
-                  
+
                   {/* Active Filters Display */}
                   {hasActiveFilters && (
                     <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -406,35 +530,35 @@ export default function RepoExportContent() {
                         Active Filters:
                       </Typography>
                       {fromDate && (
-                        <Chip 
-                          label={`From: ${new Date(fromDate).toLocaleDateString()}`} 
-                          size="small" 
+                        <Chip
+                          label={`From: ${new Date(fromDate).toLocaleDateString()}`}
+                          size="small"
                           onDelete={() => setFromDate('')}
                         />
                       )}
                       {toDate && (
-                        <Chip 
-                          label={`To: ${new Date(toDate).toLocaleDateString()}`} 
-                          size="small" 
+                        <Chip
+                          label={`To: ${new Date(toDate).toLocaleDateString()}`}
+                          size="small"
                           onDelete={() => setToDate('')}
                         />
                       )}
                       {client && (
-                        <Chip 
-                          label={`Client: ${client}`} 
-                          size="small" 
+                        <Chip
+                          label={`Client: ${client}`}
+                          size="small"
                           onDelete={() => setClient('')}
                         />
                       )}
                       {assetType && (
-                        <Chip 
-                          label={`Type: ${assetType}`} 
-                          size="small" 
+                        <Chip
+                          label={`Type: ${assetType}`}
+                          size="small"
                           onDelete={() => setAssetType('')}
                         />
                       )}
-                      <Button 
-                        size="small" 
+                      <Button
+                        size="small"
                         onClick={handleResetFilters}
                         sx={{ ml: 1 }}
                       >
@@ -455,9 +579,9 @@ export default function RepoExportContent() {
                     Customizable PDF/CSV Reports
                   </Typography>
                   <Typography variant="body1" sx={reportingExportSectionDescription}>
-                    Generate detailed reports with flexible filtering options. Export delivery logs, license statuses, and audit summaries by date range, client, or asset type.
+                    Generate detailed reports with flexible filtering. Export delivery logs, license statuses, and audit summaries.
                   </Typography>
-                  
+
                   {/* Report Filters and Actions */}
                   <Grid container spacing={3} sx={{ mt: 2 }}>
                     {/* Date Range Filters */}
@@ -485,15 +609,15 @@ export default function RepoExportContent() {
                         helperText="End date for report data"
                       />
                     </Grid>
-                    
+
                     {/* Client Filter */}
                     <Grid item xs={12} sm={6} md={3}>
                       <FormControl fullWidth sx={reportingExportFormControl}>
                         <InputLabel>Client</InputLabel>
-                        <Select 
-                          label="Client" 
-                          value={client} 
-                          onChange={(e) => setClient(e.target.value)} 
+                        <Select
+                          label="Client"
+                          value={client}
+                          onChange={(e) => setClient(e.target.value)}
                           sx={reportingExportSelect}
                         >
                           <MenuItem value="">All Clients</MenuItem>
@@ -511,16 +635,16 @@ export default function RepoExportContent() {
                         </Select>
                       </FormControl>
                     </Grid>
-                    
+
                     {/* Asset Type Filter */}
                     <Grid item xs={12} sm={6} md={3}>
                       <FormControl fullWidth sx={reportingExportFormControl}>
                         <InputLabel id="asset-type-label">Asset Type</InputLabel>
-                        <Select 
-                          labelId="asset-type-label" 
-                          label="Asset Type" 
-                          value={assetType} 
-                          onChange={(e) => setAssetType(e.target.value)} 
+                        <Select
+                          labelId="asset-type-label"
+                          label="Asset Type"
+                          value={assetType}
+                          onChange={(e) => setAssetType(e.target.value)}
                           sx={reportingExportSelect}
                         >
                           <MenuItem value="">All Types</MenuItem>
@@ -538,13 +662,13 @@ export default function RepoExportContent() {
                         </Select>
                       </FormControl>
                     </Grid>
-                    
+
                     {/* Export Actions */}
                     <Grid item xs={12} sm={6}>
                       <Button
                         onClick={handleExportPdfEnhanced}
                         variant="contained"
-                        startIcon={isExportingPdf ? <LinearProgress size={16} /> : <PdfIcon />}
+                        startIcon={isExportingPdf ? <LinearProgress size={16} color="inherit" /> : <PdfIcon />}
                         disabled={isExportingPdf || isExportingCsv}
                         sx={reportingExportButton.contained}
                         fullWidth
@@ -557,7 +681,7 @@ export default function RepoExportContent() {
                       <Button
                         onClick={handleExportCsvEnhanced}
                         variant="contained"
-                        startIcon={isExportingCsv ? <LinearProgress size={16} /> : <CsvIcon />}
+                        startIcon={isExportingCsv ? <LinearProgress size={16} color="inherit" /> : <CsvIcon />}
                         disabled={isExportingPdf || isExportingCsv}
                         sx={{
                           ...reportingExportButton.contained,
@@ -586,18 +710,18 @@ export default function RepoExportContent() {
                     Scheduled Report Delivery
                   </Typography>
                   <Typography variant="body1" sx={reportingExportSectionDescription}>
-                    Automate report distribution to stakeholders. Set up regular deliveries via email or SharePoint with custom scheduling options.
+                    Automate report distribution to stakeholders via email or SharePoint.
                   </Typography>
-                  
+
                   <Grid container spacing={3} sx={{ mt: 2 }}>
                     <Grid item xs={12}>
                       <FormControl fullWidth sx={reportingExportFormControl}>
                         <InputLabel id="schedule-frequency-label">Delivery Frequency</InputLabel>
-                        <Select 
-                          labelId="schedule-frequency-label" 
-                          label="Delivery Frequency" 
-                          value={scheduleFrequency} 
-                          onChange={(e) => setScheduleFrequency(e.target.value)} 
+                        <Select
+                          labelId="schedule-frequency-label"
+                          label="Delivery Frequency"
+                          value={scheduleFrequency}
+                          onChange={(e) => setScheduleFrequency(e.target.value)}
                           sx={reportingExportSelect}
                         >
                           <MenuItem value="weekly">Weekly</MenuItem>
@@ -621,7 +745,7 @@ export default function RepoExportContent() {
                       <Button
                         onClick={handleSetScheduleEnhanced}
                         variant="contained"
-                        startIcon={isSettingSchedule ? <LinearProgress size={16} /> : <ScheduleIcon />}
+                        startIcon={isSettingSchedule ? <LinearProgress size={16} color="inherit" /> : <ScheduleIcon />}
                         disabled={isSettingSchedule}
                         sx={reportingExportButton.contained}
                         fullWidth
@@ -644,9 +768,9 @@ export default function RepoExportContent() {
                     On-Demand Audit Snapshots
                   </Typography>
                   <Typography variant="body1" sx={reportingExportSectionDescription}>
-                    Generate comprehensive snapshots of the entire asset register for any historical date. Perfect for compliance audits and historical analysis.
+                    Generate snapshots of the asset register for any historical date.
                   </Typography>
-                  
+
                   <Grid container spacing={3} sx={{ mt: 2 }}>
                     <Grid item xs={12}>
                       <TextField
@@ -656,8 +780,8 @@ export default function RepoExportContent() {
                         InputLabelProps={{ shrink: true }}
                         value={cutOffDate}
                         onChange={(e) => setCutOffDate(e.target.value)}
-                        helperText="Select the date for which you want the asset register snapshot"
-                        inputProps={{ 
+                        helperText="Select the date for the asset register snapshot"
+                        inputProps={{
                           max: new Date().toISOString().split('T')[0] // Prevent future dates
                         }}
                       />
@@ -666,7 +790,7 @@ export default function RepoExportContent() {
                       <Button
                         onClick={handleGenerateSnapshotEnhanced}
                         variant="contained"
-                        startIcon={isGeneratingSnapshot ? <LinearProgress size={16} /> : <SnapshotIcon />}
+                        startIcon={isGeneratingSnapshot ? <LinearProgress size={16} color="inherit" /> : <SnapshotIcon />}
                         disabled={isGeneratingSnapshot}
                         sx={reportingExportButton.contained}
                         fullWidth
@@ -690,7 +814,7 @@ export default function RepoExportContent() {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
+        <Alert
           severity={snackbarSeverity}
           sx={{
             width: '100%',
@@ -711,11 +835,11 @@ export default function RepoExportContent() {
         onClose={handleCloseLogoutSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          severity="success" 
-          sx={{ 
-            width: '100%', 
-            fontWeight: 'bold', 
+        <Alert
+          severity="success"
+          sx={{
+            width: '100%',
+            fontWeight: 'bold',
             fontSize: '1.2rem',
             backgroundColor: '#a6f0daff',
             color: 'black'
