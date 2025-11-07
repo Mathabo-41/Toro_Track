@@ -11,6 +11,13 @@ export const metadata = {
   icons: {
     icon: '/appImages/toro-icon.png', 
   },
+  // This viewport object is added for mobile responsiveness
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({ children }) {
