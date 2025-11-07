@@ -23,6 +23,7 @@ export const useUsers = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuUserId, setMenuUserId] = useState(null);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   // Updated state for client details to match new schema
   const [clientName, setClientName] = useState('');
@@ -41,6 +42,7 @@ export const useUsers = () => {
       setTasks(tasks || []);
     } catch (error) {
         console.error("Failed to load initial data:", error);
+        setApiError('Failed to load initial data. Please refresh.');
     }
   };
 
@@ -55,6 +57,7 @@ export const useUsers = () => {
 */
 const handleInviteUser = async (role, password) => {
     if (!inviteEmail) return;
+    setApiError(null); // Clear previous errors
 
     try {
       // Package client data with updated field names for the API
@@ -78,18 +81,25 @@ const handleInviteUser = async (role, password) => {
         loadInitialData(); // Refresh the user list
       } else {
         console.error("Invitation failed:", error.message || error);
+        setApiError(error.message); // Set error state
       }
     } catch (error) {
         console.error("An unexpected error occurred during invitation:", error);
+        setApiError('An unexpected error occurred. Please try again.');
     }
 };
 
   const handleAddTask = async (userId) => {
     if (newTask) {
-      await assignTask(userId, newTask);
-      setNewTask('');
-      setSelectedUser(null);
-      loadInitialData();
+      setApiError(null);
+      const { error } = await assignTask(userId, newTask);
+      if (error) {
+        setApiError(error.message);
+      } else {
+        setNewTask('');
+        setSelectedUser(null);
+        loadInitialData();
+      }
     }
   };
 
@@ -119,17 +129,33 @@ const handleInviteUser = async (role, password) => {
 
   const handleConfirmRemove = async () => {
     if (!menuUserId) return;
+    setApiError(null); // Clear previous errors
     
-    const { error } = await removeUserService(menuUserId);
-    if (!error) {
-      setUsers(currentUsers => currentUsers.filter(user => user.id !== menuUserId));
+    try {
+      const { error } = await removeUserService(menuUserId);
+      if (error) {
+      // Log the specific message string, not the whole error object.
+      console.error("Failed to remove user:", error.message || error);
+      setApiError(error.message || 'Failed to remove user. They may have dependent records.');
+    } else {
+        setUsers(currentUsers => currentUsers.filter(user => user.id !== menuUserId));
+      }
+    } catch (hookError) {
+       console.error("Error in handleConfirmRemove:", hookError);
+       setApiError('A critical client-side error occurred.');
     }
+    
     handleCloseConfirmDialog();
   };
 
   const handleUpdateRole = async (userId, newRole) => {
-    await updateUserRole(userId, newRole);
-    loadInitialData();
+    setApiError(null);
+    const { error } = await updateUserRole(userId, newRole);
+    if (error) {
+      setApiError(error.message);
+    } else {
+      loadInitialData();
+    }
   };
 
   return {
@@ -140,6 +166,7 @@ const handleInviteUser = async (role, password) => {
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
+    apiError, setApiError, // Export the error state
     handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
     handleAssignTask, handleRemoveUser, handleUpdateRole,
     handleCloseConfirmDialog, handleConfirmRemove,

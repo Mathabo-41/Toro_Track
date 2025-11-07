@@ -51,6 +51,7 @@ export default function TeamsAndUsers() {
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
+    apiError, setApiError, // Add these
   } = useUsers();
 
   const router = useRouter();
@@ -659,6 +660,21 @@ export default function TeamsAndUsers() {
         </MenuItem>
       </Menu>
       
+      {/* Snackbar: API Error */}
+      <Snackbar
+        open={!!apiError}
+        autoHideDuration={6000}
+        onClose={() => setApiError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setApiError(null)}
+          severity="error"
+          sx={{ width: '100%', fontWeight: 'bold' }}
+        >
+          {apiError}
+        </Alert>
+      </Snackbar>
 
       {/* Snackbar: invite success */}
       <Snackbar

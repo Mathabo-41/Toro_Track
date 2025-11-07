@@ -65,6 +65,115 @@ export default function PerformanceReports() {
     setMobileOpen(!mobileOpen);
   };
 
+// Helper function to create empty metrics
+  const createEmptyMetrics = React.useCallback(() => ({
+    totalProjects: {
+      title: 'Total Projects',
+      value: 0,
+      trend: 'neutral',
+      change: '0%',
+      icon: <ProjectIcon />
+    },
+    completedTasks: {
+      title: 'Completed Tasks',
+      value: 0,
+      trend: 'neutral',
+      change: '0%',
+      icon: <DoneIcon />
+    },
+    inProgress: {
+      title: 'In Progress',
+      value: 0,
+      trend: 'neutral',
+      change: '0%',
+      icon: <InProgressIcon />
+    },
+    teamMembers: {
+      title: 'Team Members',
+      value: 0,
+      trend: 'neutral',
+      change: '0',
+      icon: <PersonIcon />
+    },
+    backlog: {
+      title: 'Backlog Tasks',
+      value: 0,
+      trend: 'neutral',
+      change: '0%',
+      icon: <BacklogIcon />
+    }
+  }), []);
+
+  const getTotalTasks = React.useCallback((project) => {
+    if (!project?.columns) return 0;
+    return Object.values(project.columns).reduce((total, column) => {
+      return total + (column?.tasks?.length || 0);
+    }, 0);
+  }, []);
+
+  // Helper function to create metrics data
+  const createMetricsData = React.useCallback((projects, members) => {
+    const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
+    const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
+    const inProgressTasks = projects.reduce((total, project) => total + (project.columns?.inProgress?.tasks?.length || 0), 0);
+    const backlogTasks = projects.reduce((total, project) => total + (project.columns?.backlog?.tasks?.length || 0), 0);
+
+    return {
+      totalProjects: {
+        title: 'Total Projects',
+        value: projects.length,
+        trend: projects.length > 0 ? 'up' : 'neutral',
+        change: projects.length > 0 ? '+100%' : '0%',
+        icon: <ProjectIcon />
+      },
+      completedTasks: {
+        title: 'Completed Tasks',
+        value: completedTasks,
+        trend: completedTasks > 0 ? 'up' : 'neutral',
+        change: completedTasks > 0 ? '+100%' : '0%',
+        icon: <DoneIcon />
+      },
+      inProgress: {
+        title: 'In Progress',
+        value: inProgressTasks,
+        trend: inProgressTasks > 0 ? 'up' : 'neutral',
+        change: inProgressTasks > 0 ? '+100%' : '0%',
+        icon: <InProgressIcon />
+      },
+      teamMembers: {
+        title: 'Team Members',
+        value: members.length,
+        trend: members.length > 0 ? 'up' : 'neutral',
+        change: members.length > 0 ? '+100%' : '0',
+        icon: <PersonIcon />
+      },
+      backlog: {
+        title: 'Backlog Tasks',
+        value: backlogTasks,
+        trend: backlogTasks > 0 ? 'up' : 'neutral',
+        change: backlogTasks > 0 ? '+100%' : '0%',
+        icon: <BacklogIcon />
+      }
+    };
+  }, [getTotalTasks]);
+
+  // Helper function to create project with empty tasks
+  const createProjectWithEmptyTasks = React.useCallback((project) => {
+    return {
+      id: project.id,
+      name: project.project_name || 'Unnamed Project',
+      description: project.description || 'No description available',
+      progress: 0,
+      columns: {
+        backlog: { title: 'Backlog', tasks: [] },
+        inProgress: { title: 'In Progress', tasks: [] },
+        done: { title: 'Done', tasks: [] }
+      },
+      created_at: project.created_at,
+      updated_at: project.updated_at
+    };
+  }, []);
+
   // Current project
   const currentProject = projects[currentProjectIndex];
 
@@ -201,108 +310,6 @@ export default function PerformanceReports() {
     fetchData();
   }, [supabase, createEmptyMetrics, createProjectWithEmptyTasks, createMetricsData]);
 
-  // Helper function to create empty metrics
-  const createEmptyMetrics = React.useCallback(() => ({
-    totalProjects: {
-      title: 'Total Projects',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <ProjectIcon />
-    },
-    completedTasks: {
-      title: 'Completed Tasks',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <DoneIcon />
-    },
-    inProgress: {
-      title: 'In Progress',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <InProgressIcon />
-    },
-    teamMembers: {
-      title: 'Team Members',
-      value: 0,
-      trend: 'neutral',
-      change: '0',
-      icon: <PersonIcon />
-    },
-    backlog: {
-      title: 'Backlog Tasks',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <BacklogIcon />
-    }
-  }), []);
-
-  // Helper function to create metrics data
-  const createMetricsData = React.useCallback((projects, members) => {
-    const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
-    const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
-    const inProgressTasks = projects.reduce((total, project) => total + (project.columns?.inProgress?.tasks?.length || 0), 0);
-    const backlogTasks = projects.reduce((total, project) => total + (project.columns?.backlog?.tasks?.length || 0), 0);
-
-    return {
-      totalProjects: {
-        title: 'Total Projects',
-        value: projects.length,
-        trend: projects.length > 0 ? 'up' : 'neutral',
-        change: projects.length > 0 ? '+100%' : '0%',
-        icon: <ProjectIcon />
-      },
-      completedTasks: {
-        title: 'Completed Tasks',
-        value: completedTasks,
-        trend: completedTasks > 0 ? 'up' : 'neutral',
-        change: completedTasks > 0 ? '+100%' : '0%',
-        icon: <DoneIcon />
-      },
-      inProgress: {
-        title: 'In Progress',
-        value: inProgressTasks,
-        trend: inProgressTasks > 0 ? 'up' : 'neutral',
-        change: inProgressTasks > 0 ? '+100%' : '0%',
-        icon: <InProgressIcon />
-      },
-      teamMembers: {
-        title: 'Team Members',
-        value: members.length,
-        trend: members.length > 0 ? 'up' : 'neutral',
-        change: members.length > 0 ? '+100%' : '0',
-        icon: <PersonIcon />
-      },
-      backlog: {
-        title: 'Backlog Tasks',
-        value: backlogTasks,
-        trend: backlogTasks > 0 ? 'up' : 'neutral',
-        change: backlogTasks > 0 ? '+100%' : '0%',
-        icon: <BacklogIcon />
-      }
-    };
-  }, [getTotalTasks]);
-
-  // Helper function to create project with empty tasks
-  const createProjectWithEmptyTasks = React.useCallback((project) => {
-    return {
-      id: project.id,
-      name: project.project_name || 'Unnamed Project',
-      description: project.description || 'No description available',
-      progress: 0,
-      columns: {
-        backlog: { title: 'Backlog', tasks: [] },
-        inProgress: { title: 'In Progress', tasks: [] },
-        done: { title: 'Done', tasks: [] }
-      },
-      created_at: project.created_at,
-      updated_at: project.updated_at
-    };
-  }, []);
-
   // Helper functions
   const showSnackbar = (message, severity = 'success') => {
     setSnackbarMessage(message);
@@ -317,13 +324,10 @@ export default function PerformanceReports() {
     return member ? member.color : '#888';
   };
 
+  // Paste this new, corrected function
   const getAssigneeName = (task) => {
-    if (task.assignee_team) return task.assignee_team;
-    if (task.assignee_id) {
-        const member = teamMembers.find(m => m.id === task.assignee_id);
-        return member ? member.name : 'Unassigned';
-    }
-    return 'Unassigned';
+    const userName = teamMembers.find(m => m.id === task.assignee_id)?.name;
+    return userName || task.assignee_team || 'Unassigned';
   };
 
   const getAssigneeRole = (task) => {
@@ -334,13 +338,6 @@ export default function PerformanceReports() {
     }
     return 'unassigned';
   };
-
-  const getTotalTasks = React.useCallback((project) => {
-    if (!project?.columns) return 0;
-    return Object.values(project.columns).reduce((total, column) => {
-      return total + (column?.tasks?.length || 0);
-    }, 0);
-  }, []);
 
   const getColumnColor = (columnId) => {
     const colors = {
@@ -467,6 +464,7 @@ export default function PerformanceReports() {
               due_date: currentTask.dueDate,
               status: currentColumn,
               assignee_team: currentTask.assignee_team,
+              assignee_id: currentTask.assignee_id,
               updated_at: new Date().toISOString()
             })
             .eq('id', currentTask.id)
@@ -495,7 +493,8 @@ export default function PerformanceReports() {
               due_date: currentTask.dueDate,
               status: 'backlog',
               project_id: currentProject.id,
-              assignee_team: currentTask.assignee_team
+              assignee_team: currentTask.assignee_team,
+              assignee_id: currentTask.assignee_id
             })
             .select()
             .single();
@@ -941,25 +940,25 @@ export default function PerformanceReports() {
               required 
             />
             <FormControl fullWidth>
-              <InputLabel id="team-select-label">Team</InputLabel>
+              <InputLabel id="assign-to-label">Assign to</InputLabel>
               <Select
-                labelId="team-select-label"
-                value={currentTask?.assignee_team || ''}
-                label="Team"
+                labelId="assign-to-label"
+                value={currentTask?.assignee_id || ''}
+                label="Assign to"
                 onChange={(e) => {
                   setCurrentTask({
                     ...currentTask,
-                    assignee_team: e.target.value,
+                    assignee_id: e.target.value, // Set the user ID
+                    assignee_team: null,       // Clear the team field
                   });
                 }}
               >
                 <MenuItem value=""><em>Unassigned</em></MenuItem>
-                <MenuItem value="Business Analyst">Business Analyst</MenuItem>
-                <MenuItem value="Project Manager">Project Manager</MenuItem>
-                <MenuItem value="Software Engineer">Software Engineer</MenuItem>
-                <MenuItem value="DevOps Team">DevOps Team</MenuItem>
-                <MenuItem value="UX/UI Team">UX/UI Team</MenuItem>
-                <MenuItem value="Software Architect">Software Architect</MenuItem>
+                {teamMembers.map((user) => (
+                  <MenuItem key={user.id} value={user.id}>
+                    {user.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField 
