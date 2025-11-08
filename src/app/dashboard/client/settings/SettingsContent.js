@@ -278,6 +278,7 @@ export default function SettingsContent() {
                   sx={{
                       display: { xs: 'flex', md: 'none' }, // Only show on mobile
                       backgroundColor: '#283618', // Match drawer header
+                      paddingTop: 'env(safe-area-inset-top)'
                   }}
                 >
                   <Toolbar>

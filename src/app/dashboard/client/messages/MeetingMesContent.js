@@ -497,6 +497,7 @@ export default function MeetingMesContent() {
           sx={{
             display: { xs: 'flex', md: 'none' }, // Only show on mobile
             backgroundColor: COLORS.primary,
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
           <Toolbar>
