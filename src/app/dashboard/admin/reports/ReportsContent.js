@@ -10,7 +10,7 @@ import {
   ListItemButton, ListItemText, Drawer, Grid, Paper, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, TextField,
   Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Select, MenuItem,
-  FormControl, InputLabel, Menu, Tabs, Tab
+  FormControl, InputLabel, Menu, Tabs, Tab, AppBar, Toolbar
 } from '@mui/material';
 import {
   Assessment as ReportsIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon,
@@ -195,33 +195,43 @@ export default function PerformanceReports() {
 
       {/* Main Content */}
       <Box component="main" sx={styles.mainContent}>
-        
-        {/* IconButton FOR MOBILE */}
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
+        {/* --- APP BAR --- */}
+        <AppBar
+          position="static"
           sx={{
-            mr: 2,
-            display: { md: 'none' },
-            color: '#283618',
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            zIndex: 1 
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Performance Reports
+            </Typography>
+          </Toolbar>
+        </AppBar>
         
         {/* Page Header */}
-        <Box sx={styles.pageHeader}>
+        <Box sx={{
+          ...styles.pageHeader,
+          display: { xs: 'none', md: 'flex' }, // Hide on mobile
+          p: 3 // Add padding back for desktop
+        }}>
           <Typography variant="h4" sx={styles.pageTitle}><ReportsIcon sx={styles.headerIcon} />Performance Reports</Typography>
           <Typography variant="body1" sx={styles.pageSubtitle}>Analytics and insights for your CRM system</Typography>
         </Box>
 
-        {/* Key Metrics Cards */}
+        {/* --- WRAP CONTENT IN PADDING BOX --- */}
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reports).map(([key, metric]) => (
             <Grid item xs={12} sm={6} md={4} lg={2.4} key={key}> {/* Adjusted lg for 5 items */}
@@ -245,6 +255,7 @@ export default function PerformanceReports() {
             </Grid>
           ))}
         </Grid>
+        </Box>
 
         {/* Kanban Board Section */}
         {projects.length > 0 ? (

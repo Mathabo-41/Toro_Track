@@ -10,7 +10,7 @@ import {
   Box, Typography, Grid, Card, CardContent,
   Stack, Avatar, List, ListItem, ListItemText,
   Divider, Button, Drawer, ListItemButton, Snackbar, Alert, IconButton,
-  TextField, Collapse, Chip, CircularProgress
+  TextField, Collapse, Chip, CircularProgress, AppBar, Toolbar
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -190,29 +190,41 @@ export default function AdminOverviewContent() {
       </Drawer>
 
       <Box component="main" sx={globalStyles.mainContentBox}>
-        {/* Mobile Menu Button */}
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
+        {/* --- APP BAR --- */}
+        <AppBar
+          position="static"
           sx={{
-            mr: 2,
-            display: { md: 'none' },
-            color: '#283618', // Or appropriate color
-            position: 'absolute',
-            top: 16,
-            left: 16
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)' // Safe area padding
           }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Dashboard Overview
+            </Typography>
+          </Toolbar>
+        </AppBar>
         
-        <Box sx={globalStyles.pageHeader}>
+        <Box sx={{
+          ...globalStyles.pageHeader,
+          display: { xs: 'none', md: 'flex' }, // Hide on mobile
+          p: 3 // Add padding back for desktop
+        }}>
           <Typography variant="h4" sx={globalStyles.pageHeaderText}>Dashboard Overview</Typography>
           <Typography variant="body1" sx={globalStyles.pageHeaderText}>Welcome back! Here&apos;s what&apos;s happening today.</Typography>
         </Box>
 
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {metrics.map(({ title, value, change, icon, trend }, i) => (
             <Grid item xs={12} sm={6} md={4} key={i}>
@@ -236,6 +248,7 @@ export default function AdminOverviewContent() {
             </Grid>
           ))}
         </Grid>
+        </Box>
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>

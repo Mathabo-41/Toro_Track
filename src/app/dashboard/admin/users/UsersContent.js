@@ -13,7 +13,7 @@ import {
   Drawer, ListItemButton, TextField, Chip,
   IconButton, Menu, MenuItem, Paper, Table, TableBody, Tooltip,
   TableCell, TableContainer, TableHead, TableRow, DialogActions, Dialog, DialogTitle, DialogContent, DialogContentText,
-  Select, FormControl, InputAdornment, Snackbar, Alert, CircularProgress,
+  Select, FormControl, InputAdornment, Snackbar, Alert, CircularProgress, AppBar, Toolbar
 } from '@mui/material';
 
 import CheckIcon from '@mui/icons-material/Check';
@@ -232,26 +232,38 @@ export default function TeamsAndUsers() {
 
       {/* Main Content */}
       <Box component="main" sx={styles.mainContent}>
-      
-        {/* IconButton FOR MOBILE */}
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
-          sx={{ 
-            mr: 2, 
-            display: { md: 'none' }, 
-            color: '#283618', 
-            position: 'absolute', // Position it for visibility
-            top: 16, 
-            left: 16 
+      {/* --- APP BAR --- */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Invite Users
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
-        <Box sx={{...styles.pageHeader, mt: { xs: 5, md: 0 }}}> {/* Add margin top on mobile */}
+        {/* Page Header */}
+        <Box sx={{
+          ...styles.pageHeader, 
+          mt: { xs: 0, md: 0 }, // Remove mobile margin
+          display: { xs: 'none', md: 'flex' }, // Hide on mobile
+          p: 3 // Add padding back for desktop
+        }}>
           <Typography variant="h4" sx={styles.pageTitle}>
             <TeamsIcon sx={styles.headerIcon} />Invite Users
           </Typography>
@@ -260,6 +272,8 @@ export default function TeamsAndUsers() {
           </Typography>
         </Box>
 
+        {/* --- WRAP CONTENT IN PADDING BOX --- */}
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         {/* Invite new user */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12}>
@@ -375,6 +389,7 @@ export default function TeamsAndUsers() {
             </Card>
           </Grid>
         </Grid>
+        </Box>
 
         {/* Users table */}
         <Card sx={styles.usersCard}>

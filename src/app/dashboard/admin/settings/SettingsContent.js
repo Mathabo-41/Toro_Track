@@ -13,7 +13,7 @@ import {
   TableBody, Paper, FormControl, Select, MenuItem, CircularProgress,
   Snackbar, Alert, IconButton, Tooltip, Dialog, DialogTitle,
   DialogContent, DialogActions, Switch, FormControlLabel,
-  LinearProgress, Stepper, Step, StepLabel, StepContent
+  LinearProgress, Stepper, Step, StepLabel, StepContent, AppBar, Toolbar
 } from '@mui/material';
 
 import {
@@ -619,28 +619,37 @@ const drawerContent = (
 
       {/* Main content */}
       <Box component="main" sx={styles.mainContent}>
-
-        {/* IconButton FOR MOBILE */}
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
+        {/* --- APP BAR --- */}
+        <AppBar
+          position="static"
           sx={{
-            mr: 2,
-            display: { md: 'none' },
-            color: '#283618',
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            zIndex: 1 // Ensure it's above content
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              System Settings
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
         {/* Page Header */}
-        <Box sx={styles.pageHeader}>
+        <Box sx={{
+          ...styles.pageHeader,
+          display: { xs: 'none', md: 'flex' }, // Hide on mobile
+          p: 3 // Add padding back for desktop
+        }}>
           <Typography variant="h4" sx={styles.pageTitle}>
             <SettingsIcon sx={styles.headerIcon} />
             System Settings
@@ -650,6 +659,8 @@ const drawerContent = (
           </Typography>
         </Box>
 
+        {/* --- WRAP CONTENT IN PADDING BOX --- */}
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         {/* Settings categories grid - KEEPING ORIGINAL STYLES */}
         <Grid container spacing={3}>
           {updatedSettingsCategories.map((category, index) => (
@@ -710,6 +721,7 @@ const drawerContent = (
             </Grid>
           ))}
         </Grid>
+        </Box>
 
         {/* Permissions management section - KEEPING ORIGINAL STYLES */}
         <Box sx={{ mt: 4 }}>

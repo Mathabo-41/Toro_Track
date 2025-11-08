@@ -11,7 +11,7 @@ import {
   Paper, Card, CardContent, Stack, Avatar, List, ListItem, ListItemButton, ListItemText, Drawer,
   TextField, InputAdornment, Chip, IconButton, Grid, Menu, Divider, MenuItem, Dialog, DialogTitle,
   DialogContent, DialogActions, FormControl, InputLabel, Select, Checkbox, Popover, Snackbar, Alert,
-  Slider, LinearProgress
+  Slider, LinearProgress, AppBar, Toolbar
 } from '@mui/material';
 import {
   Add as AddIcon, Search as SearchIcon, Assignment as ProjectIcon, DateRange as TimelineIcon,
@@ -344,26 +344,37 @@ export default function ProjectsContent() {
           Main Content
       ============================ */}
       <Box component="main" sx={styles.mainContent}>
-        {/* Mobile Menu Button */}
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
+        {/* --- ADD THIS APP BAR --- */}
+        <AppBar
+          position="static"
           sx={{
-            mr: 2,
-            display: { md: 'none' },
-            color: '#283618',
-            position: 'absolute',
-            top: 16,
-            left: 16
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Projects
+            </Typography>
+          </Toolbar>
+        </AppBar>
         
         {/* Header with search and create button */}
-        <Box sx={styles.header}>
+        <Box sx={{
+          ...styles.header,
+          display: { xs: 'none', md: 'flex' }, // Hide on mobile
+          p: 3 // Add padding back for desktop
+        }}>
           <Typography variant="h4" sx={styles.title}>
             <ProjectIcon sx={styles.titleIcon} /> Projects
           </Typography>
@@ -384,6 +395,8 @@ export default function ProjectsContent() {
           </Stack>
         </Box>
 
+        {/* --- WRAP CONTENT IN PADDING BOX --- */}
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         {/* Statistics Cards */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
@@ -460,6 +473,7 @@ export default function ProjectsContent() {
             </Card>
           </Grid>
         </Grid>
+        </Box>
 
         {/* Projects Table */}
         <Card sx={styles.projectsCard}>
