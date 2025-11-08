@@ -15,7 +15,6 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Snackbar, Alert,
   Paper,AppBar, Toolbar,
-  Menu as MenuIcon,
   LinearProgress
 } from '@mui/material';
 import {
@@ -32,7 +31,8 @@ import {
   Folder as FolderIcon,
   Chat as ChatIcon,
   ViewKanban as KanbanIcon,
-  CalendarToday as CalendarIcon
+  CalendarToday as CalendarIcon,
+  Menu as MenuIcon
 } from '@mui/icons-material';
 
 // Import styles
@@ -1240,11 +1240,16 @@ export default function ProjDetailsContent() {
                 p: 3, // Add padding for desktop
                 display: { xs: 'none', md: 'block' } // Hide on mobile
             }}>
+              {/* --- PASTE THIS BLOCK --- */}
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                {/* ... (rest of header content is unchanged) ... */}
+                <Typography variant="h4" sx={headerStyles.headerTitle}>
+                  <ProjectIcon sx={headerStyles.projectIcon} />
+                  {currentProject.project_name || currentProject.name || 'Project Details'}
+                </Typography>
               </Stack>
+              {/* --- END OF PASTE --- */}
               <Typography variant="body1" sx={headerStyles.headerSubtext}>
-                {currentProject.description || 'Project details'}
+                {currentProject.description || 'View project overview, tasks, files, and team members.'}
               </Typography>
             </Box>
 
@@ -1421,7 +1426,7 @@ export default function ProjDetailsContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Global Snackbar for notifications - EXACT SAME AS SETTINGS SCREEN */}
+      {/* Global Snackbar for notifications */}
       <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           {snackbarMessage}

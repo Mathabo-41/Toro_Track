@@ -343,7 +343,16 @@ export default function ProjectsContent() {
       {/* ===========================
           Main Content
       ============================ */}
-      <Box component="main" sx={styles.mainContent}>
+      <Box 
+        component="main" 
+        sx={{
+          ...styles.mainContent,
+          flexGrow: 1,
+          width: { xs: '100%', md: `calc(100% - 240px)` }, 
+          ml: { xs: 0, md: `240px` }, 
+          p: 0 
+        }}
+      >
         {/* --- ADD THIS APP BAR --- */}
         <AppBar
           position="static"

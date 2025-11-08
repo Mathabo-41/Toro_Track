@@ -618,7 +618,17 @@ const drawerContent = (
       </Drawer>
 
       {/* Main content */}
-      <Box component="main" sx={styles.mainContent}>
+      <Box 
+        component="main" 
+        sx={{
+          ...styles.mainContent,
+          flexGrow: 1, 
+          width: { xs: '100%', md: `calc(100% - 240px)` }, 
+          ml: { xs: 0, md: `240px` }, 
+          p: 0 
+        }}
+      >
+
         {/* --- APP BAR --- */}
         <AppBar
           position="static"
