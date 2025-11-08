@@ -171,6 +171,132 @@ export default function ProjDetailsContent() {
     handleTabChange,
   } = useDetails(currentProject?.id);
 
+ /**
+   * Initialize empty columns
+   */
+  const initializeEmptyColumns = React.useCallback(() => {
+    const emptyColumns = {
+      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
+      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
+      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
+    };
+    setKanbanColumns(emptyColumns);
+  }, []); // No dependencies
+
+  /**
+   * Organize tasks into Kanban columns
+   */
+  const organizeTasksIntoColumns = React.useCallback((tasks) => {
+    const columns = {
+      backlog: {
+        id: 'backlog',
+        title: 'Backlog',
+        color: COLUMN_COLORS.backlog,
+        icon: <BacklogIcon />,
+        tasks: []
+      },
+      in_progress: {
+        id: 'in_progress',
+        title: 'In Progress',
+        color: COLUMN_COLORS.in_progress,
+        icon: <InProgressIcon />,
+        tasks: []
+      },
+      done: {
+        id: 'done',
+        title: 'Done',
+        color: COLUMN_COLORS.done,
+        icon: <DoneIcon />,
+        tasks: []
+      }
+    };
+
+    if (tasks && tasks.length > 0) {
+      tasks.forEach(task => {
+        let columnId = 'backlog';
+
+        if (task.status === 'in_progress' || task.status === 'in progress') {
+          columnId = 'in_progress';
+        } else if (task.status === 'done' || task.status === 'completed') {
+          columnId = 'done';
+        } else if (task.status === 'backlog' || task.status === 'todo') {
+          columnId = 'backlog';
+        }
+
+        if (columns[columnId]) {
+          columns[columnId].tasks.push(task);
+        }
+      });
+    }
+
+    setKanbanColumns(columns);
+  }, []); // No dependencies
+
+  /**
+   * Fetch tasks for a specific project
+   */
+  const fetchTasksForProject = React.useCallback(async (projectId) => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from('project_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        initializeEmptyColumns();
+        return;
+      }
+
+      organizeTasksIntoColumns(tasks || []);
+    } catch (error) {
+      console.error('Error in fetchTasksForProject:', error);
+      initializeEmptyColumns();
+    }
+  }, [supabase, organizeTasksIntoColumns, initializeEmptyColumns]); // Added dependencies
+
+  /**
+   * Fetch project files
+   */
+  const fetchProjectFiles = React.useCallback(async (projectId) => {
+    try {
+      const { data: files, error } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Error fetching project files:', error);
+        return;
+      }
+
+      if (files) {
+        setProjectFiles(files);
+      }
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+    }
+  }, [supabase]); // Added supabase dependency
+
+  /**
+   * Fetch additional project data (tasks, team, files)
+   */
+  const fetchAdditionalProjectData = React.useCallback(async (projectId) => {
+    try {
+      // Fetch tasks
+      await fetchTasksForProject(projectId);
+
+      // Fetch project files
+      await fetchProjectFiles(projectId);
+
+    } catch (error) {
+      console.error('Error fetching additional project data:', error);
+    }
+  }, [fetchTasksForProject, fetchProjectFiles]); // Dependencies are now declared
+
+
   // Fetch current user from Supabase
   useEffect(() => {
     const fetchUser = async () => {
@@ -367,131 +493,6 @@ export default function ProjDetailsContent() {
   }, [supabase, router,fetchAdditionalProjectData]);
 
   /**
-   * Fetch additional project data (tasks, team, files)
-   */
-  const fetchAdditionalProjectData = React.useCallback(async (projectId) => {
-    try {
-      // Fetch tasks
-      await fetchTasksForProject(projectId);
-
-      // Fetch project files
-      await fetchProjectFiles(projectId);
-
-    } catch (error) {
-      console.error('Error fetching additional project data:', error);
-    }
-  }, [fetchTasksForProject, fetchProjectFiles]);
-
-  /**
-   * Fetch tasks for a specific project
-   */
-  const fetchTasksForProject = React.useCallback(async (projectId) => {
-    try {
-      const { data: tasks, error } = await supabase
-        .from('project_tasks')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        initializeEmptyColumns();
-        return;
-      }
-
-      organizeTasksIntoColumns(tasks || []);
-    } catch (error) {
-      console.error('Error in fetchTasksForProject:', error);
-      initializeEmptyColumns();
-    }
-  }, [organizeTasksIntoColumns, initializeEmptyColumns]);
-
-  /**
-   * Fetch project files
-   */
-  const fetchProjectFiles = React.useCallback(async (projectId) => {
-    try {
-      const { data: files, error } = await supabase
-        .from('project_files')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.log('Error fetching project files:', error);
-        return;
-      }
-
-      if (files) {
-        setProjectFiles(files);
-      }
-    } catch (error) {
-      console.error('Error fetching project files:', error);
-    }
-  }, [supabase]);
-
-  /**
-   * Organize tasks into Kanban columns
-   */
-  const organizeTasksIntoColumns = React.useCallback((tasks) => {
-    const columns = {
-      backlog: {
-        id: 'backlog',
-        title: 'Backlog',
-        color: COLUMN_COLORS.backlog,
-        icon: <BacklogIcon />,
-        tasks: []
-      },
-      in_progress: {
-        id: 'in_progress',
-        title: 'In Progress',
-        color: COLUMN_COLORS.in_progress,
-        icon: <InProgressIcon />,
-        tasks: []
-      },
-      done: {
-        id: 'done',
-        title: 'Done',
-        color: COLUMN_COLORS.done,
-        icon: <DoneIcon />,
-        tasks: []
-      }
-    };
-
-    if (tasks && tasks.length > 0) {
-      tasks.forEach(task => {
-        let columnId = 'backlog';
-
-        if (task.status === 'in_progress' || task.status === 'in progress') {
-          columnId = 'in_progress';
-        } else if (task.status === 'done' || task.status === 'completed') {
-          columnId = 'done';
-        } else if (task.status === 'backlog' || task.status === 'todo') {
-          columnId = 'backlog';
-        }
-
-        if (columns[columnId]) {
-          columns[columnId].tasks.push(task);
-        }
-      });
-    }
-
-    setKanbanColumns(columns);
-  }, []);
-
-  /**
-   * Initialize empty columns
-   */
-  const initializeEmptyColumns = React.useCallback(() => {
-    const emptyColumns = {
-      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
-      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
-      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
-    };
-    setKanbanColumns(emptyColumns);
-  }, []);
-
-  /**
    * Handle project change
    */
   const handleProjectChange = async (projectId) => {
@@ -589,76 +590,7 @@ export default function ProjDetailsContent() {
 
     const progress = getProjectProgress();
 
-    // ADD THIS REUSABLE DRAWER CONTENT
-  const drawerContent = (
-    <>
-      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Link href="/dashboard/client/details" passHref>
-          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-            <DashboardIcon />
-          </IconButton>
-        </Link>
-        <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
-      </Box>
-      <List>
-        {clientMenu.map((item) => (
-          <ListItem key={item.path} disablePadding>
-            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
-              <ListItemText primary={item.name} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Profile Section */}
-      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-            <Image
-              src={profilePicture}
-              alt="User Profile"
-              fill
-              style={{ objectFit: 'cover' }}
-              onError={(e) => {
-                e.target.src = '/toroLogo.jpg';
-              }}
-            />
-          </Box>
-          {sidebarOpen && ( 
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-        <Button
-          onClick={handleLogout}
-          fullWidth
-          sx={{
-            padding: '0.75rem',
-            background: 'transparent',
-            border: '1px solid #fefae0',
-            borderRadius: '8px',
-            color: '#fefae0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            '&:hover': { background: '#6b705c' }
-          }}
-        >
-          {sidebarOpen ? 'Logout' : <LogoutIcon />}
-        </Button>
-      </Box>
-    </>
-  );
+   
 
       return (
       <Box sx={{ p: 2 }}>
@@ -1157,6 +1089,77 @@ export default function ProjDetailsContent() {
         return renderOverviewTab();
     }
   };
+
+ // ADD THIS REUSABLE DRAWER CONTENT
+  const drawerContent = (
+    <>
+      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard/client/details" passHref>
+          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
+      </Box>
+      <List>
+        {clientMenu.map((item) => (
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      {/* Profile Section */}
+      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+            <Image
+              src={profilePicture}
+              alt="User Profile"
+              fill
+              style={{ objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.src = '/toroLogo.jpg';
+              }}
+            />
+          </Box>
+          {sidebarOpen && ( 
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+              </Typography>
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          sx={{
+            padding: '0.75rem',
+            background: 'transparent',
+            border: '1px solid #fefae0',
+            borderRadius: '8px',
+            color: '#fefae0',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            '&:hover': { background: '#6b705c' }
+          }}
+        >
+          {sidebarOpen ? 'Logout' : <LogoutIcon />}
+        </Button>
+      </Box>
+    </>
+  );
 
   // Show loading state
   if (loading) {
