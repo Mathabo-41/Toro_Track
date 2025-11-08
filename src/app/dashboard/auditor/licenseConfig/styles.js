@@ -38,8 +38,6 @@ export const listItemButtonStyles = (isActive) => ({
 export const mainContentBoxStyles = {
   flexGrow: 1,
   p: 3,
-  ml: '240px', // Adjust margin to account for the drawer width.
-  width: 'calc(100% - 240px)',
 };
 
 // Header at the top of the main content area.

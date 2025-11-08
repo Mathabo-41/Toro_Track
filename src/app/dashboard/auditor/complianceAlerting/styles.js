@@ -31,7 +31,6 @@ export const drawerHeaderStyles = {
 export const mainContentBoxStyles = {
   flexGrow: 1,
   p: 3,
-  ml: '240px',
   display: 'flex',
   flexDirection: 'column',
 };

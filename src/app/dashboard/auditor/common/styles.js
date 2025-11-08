@@ -7,7 +7,7 @@ export const rootBox = {
 };
 
 export const drawerPaper = {
-  width: 240,
+  width: 260,
   boxSizing: 'border-box',
   backgroundColor:'#283618'
 };
