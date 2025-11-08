@@ -14,7 +14,7 @@ import {
   Tabs, Tab, IconButton, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Snackbar, Alert,
-  Paper,AppBar, Toolbar,
+  Paper, AppBar, Toolbar,
   LinearProgress
 } from '@mui/material';
 import {
@@ -1240,14 +1240,12 @@ export default function ProjDetailsContent() {
                 p: 3, // Add padding for desktop
                 display: { xs: 'none', md: 'block' } // Hide on mobile
             }}>
-              {/* --- PASTE THIS BLOCK --- */}
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h4" sx={headerStyles.headerTitle}>
                   <ProjectIcon sx={headerStyles.projectIcon} />
                   {currentProject.project_name || currentProject.name || 'Project Details'}
                 </Typography>
               </Stack>
-              {/* --- END OF PASTE --- */}
               <Typography variant="body1" sx={headerStyles.headerSubtext}>
                 {currentProject.description || 'View project overview, tasks, files, and team members.'}
               </Typography>

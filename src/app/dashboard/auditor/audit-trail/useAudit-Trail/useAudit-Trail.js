@@ -1,8 +1,7 @@
-// Contains all the logic and instructions for this feature. We can also display error messages to the UI from this file.
+// Contains all the logic and instructions for this feature. We can also display error messages to the user interface from this file.
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo, useEffect } from 'react';
 import { 
     auditTrailMenu, 
     getAuditTrailData, 
@@ -15,20 +14,22 @@ import {
 
 // Manage state and logic for the audit trail screen
 const useAuditTrail = () => {
-    const queryClient = useQueryClient();
     const [search, setSearch] = useState("");
+    const [logs, setLogs] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingLog, setEditingLog] = useState(null);
     const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'success' });
 
     /*
-    * Fetch data using useQuery.
-    * This replaces the useEffect and useState for 'logs'.
+    * Fetch data when the component mounts.
     */
-    const { data: logs, isLoading: isLoadingLogs } = useQuery({
-        queryKey: ['auditTrailData'],
-        queryFn: getAuditTrailData,
-    });
+    useEffect(() => {
+        const loadData = async () => {
+            const data = await getAuditTrailData();
+            setLogs(data);
+        };
+        loadData();
+    }, []);
 
     const handleSearchChange = (event) => {
         setSearch(event.target.value);
@@ -58,80 +59,74 @@ const useAuditTrail = () => {
         setIsModalOpen(false);
     };
 
-    // Helper to invalidate cache and show feedback
-    const onMutationSuccess = (message) => {
-        queryClient.invalidateQueries({ queryKey: ['auditTrailData'] });
-        setFeedback({ open: true, message, severity: 'success' });
-        handleCloseModal();
+    /*
+    * Handles creating a new log entry.
+    */
+    const addLogEntry = async (newLogData) => {
+        const returnedData = await createAuditLogEntry(newLogData);
+        if (returnedData) {
+            const newFormattedLog = { ...returnedData, timestamp: new Date(returnedData.timestamp).toLocaleString() };
+            setLogs(prevLogs => [newFormattedLog, ...prevLogs]);
+            setFeedback({ open: true, message: 'Log entry added successfully!', severity: 'success' });
+            handleCloseModal();
+        } else {
+            setFeedback({ open: true, message: 'Failed to add log entry.', severity: 'error' });
+        }
     };
 
-    const onMutationError = (message) => {
-        setFeedback({ open: true, message, severity: 'error' });
+    /*
+    * Handles updating an existing log entry.
+    */
+    const editLogEntry = async (updatedLogData) => {
+        const returnedData = await updateAuditLogEntry(updatedLogData);
+        if (returnedData) {
+            const updatedFormattedLog = { ...returnedData, timestamp: new Date(returnedData.timestamp).toLocaleString() };
+            setLogs(prevLogs => prevLogs.map(log => log.id === updatedFormattedLog.id ? updatedFormattedLog : log));
+            setFeedback({ open: true, message: 'Log entry updated successfully!', severity: 'success' });
+            handleCloseModal();
+        } else {
+            setFeedback({ open: true, message: 'Failed to update log entry.', severity: 'error' });
+        }
     };
 
     /*
-    * Mutation for creating a new log entry.
+    * Handles deleting a log entry.
     */
-    const addLogMutation = useMutation({
-        mutationFn: createAuditLogEntry,
-        onSuccess: () => onMutationSuccess('Log entry added successfully!'),
-        onError: () => onMutationError('Failed to add log entry.'),
-    });
+    const removeLogEntry = async (logId) => {
+        const deletedId = await deleteAuditLogEntry(logId);
+        if (deletedId) {
+            setLogs(prevLogs => prevLogs.filter(log => log.id !== deletedId));
+            setFeedback({ open: true, message: 'Log entry deleted.', severity: 'success' });
+        } else {
+            setFeedback({ open: true, message: 'Failed to delete log entry.', severity: 'error' });
+        }
+    };
 
     /*
-    * Mutation for updating an existing log entry.
+    * Handles the entire document upload flow.
     */
-    const editLogMutation = useMutation({
-        mutationFn: updateAuditLogEntry,
-        onSuccess: () => onMutationSuccess('Log entry updated successfully!'),
-        onError: () => onMutationError('Failed to update log entry.'),
-    });
+    const handleDocumentUpload = async (logId, file) => {
+        if (!file) return;
 
-    /*
-    * Mutation for deleting a log entry.
-    */
-    const deleteLogMutation = useMutation({
-        mutationFn: deleteAuditLogEntry,
-        onSuccess: () => onMutationSuccess('Log entry deleted.'),
-        onError: () => onMutationError('Failed to delete log entry.'),
-    });
+        setFeedback({ open: true, message: 'Uploading document...', severity: 'info' });
+        const filePath = await uploadDocument(file);
 
-    /*
-    * Mutation for handling the entire document upload flow.
-    */
-    const uploadDocumentMutation = useMutation({
-        mutationFn: async ({ logId, file }) => {
-            if (!file) throw new Error('No file provided.');
-            
-            setFeedback({ open: true, message: 'Uploading document...', severity: 'info' });
-            const filePath = await uploadDocument(file);
-
-            if (filePath) {
-                const docData = {
-                    name: file.name,
-                    url: filePath,
-                    type: file.type.split('/')[1].toUpperCase() // e.g., 'pdf', 'png'
-                };
-                const record = await addDocumentRecord(logId, docData);
-                if (record) {
-                    return 'Document attached successfully!';
-                } else {
-                    throw new Error('Failed to record the document.');
-                }
+        if (filePath) {
+            const docData = {
+                name: file.name,
+                url: filePath,
+                type: file.type.split('/')[1].toUpperCase() // e.g., 'pdf', 'png'
+            };
+            const record = await addDocumentRecord(logId, docData);
+            if (record) {
+                setFeedback({ open: true, message: 'Document attached successfully!', severity: 'success' });
             } else {
-                throw new Error('File upload failed.');
+                setFeedback({ open: true, message: 'Failed to record the document.', severity: 'error' });
             }
-        },
-        onSuccess: (message) => onMutationSuccess(message),
-        onError: (err) => onMutationError(err.message),
-    });
-
-
-    // Public handlers that call the mutations
-    const addLogEntry = (newLogData) => addLogMutation.mutate(newLogData);
-    const editLogEntry = (updatedLogData) => editLogMutation.mutate(updatedLogData);
-    const removeLogEntry = (logId) => deleteLogMutation.mutate(logId);
-    const handleDocumentUpload = (logId, file) => uploadDocumentMutation.mutate({ logId, file });
+        } else {
+            setFeedback({ open: true, message: 'File upload failed.', severity: 'error' });
+        }
+    };
 
     const handleCloseFeedback = () => {
         setFeedback({ ...feedback, open: false });
@@ -151,8 +146,7 @@ const useAuditTrail = () => {
         removeLogEntry,
         handleDocumentUpload,
         feedback,
-        handleCloseFeedback,
-        isLoadingLogs, // Expose loading state
+        handleCloseFeedback
     };
 };
 

@@ -14,7 +14,7 @@ import {
   TableRow, TableCell, TextField,
   Button, IconButton, Modal,
   MenuItem, Snackbar, Alert, 
-  useTheme, useMediaQuery,Tooltip
+  useTheme, useMediaQuery,Tooltip, AppBar, Toolbar
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -29,7 +29,7 @@ import {
   tablePaperStyles,
   tableCellHeaderStyles,
   tableCellBodyStyles,
-  modalStyles,AppBar, Toolbar
+  modalStyles
 } from './styles';
 import useAuditTrail from './useAudit-Trail/useAudit-Trail';
 
@@ -133,6 +133,9 @@ export default function AuditTrailContent() {
   /*
    * Populates the form with data when a log entry is being edited.
    */
+  /*
+   * Populates the form with data when a log entry is being edited.
+   */
   useEffect(() => {
     if (editingLog) {
       setFormState({
@@ -145,7 +148,7 @@ export default function AuditTrailContent() {
     } else {
       setFormState(initialFormState);
     }
-  }, [editingLog, isModalOpen, initialFormState]);
+  }, [editingLog, isModalOpen]);
 
   /**
    * Handles form field changes
@@ -576,7 +579,7 @@ export default function AuditTrailContent() {
           </Table>
         </Box>
       </Box>
-    </Box>
+</Box>
       {/* Modal */}
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         <Box

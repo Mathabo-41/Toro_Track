@@ -11,13 +11,14 @@ export const metadata = {
   icons: {
     icon: '/appImages/toro-icon.png', 
   },
-  // This viewport object is added for mobile responsiveness
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+// This viewport object is moved out of metadata for Next.js compliance
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {

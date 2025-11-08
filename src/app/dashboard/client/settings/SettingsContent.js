@@ -208,7 +208,7 @@ export default function SettingsContent() {
 
     if (isError) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 3, backgroundColor: globalStyles.COLORS.background }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 3, backgroundColor: globalStyles.rootBox.backgroundColor }}>
                 <Alert severity="error" sx={{ fontSize: '1.1rem' }}>
                     Failed to load settings. Please try again later.
                 </Alert>
