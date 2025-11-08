@@ -18,10 +18,10 @@ export { PeopleIcon, WorkIcon, StarIcon, BarChartIcon, TrendingUpIcon, BacklogIc
 // Static data for the sidebar navigation menu.
 export const adminMenuData = [
     { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+    { name: 'Projects', path: '/dashboard/admin/projects' },
     { name: 'Performance Reports', path: '/dashboard/admin/reports' },
     { name: 'Client Profiles', path: '/dashboard/admin/profiles' },
-    { name: 'Projects', path: '/dashboard/admin/projects' },
-    { name: 'Teams & Users', path: '/dashboard/admin/users' },
+    { name: 'Invite Users', path: '/dashboard/admin/users' },
     { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 

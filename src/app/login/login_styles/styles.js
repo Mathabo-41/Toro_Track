@@ -1,17 +1,17 @@
-// styles.js
+// These styles are now compatible with MUI's 'sx' prop.
 
-// Inline styles as JavaScript objects
 export const mainContainer = {
   position: 'relative',
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   minHeight: "100vh",
-  padding: { xs: "1rem", md: "2rem" }, // Responsive padding
+  padding: { xs: "1rem", md: "2rem" },
   flexDirection: "column",
   overflow: 'hidden',
 };
 
+// This style is for the <video> tag, so it remains a simple object.
 export const videoBackground = {
   position: 'absolute',
   top: '50%',
@@ -35,20 +35,20 @@ export const subtleOverlay = {
 
 export const mainContentContainer = {
   textAlign: "center",
-  maxWidth: "500px", // MaxWidth is good
-  width: "100%", // Ensures it scales down
+  maxWidth: "500px",
+  width: "100%",
   zIndex: 1,
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: { xs: "1rem", md: "2rem" }, // Responsive padding
+  padding: { xs: "1rem", md: "2rem" },
   borderRadius: "16px",
 };
 
 export const formContainer = {
   backgroundColor: "rgba(253, 255, 252, 0.1)",
-  padding: { xs: "1.5rem", md: "2rem" }, // Responsive padding
+  padding: { xs: "1.5rem", md: "2rem" },
   borderRadius: "16px",
   backdropFilter: "blur(10px)",
   border: "1px solid rgba(253, 255, 252, 0.2)",
@@ -58,21 +58,23 @@ export const formContainer = {
 
 export const loginTitle = {
   fontFamily: "Disekt Mono, monospace",
-  color: "#283618",
+  color: "#283618", 
   marginBottom: "1rem",
   textAlign: "center",
-  fontSize: { xs: "1.75rem", md: "2rem" }, // Responsive font size
+  fontSize: { xs: "1.75rem", md: "2rem" },
   fontWeight: "bold",
 };
 
 export const formStyle = {
-  width: { xs: "95%", md: "80%" }, // Responsive width
+  width: { xs: "85%", md: "80%" }, // Responsive width
   margin: "0 auto",
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
 };
 
 export const inputField = {
   width: "100%",
-  padding: "1rem",
   marginBottom: "1rem",
   borderRadius: "8px",
   border: "1px solid #e2e8f0",
@@ -80,20 +82,31 @@ export const inputField = {
   fontFamily: "Disekt Mono, monospace",
   background: "rgba(255, 255, 255, 0.6)",
   color: "#525252",
-  transform: "scale(0.9)",
-  transformOrigin: "center",
+  '& .MuiInputBase-input': {
+    color: '#525252',
+  },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: 'transparent',
+    },
+    '&:hover fieldset': {
+      borderColor: '#283618',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#606c38',
+      borderWidth: '2px',
+    },
+  },
 };
 
 export const passwordField = {
   ...inputField, // Inherit styles from inputField
   marginBottom: "2rem",
-  color: "#525252",
 };
 
 export const loginButton = {
-  display: "inline-block",
   backgroundColor: "#283618",
-  color: "#606c38",
+  color: "#606c38", // text color
   padding: "1rem 2.5rem",
   borderRadius: "8px",
   fontSize: "1.125rem",
@@ -102,26 +115,16 @@ export const loginButton = {
   cursor: "pointer",
   transition: "all 0.3s ease",
   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-  width: { xs: "95%", md: "80%" }, // Responsive width
-  transform: "scale(0.9)",
-  transformOrigin: "center",
+  width: { xs: "95%", md: "90%" },
   marginBottom: "1.5rem",
   fontFamily: "Disekt Mono, monospace",
-};
-
-export const loginButtonHover = {
-  backgroundColor: '#606c38',
-  color: '#283618',
-  borderColor: '#283618',
-  border: '1px solid',
-};
-
-// Global styles for Next.js
-export const globalStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Disekt+Mono&display=swap');
-  body {
-    margin: 0;
-    font-family: 'Disekt Mono', monospace;
-    color: #283618;
+  '&:hover': {
+    backgroundColor: '#606c38',
+    color: '#283618',
+    borderColor: '#283618',
+    border: '1px solid',
+  },
+  '&:disabled': {
+    backgroundColor: 'grey.500',
   }
-`;
+};

@@ -12,6 +12,7 @@ import {
   logoContainerStyles,
   continueButtonStyles,
 } from './welcomeStyles.js';
+import Link from 'next/link';
 
 export default function Welcome() {
   const router = useRouter();

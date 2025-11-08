@@ -1,9 +1,7 @@
-// This file contains the client-side logic for the login page.
+// This file contains the client-side UI for the login page.
+// It now uses the useLogin hook for all logic.
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   mainContainer,
   videoBackground,
@@ -15,138 +13,99 @@ import {
   inputField,
   passwordField,
   loginButton,
-  loginButtonHover,
-  globalStyles,
 } from './login_styles/styles.js';
-import CircularProgress from '@mui/material/CircularProgress'; 
+import {
+  Box,
+  TextField,
+  Button,
+  CircularProgress,
+  Typography,
+  Alert,
+  Backdrop
+} from '@mui/material';
+import { useLogin } from './useLogin.js';
 
 export default function Login() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
-  /**Looading State */
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
-  
-
-  // Initialize the new Supabase client inside the component.
-  const supabase = createSupabaseClient();
-
-  /*
-  Handles the standard email and password login process.
-  It authenticates the user, fetches their role from the database,
-  and redirects them to the appropriate dashboard.
-  */
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (signInError) throw signInError;
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Redirect based on the user's role
-      switch (profile.role) {
-        case 'admin':
-          router.push('/dashboard/admin/overview');
-          break;
-        case 'client':
-          router.push('/dashboard/client/details');
-          break;
-        case 'auditor':
-          router.push('/dashboard/auditor/audit-trail');
-          break;
-        default:
-          router.push('/login');
-      }
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    handleSubmit,
+    isLoading,
+    error,
+  } = useLogin();
 
   return (
-    <main style={mainContainer}>
+    <Box component="main" sx={mainContainer}>
+      {/* The <video> tag uses the 'style' prop because 'sx' does not work
+        on it, and the styles are simple properties.
+      */}
       <video autoPlay loop muted playsInline style={videoBackground}>
         <source src="/appImages/logo_animation.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      <div style={subtleOverlay}></div>
+      <Box sx={subtleOverlay}></Box>
 
-      <div style={mainContentContainer}>
-        <div style={formContainer}>
-          <h2 style={loginTitle}>Login</h2>
-          <form onSubmit={handleLogin} style={formStyle}>
-            <input
+      <Box sx={mainContentContainer}>
+        <Box sx={formContainer}>
+          <Typography variant="h2" sx={loginTitle}>
+            Login
+          </Typography>
+          
+          <Box component="form" onSubmit={handleSubmit} sx={formStyle}>
+            <TextField
               type="email"
               placeholder="Email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={inputField}
+              sx={inputField}
+              disabled={isLoading}
             />
-            <input
+            <TextField
               type="password"
               placeholder="Password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={passwordField}
+              sx={passwordField}
+              disabled={isLoading}
             />
-            <button
+            <Button
               type="submit"
-              style={isHovered ? { ...loginButton, ...loginButtonHover } : loginButton}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              disabled={loading}
+              variant="contained"
+              sx={loginButton}
+              disabled={isLoading}
             >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-          </form>
-        </div>
-      </div>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </Button>
+            
+            {error && (
+              <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+                {error}
+              </Alert>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
-      {/*  Full-screen overlay while logging in */}
-      {loading && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-          zIndex: 2000
-        }}>
-          <CircularProgress style={{ color: '#fefae0', marginBottom: '1rem' }} />
-          <p style={{ color: '#fefae0', fontSize: '1.5rem', fontWeight: 'bold' }}>
-            Logging you in...
-          </p>
-        </div>
-      )}
-
-      <style jsx global>{globalStyles}</style>
-    </main>
+      {/* Full-screen loading overlay */}
+      <Backdrop
+        sx={{ 
+          color: '#fff', 
+          zIndex: 2000, 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}
+        open={isLoading}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="h6" sx={{ mt: 2, color: '#fefae0' }}>
+          Logging you in...
+        </Typography>
+      </Backdrop>
+    </Box>
   );
 }
