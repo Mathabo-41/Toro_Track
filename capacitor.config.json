@@ -1,0 +1,9 @@
+{
+  "appId": "com.torotrack.app",
+  "appName": "Toro Track",
+  "webDir": "public",
+  "server": {
+    "url": "https://toro-track.vercel.app",
+    "cleartext": true
+  }
+}
