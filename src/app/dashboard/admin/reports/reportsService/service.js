@@ -1,12 +1,19 @@
-// This file handles all data-related tasks for this feature, such as fetching and sending information to our database.
+// This file handles all data-related tasks for this feature.
 import { createSupabaseClient } from '@/lib/supabase/client';
+import React from 'react';
 import {
     People as PeopleIcon,
     Work as WorkIcon,
     Star as StarIcon,
     BarChart as BarChartIcon,
-    TrendingUp as TrendingUpIcon
+    TrendingUp as TrendingUpIcon,
+    PlaylistAdd as BacklogIcon,
+    Build as InProgressIcon,
+    CheckCircle as DoneIcon,
 } from '@mui/icons-material';
+
+// Export icons so the hook can use them
+export { PeopleIcon, WorkIcon, StarIcon, BarChartIcon, TrendingUpIcon, BacklogIcon, InProgressIcon, DoneIcon };
 
 // Static data for the sidebar navigation menu.
 export const adminMenuData = [
@@ -18,112 +25,151 @@ export const adminMenuData = [
     { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 
-/*
-  Fetches key performance metrics from the database.
-*/
-export async function fetchReportMetrics() {
-    // This function can remain as is, using mock data for now.
-    return getFallbackMetrics();
-}
+// --- Helper Functions for Data Processing ---
 
-/*
-  Fetches all project and task data for the Kanban board view.
-*/
-export async function fetchKanbanData() {
+const getTotalTasks = (project) => {
+    if (!project?.columns) return 0;
+    return Object.values(project.columns).reduce((total, column) => total + (column?.tasks?.length || 0), 0);
+};
+
+const createMetricsData = (projects, members) => {
+    const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
+    const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
+    const inProgressTasks = projects.reduce((total, project) => total + (project.columns?.in_progress?.tasks?.length || 0), 0);
+    const backlogTasks = projects.reduce((total, project) => total + (project.columns?.backlog?.tasks?.length || 0), 0);
+
+    return {
+      totalProjects: { title: 'Total Projects', value: projects.length, trend: 'up', change: '+100%', icon: <WorkIcon /> },
+      completedTasks: { title: 'Completed Tasks', value: completedTasks, trend: 'up', change: '+100%', icon: <DoneIcon /> },
+      inProgress: { title: 'In Progress', value: inProgressTasks, trend: 'up', change: '+100%', icon: <InProgressIcon /> },
+      teamMembers: { title: 'Team Members', value: members.length, trend: 'up', change: '+100%', icon: <PeopleIcon /> },
+      backlog: { title: 'Backlog Tasks', value: backlogTasks, trend: 'up', change: '+100%', icon: <BacklogIcon /> }
+    };
+};
+
+export const createEmptyMetrics = () => ({
+    totalProjects: { title: 'Total Projects', value: 0, trend: 'neutral', change: '0%', icon: <WorkIcon /> },
+    completedTasks: { title: 'Completed Tasks', value: 0, trend: 'neutral', change: '0%', icon: <DoneIcon /> },
+    inProgress: { title: 'In Progress', value: 0, trend: 'neutral', change: '0%', icon: <InProgressIcon /> },
+    teamMembers: { title: 'Team Members', value: 0, trend: 'neutral', change: '0', icon: <PeopleIcon /> },
+    backlog: { title: 'Backlog Tasks', value: 0, trend: 'neutral', change: '0%', icon: <BacklogIcon /> }
+});
+
+/**
+ * Fetches all data needed for the Performance Reports page.
+ * This single function is called by useQuery.
+ */
+export async function getPerformanceReportsData() {
     const supabase = createSupabaseClient();
+    
+    // 1. Fetch User
+    const { data: { user } } = await supabase.auth.getUser();
 
-    try {
-        const { data: projects, error: projectsError } = await supabase
-            .from('projects')
-            .select('*');
+    // 2. Fetch Projects and their Tasks in one go
+    const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select(`
+            *,
+            project_tasks ( * )
+        `)
+        .order('created_at', { ascending: false });
 
-        if (projectsError) {
-            console.error('Error fetching projects:', projectsError);
-            return []; // Return empty array on error
-        }
+    if (projectsError) {
+        console.error('Error fetching projects and tasks:', projectsError);
+        throw new Error('Failed to fetch projects: ' + projectsError.message);
+    }
 
-        const projectsWithTasks = await Promise.all(
-            projects.map(async (project) => {
-                const { data: tasks, error: tasksError } = await supabase
-                    .from('project_tasks')
-                    .select('*')
-                    .eq('project_id', project.id);
-                
-                // Even if tasks fail to load, return the project with empty columns
-                if (tasksError) {
-                    console.error(`Error fetching tasks for project ${project.id}:`, tasksError);
+    let projectsWithTasks = [];
+    if (projectsData && projectsData.length > 0) {
+        // Process projects and assign tasks
+        projectsWithTasks = projectsData.map(project => {
+            const tasksForProject = project.project_tasks || [];
+            
+            const columns = {
+                backlog: {
+                    id: 'backlog',
+                    title: 'Backlog',
+                    tasks: tasksForProject.filter(task => task.status === 'backlog' || !task.status) || []
+                },
+                in_progress: {
+                    id: 'in_progress',
+                    title: 'In Progress',
+                    tasks: tasksForProject.filter(task => task.status === 'in_progress') || [] 
+                },
+                done: {
+                    id: 'done',
+                    title: 'Done',
+                    tasks: tasksForProject.filter(task => task.status === 'done') || []
                 }
+            };
 
-                const organizedTasks = tasks || [];
+            const totalTasks = tasksForProject.length;
+            const completedTasks = columns.done.tasks.length;
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-                return {
-                    ...project,
-                    columns: {
-                        backlog: {
-                            id: 'backlog',
-                            title: 'Backlog',
-                            tasks: organizedTasks.filter(t => t.status === 'backlog')
-                        },
-                        inProgress: {
-                            id: 'inProgress',
-                            title: 'In Progress',
-                            tasks: organizedTasks.filter(t => t.status === 'inProgress')
-                        },
-                        done: {
-                            id: 'done',
-                            title: 'Done',
-                            tasks: organizedTasks.filter(t => t.status === 'done')
-                        }
-                    }
-                };
-            })
-        );
-
-        return projectsWithTasks;
-    } catch (error) {
-        console.error('Error fetching Kanban data:', error);
-        return []; // Return empty array on error
+            return {
+                id: project.id,
+                name: project.project_name || 'Unnamed Project',
+                description: project.description || 'No description available',
+                progress: progress,
+                columns: columns,
+                created_at: project.created_at,
+                updated_at: project.updated_at
+            };
+        });
     }
-}
 
-/*
-  Fetches a list of all team members.
-*/
-export async function fetchTeamMembers() {
-    const supabase = createSupabaseClient();
-    const colors = ['#f3722c', '#2ec4b6', '#e71d36', '#ff9f1c', '#6b705c'];
-
+    // 3. Fetch Team Members
+    let formattedMembers = [];
     try {
-        // Query the 'profiles' table as defined by your schema
-        const { data: members, error: membersError } = await supabase
-            .from('profiles')
-            .select('id, name, role')
-            .order('name');
+        const { data: membersData, error: membersError } = await supabase
+            .from('users') // Main table for team
+            .select('id, email, name, role')
+            .neq('role', 'client');
 
-        if (membersError) {
-            // This is where your error was happening
-            console.error('Error fetching team members:', membersError);
-            throw membersError; // Throw error to be caught by the calling function
+        if (membersError) throw membersError;
+
+        formattedMembers = (membersData || []).map((member, index) => ({
+            id: member.id,
+            name: member.name || member.email,
+            role: member.role || 'team_member',
+            color: ['#f3722c', '#2ec4b6', '#e71d36', '#ff9f1c', '#6b705c'][index % 5]
+        }));
+    } catch (err) {
+        console.warn('Error fetching team members from users table:', err.message);
+        // Fallback to 'profiles' table
+        try {
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('id, email, full_name, role');
+             if (profileError) throw profileError;
+             formattedMembers = (profileData || []).map((member, index) => ({
+                id: member.id,
+                name: member.full_name || member.email,
+                role: member.role || 'team_member',
+                color: ['#f3722c', '#2ec4b6', '#e71d36', '#ff9f1c', '#6b705c'][index % 5]
+            }));
+        } catch (err2) {
+            console.error('Also failed to fetch from profiles table:', err2.message);
         }
-
-        // Map colors to the members
-        return members?.map((member, index) => ({
-            ...member,
-            color: colors[index % colors.length] // Assign a color from the array
-        })) || [];
-    } catch (error) {
-        console.error('An unexpected error occurred in fetchTeamMembers:', error);
-        return []; // Return an empty array if anything goes wrong
     }
-}
 
+    // 4. Create Metrics
+    const metricsData = createMetricsData(projectsWithTasks, formattedMembers);
+
+    return {
+        currentUser: user,
+        projects: projectsWithTasks,
+        teamMembers: formattedMembers,
+        reports: metricsData,
+    };
+}
 
 /*
   Creates a new task in the database.
 */
 export async function createTask(taskData) {
     const supabase = createSupabaseClient();
-
     if (!taskData.projectId || !taskData.title) {
         throw new Error('Project ID and Title are required to create a task.');
     }
@@ -137,16 +183,11 @@ export async function createTask(taskData) {
                 description: taskData.description || null,
                 assignee_id: taskData.assignee_id || null,
                 due_date: taskData.dueDate || null,
-                status: 'backlog',
+                status: 'backlog', // New tasks always go to backlog
             })
             .select()
             .single();
-
-        if (error) {
-            console.error('Error creating task in database:', error);
-            throw error;
-        }
-
+        if (error) throw error;
         return data;
     } catch (error) {
         console.error('Unexpected error in createTask:', error);
@@ -159,7 +200,6 @@ export async function createTask(taskData) {
 */
 export async function updateTask(taskId, taskData) {
     const supabase = createSupabaseClient();
-
     try {
         const { data, error } = await supabase
             .from('project_tasks')
@@ -167,19 +207,14 @@ export async function updateTask(taskId, taskData) {
                 title: taskData.title,
                 description: taskData.description,
                 assignee_id: taskData.assignee_id || null,
-                due_date: taskData.dueDate || taskData.due_date,
+                due_date: taskData.dueDate || taskData.due_date, // Handle both formats
                 status: taskData.status,
                 updated_at: new Date().toISOString()
             })
             .eq('id', taskId)
             .select()
             .single();
-
-        if (error) {
-            console.error('Error updating task:', error);
-            throw error;
-        }
-
+        if (error) throw error;
         return data;
     } catch (error) {
         console.error('Unexpected error in updateTask:', error);
@@ -192,68 +227,15 @@ export async function updateTask(taskId, taskData) {
 */
 export async function deleteTask(taskId) {
     const supabase = createSupabaseClient();
-
     try {
         const { error } = await supabase
             .from('project_tasks')
             .delete()
             .eq('id', taskId);
-
-        if (error) {
-            console.error('Error deleting task:', error);
-            throw error;
-        }
-
+        if (error) throw error;
+        return { id: taskId }; // Return the ID for confirmation
     } catch (error) {
         console.error('Unexpected error in deleteTask:', error);
         throw error;
     }
-}
-
-// Mock data functions (can be removed if not needed elsewhere)
-function getFallbackMetrics() {
-    return {
-        clientAcquisition: {
-            title: 'Client Acquisition',
-            value: '12',
-            change: 'this quarter',
-            trend: 'up',
-            icon: <PeopleIcon />
-        },
-        projectCompletion: {
-            title: 'Project Completion Rate',
-            value: '75%',
-            change: 'last quarter',
-            trend: 'up',
-            icon: <WorkIcon />
-        },
-        clientRetention: {
-            title: 'Client Retention Rate',
-            value: '88%',
-            change: 'last quarter',
-            trend: 'up',
-            icon: <TrendingUpIcon />
-        },
-        revenueGrowth: {
-            title: 'Revenue Growth Rate',
-            value: '15%',
-            change: 'quarter-over-quarter',
-            trend: 'up',
-            icon: <StarIcon />
-        },
-        satisfactionScores: {
-            title: 'Avg. Satisfaction',
-            value: '4.2/5',
-            change: 'last quarter',
-            trend: 'up',
-            icon: <StarIcon />
-        },
-        teamPerformance: {
-            title: 'Team Performance',
-            value: '92%',
-            change: 'tasks on time',
-            trend: 'up',
-            icon: <BarChartIcon />
-        }
-    };
 }

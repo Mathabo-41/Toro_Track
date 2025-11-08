@@ -13,7 +13,7 @@ import {
   Drawer, ListItemButton, TextField, Chip,
   IconButton, Menu, MenuItem, Paper, Table, TableBody, Tooltip,
   TableCell, TableContainer, TableHead, TableRow, DialogActions, Dialog, DialogTitle, DialogContent, DialogContentText,
-  Select, FormControl, InputAdornment, Snackbar, Alert,
+  Select, FormControl, InputAdornment, Snackbar, Alert, CircularProgress,
 } from '@mui/material';
 
 import CheckIcon from '@mui/icons-material/Check';
@@ -38,6 +38,7 @@ import {
 import { styles } from './styles';
 import { useUsers } from './useUsers/useUsers';
 import { adminMenuData } from './usersService/service';
+import LoadingScreen from '../common/LoadingScreen'; // Import the LoadingScreen
 
 export default function TeamsAndUsers() {
   const supabase = createSupabaseClient();
@@ -47,11 +48,12 @@ export default function TeamsAndUsers() {
     handleMenuOpen, handleMenuClose,
     handleRemoveUser, isConfirmDialogOpen,
     handleCloseConfirmDialog, handleConfirmRemove,
-    // Import updated state and setters for the client form
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
-    apiError, setApiError, // Add these
+    apiError, setApiError,
+    isLoading, // Import the loading state from the hook
+    isInviting, // Import mutation loading state
   } = useUsers();
 
   const router = useRouter();
@@ -116,79 +118,86 @@ export default function TeamsAndUsers() {
 
   const handleSendInvite = () => {
     setInvitedEmail(inviteEmail);
+    // Pass the password to the hook
     handleInviteUser(selectedRole, generatedPassword);
     setOpenInviteDialog(false);
-    setOpenInviteSuccess(true);
+    // Check for API error *before* showing success
+    if (!apiError) {
+       setOpenInviteSuccess(true);
+    }
   };
   
   // Updated validation logic for the new fields
-  const isInviteDisabled = !inviteEmail || (selectedRole === 'Client' && (!clientName || !contactNumber));
+  const isInviteDisabled = !inviteEmail || isInviting || (selectedRole === 'Client' && (!clientName || !contactNumber));
+
+  // --- ADDED LOADING STATE ---
+  if (isLoading) {
+    return <LoadingScreen message="Loading Users..." />;
+  }
+  
+  const drawerContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Link href="/dashboard/admin/overview" passHref>
+          <IconButton sx={{ color: 'green' }}>
+            <DashboardIcon />
+          </IconButton>
+        </Link>
+        <Typography variant="h5" sx={{ color: '#fefae0' }}>Admin Portal</Typography>
+      </Box>
+      <List>
+        {adminMenuData.map((item, index) => (
+          <ListItem key={index} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              sx={styles.sidebarListItemButton(item.name)}
+            >
+              <ListItemText primary={item.name} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      {/* User profile + logout */}
+      <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Image
+            src="/toroLogo.jpg"
+            alt="User Profile"
+            width={40}
+            height={40}
+            style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
+          />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
+              {currentUser?.email}
+            </Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
+              Admin
+            </Typography>
+          </Box>
+        </Box>
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          variant="outlined"
+          startIcon={<LogoutIcon />}
+          sx={{
+            color: '#fefae0',
+            borderColor: '#fefae0',
+            '&:hover': { background: '#6b705c' },
+          }}
+        >
+          Logout
+        </Button>
+      </Box>
+    </Box>
+  );
 
   return (
     <Box sx={styles.mainContainer}>
       {/* Sidebar */}
-      <Drawer variant="permanent" anchor="left" sx={styles.sidebarDrawer}>
-        <Box>
-        <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Link href="/dashboard/admin/overview" passHref>
-            <IconButton sx={{ color: 'green' }}>
-              <DashboardIcon />
-            </IconButton>
-          </Link>
-          <Typography variant="h5">Admin Portal</Typography>
-        </Box>
-        <List>
-          {adminMenuData.map((item, index) => (
-            <ListItem key={index} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                sx={styles.sidebarListItemButton(item.name)}
-              >
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-
-        {/* User profile + logout */}
-        <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-            <Image
-              src="/toroLogo.jpg"
-              alt="User Profile"
-              width={40}
-              height={40}
-              style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
-            />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
-                {currentUser?.email}
-              </Typography>
-              <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
-                Admin
-              </Typography>
-            </Box>
-          </Box>
-          <Button
-            onClick={handleLogout}
-            fullWidth
-            variant="outlined"
-            startIcon={<LogoutIcon />}
-            sx={{
-              color: '#fefae0',
-              borderColor: '#fefae0',
-              '&:hover': { background: '#6b705c' },
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
-      </Box>
-
-      {/* === END Sidebar Content === */}
-
-
       {/* Mobile Drawer (Temporary) */}
       <Drawer
         variant="temporary"
@@ -198,145 +207,30 @@ export default function TeamsAndUsers() {
           keepMounted: true, // Better open performance on mobile.
         }}
         sx={{
-          ...styles.sidebarDrawer, // Use same base styles
+          ...styles.sidebarDrawer, 
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { 
             boxSizing: 'border-box', 
-            // Ensure paper uses the width from your styles
             width: styles.sidebarDrawer?.width || 240 
           },
         }}
       >
-        {/* Pass sidebar content here */}
-        <Box>
-          <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Link href="/dashboard/admin/overview" passHref>
-              <IconButton sx={{ color: 'green' }}>
-                <DashboardIcon />
-              </IconButton>
-            </Link>
-            <Typography variant="h5">Admin Portal</Typography>
-          </Box>
-          <List>
-            {adminMenuData.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  href={item.path}
-                  sx={styles.sidebarListItemButton(item.name)}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-
-          {/* User profile + logout */}
-          <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                width={40}
-                height={40}
-                style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
-              />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
-                  {currentUser?.email}
-                </Typography>
-                <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
-                  Admin
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              onClick={handleLogout}
-              fullWidth
-              variant="outlined"
-              startIcon={<LogoutIcon />}
-              sx={{
-                color: '#fefae0',
-                borderColor: '#fefae0',
-                '&:hover': { background: '#6b705c' },
-              }}
-            >
-              Logout
-            </Button>
-          </Box>
-        </Box>
+        {drawerContent}
       </Drawer>
 
       {/* Desktop Drawer (Permanent) */}
       <Drawer
         variant="permanent"
         sx={{
-          ...styles.sidebarDrawer, // Use same base styles
+          ...styles.sidebarDrawer,
           display: { xs: 'none', md: 'block' },
         }}
         open
       >
-        {/* Pass sidebar content here */}
-        <Box>
-          <Box sx={{ ...styles.sidebarHeader, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Link href="/dashboard/admin/overview" passHref>
-              <IconButton sx={{ color: 'green' }}>
-                <DashboardIcon />
-              </IconButton>
-            </Link>
-            <Typography variant="h5">Admin Portal</Typography>
-          </Box>
-          <List>
-            {adminMenuData.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  href={item.path}
-                  sx={styles.sidebarListItemButton(item.name)}
-                >
-                  <ListItemText primary={item.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-
-          {/* User profile + logout */}
-          <Box sx={{ mt: 'auto', p: 2, borderTop: '2px solid #6b705c' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-              <Image
-                src="/toroLogo.jpg"
-                alt="User Profile"
-                width={40}
-                height={40}
-                style={{ borderRadius: '50%', border: '2px solid #f3722c' }}
-              />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ fontWeight: '600', color: '#fefae0' }}>
-                  {currentUser?.email}
-                </Typography>
-                <Typography variant="caption" noWrap sx={{ color: 'rgba(254, 250, 224, 0.7)' }}>
-                  Admin
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              onClick={handleLogout}
-              fullWidth
-              variant="outlined"
-              startIcon={<LogoutIcon />}
-              sx={{
-                color: '#fefae0',
-                borderColor: '#fefae0',
-                '&:hover': { background: '#6b705c' },
-              }}
-            >
-              Logout
-            </Button>
-          </Box>
-        </Box>
-      </Drawer>
+        {drawerContent}
       </Drawer>
 
+      {/* Main Content */}
       <Box component="main" sx={styles.mainContent}>
       
         {/* IconButton FOR MOBILE */}
@@ -345,13 +239,19 @@ export default function TeamsAndUsers() {
           aria-label="open drawer"
           edge="start"
           onClick={handleDrawerToggle}
-          sx={{ mr: 2, display: { md: 'none' }, color: '#283618' }}
+          sx={{ 
+            mr: 2, 
+            display: { md: 'none' }, 
+            color: '#283618', 
+            position: 'absolute', // Position it for visibility
+            top: 16, 
+            left: 16 
+          }}
         >
           <MenuIcon />
         </IconButton>
 
-      {/* Main content */}
-        <Box sx={styles.pageHeader}>
+        <Box sx={{...styles.pageHeader, mt: { xs: 5, md: 0 }}}> {/* Add margin top on mobile */}
           <Typography variant="h4" sx={styles.pageTitle}>
             <TeamsIcon sx={styles.headerIcon} />Invite Users
           </Typography>
@@ -391,7 +291,7 @@ export default function TeamsAndUsers() {
                       onChange={(e) => setSelectedRole(e.target.value)}
                       sx={styles.selectInput}
                       startAdornment={
-                        <InputAdornment position="start">
+                        <InputAdornment position="start" sx={{ml: 1}}>
                           <SecurityIcon fontSize="small" />
                         </InputAdornment>
                       }
@@ -403,12 +303,12 @@ export default function TeamsAndUsers() {
                   </FormControl>
                   <Button
                     variant="contained"
-                    startIcon={<GroupAddIcon />}
+                    startIcon={isInviting ? <CircularProgress size={20} color="inherit" /> : <GroupAddIcon />}
                     onClick={handleOpenInviteDialog}
                     sx={styles.inviteButton}
                     disabled={isInviteDisabled}
                   >
-                    Invite
+                    {isInviting ? 'Inviting...' : 'Invite'}
                   </Button>
                 </Stack>
                 
@@ -438,7 +338,7 @@ export default function TeamsAndUsers() {
                         fullWidth
                         required
                         label="Contact Number"
-                        type="number"
+                        type="tel" // Use 'tel' for better mobile experience
                         variant="outlined"
                         value={contactNumber}
                         onChange={(e) => setContactNumber(e.target.value)}
@@ -499,7 +399,7 @@ export default function TeamsAndUsers() {
                       <TableCell sx={styles.tableBodyCell}>
                         <Stack direction="row" alignItems="center" spacing={1.5}>
                           <Avatar sx={{ width: 32, height: 32, bgcolor: '#f3722c' }}>
-                            {user.name ? user.name.charAt(0) : '?'}
+                            {user.name ? user.name.charAt(0) : user.email.charAt(0).toUpperCase()}
                           </Avatar>
                           <Typography>{user.name || 'Invited User'}</Typography>
                         </Stack>
@@ -516,7 +416,7 @@ export default function TeamsAndUsers() {
                               ? 'secondary'
                               : 'default'
                           }
-                          sx={{ fontWeight: 600 }}
+                          sx={{ fontWeight: 600, textTransform: 'capitalize' }}
                         />
                       </TableCell>
                       <TableCell sx={styles.tableBodyCell}>
@@ -684,6 +584,7 @@ export default function TeamsAndUsers() {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
+          onClose={() => setOpenInviteSuccess(false)}
           severity="success"
           sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}
         >

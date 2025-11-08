@@ -1,7 +1,8 @@
 // This file contains all the logic and instructions for this feature.
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchAllData,
   inviteUser,
@@ -11,13 +12,13 @@ import {
 } from '../usersService/service.js';
 
 /**
-* Manages state and logic for the users screen.
+* Manages state and logic for the users screen using React Query.
 */
 export const useUsers = () => {
-  // Existing state
+  const queryClient = useQueryClient();
+
+  // --- State for UI components ---
   const [inviteEmail, setInviteEmail] = useState('');
-  const [users, setUsers] = useState([]);
-  const [tasks, setTasks] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newTask, setNewTask] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
@@ -25,84 +26,127 @@ export const useUsers = () => {
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [apiError, setApiError] = useState(null);
 
-  // Updated state for client details to match new schema
+  // Client form state
   const [clientName, setClientName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [companyName, setCompanyName] = useState('');
 
   const isMenuOpen = Boolean(anchorEl);
-  
-  /**
-  * Fetches the initial list of users and tasks from the server.
-  */
-  const loadInitialData = async () => {
-    try {
-      const { users, tasks } = await fetchAllData();
-      setUsers(users || []);
-      setTasks(tasks || []);
-    } catch (error) {
-        console.error("Failed to load initial data:", error);
-        setApiError('Failed to load initial data. Please refresh.');
-    }
+
+  // --- Data Fetching with useQuery ---
+  // Replaces the useEffect and useState for users/tasks
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['allUsersAndTasks'],
+    queryFn: fetchAllData,
+  });
+
+  // Use memo to derive state from query data
+  const users = useMemo(() => data?.users || [], [data]);
+  const tasks = useMemo(() => data?.tasks || [], [data]);
+
+  // --- Data Mutations (Create, Update, Delete) ---
+
+  // Helper function to refresh data and handle errors
+  const onMutationSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['allUsersAndTasks'] });
   };
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
+  const onMutationError = (error) => {
+    console.error("Mutation failed:", error.message || error);
+    setApiError(error.message || 'An operation failed. Please try again.');
+  };
 
-/**
-* Handles the user invitation process, including client creation.
-* @param {string} role - The role assigned to the new user.
-* @param {string} password - The temporary password for the new user.
-*/
-const handleInviteUser = async (role, password) => {
-    if (!inviteEmail) return;
-    setApiError(null); // Clear previous errors
-
-    try {
-      // Package client data with updated field names for the API
-      const clientData = role === 'Client' 
-        ? { 
-            client_name: clientName, 
-            contact_number: contactNumber, 
-            company_name: companyName, 
-            contact_email: inviteEmail 
-          } 
-        : null;
-
-      const { error } = await inviteUser(inviteEmail, role, password, clientData);
-      
-      if (!error) {
+  // Mutation for Inviting a User
+  const inviteUserMutation = useMutation({
+    mutationFn: ({ email, role, password, clientData }) => inviteUser(email, role, password, clientData),
+    onSuccess: (result) => {
+      if (result.error) {
+        onMutationError(result.error);
+      } else {
+        onMutationSuccess();
         // Reset all form fields on success
         setInviteEmail('');
         setClientName('');
         setContactNumber('');
         setCompanyName('');
-        loadInitialData(); // Refresh the user list
-      } else {
-        console.error("Invitation failed:", error.message || error);
-        setApiError(error.message); // Set error state
+        // This will be caught by the UsersContent component to show the success snackbar
       }
-    } catch (error) {
-        console.error("An unexpected error occurred during invitation:", error);
-        setApiError('An unexpected error occurred. Please try again.');
-    }
-};
+    },
+    onError: onMutationError,
+  });
 
-  const handleAddTask = async (userId) => {
-    if (newTask) {
-      setApiError(null);
-      const { error } = await assignTask(userId, newTask);
-      if (error) {
-        setApiError(error.message);
-      } else {
+  // Mutation for Adding a Task
+  const addTaskMutation = useMutation({
+    mutationFn: ({ userId, taskDescription }) => assignTask(userId, taskDescription),
+    onSuccess: (result) => {
+      if (result.error) onMutationError(result.error);
+      else {
+        onMutationSuccess();
         setNewTask('');
         setSelectedUser(null);
-        loadInitialData();
       }
+    },
+    onError: onMutationError,
+  });
+  
+  // Mutation for Removing a User
+  const removeUserMutation = useMutation({
+    mutationFn: (userId) => removeUserService(userId),
+    onSuccess: (result) => {
+      if (result.error) onMutationError(result.error);
+      else onMutationSuccess();
+    },
+    onError: onMutationError,
+  });
+
+  // Mutation for Updating a Role
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ userId, newRole }) => updateUserRole(userId, newRole),
+    onSuccess: (result) => {
+      if (result.error) onMutationError(result.error);
+      else onMutationSuccess();
+    },
+    onError: onMutationError,
+  });
+
+  // --- Event Handlers (call mutations) ---
+
+  const handleInviteUser = (role, password) => {
+    if (!inviteEmail) return;
+    setApiError(null);
+
+    const clientData = role === 'Client' 
+      ? { 
+          client_name: clientName, 
+          contact_number: contactNumber, 
+          company_name: companyName, 
+          contact_email: inviteEmail 
+        } 
+      : null;
+    
+    inviteUserMutation.mutate({ email: inviteEmail, role, password, clientData });
+  };
+
+  const handleAddTask = (userId) => {
+    if (newTask) {
+      setApiError(null);
+      addTaskMutation.mutate({ userId: userId, taskDescription: newTask });
     }
   };
 
+  const handleConfirmRemove = () => {
+    if (!menuUserId) return;
+    setApiError(null);
+    removeUserMutation.mutate(menuUserId);
+    handleCloseConfirmDialog();
+  };
+
+  const handleUpdateRole = (userId, newRole) => {
+    setApiError(null);
+    updateRoleMutation.mutate({ userId, newRole });
+  };
+
+  // UI state handlers
   const handleMenuOpen = (event, userId) => {
     setAnchorEl(event.currentTarget);
     setMenuUserId(userId);
@@ -127,48 +171,43 @@ const handleInviteUser = async (role, password) => {
     setMenuUserId(null);
   };
 
-  const handleConfirmRemove = async () => {
-    if (!menuUserId) return;
-    setApiError(null); // Clear previous errors
-    
-    try {
-      const { error } = await removeUserService(menuUserId);
-      if (error) {
-      // Log the specific message string, not the whole error object.
-      console.error("Failed to remove user:", error.message || error);
-      setApiError(error.message || 'Failed to remove user. They may have dependent records.');
-    } else {
-        setUsers(currentUsers => currentUsers.filter(user => user.id !== menuUserId));
-      }
-    } catch (hookError) {
-       console.error("Error in handleConfirmRemove:", hookError);
-       setApiError('A critical client-side error occurred.');
-    }
-    
-    handleCloseConfirmDialog();
-  };
-
-  const handleUpdateRole = async (userId, newRole) => {
-    setApiError(null);
-    const { error } = await updateUserRole(userId, newRole);
-    if (error) {
-      setApiError(error.message);
-    } else {
-      loadInitialData();
-    }
-  };
-
   return {
-    inviteEmail, setInviteEmail, users,
-    tasks, selectedUser, newTask, setNewTask, anchorEl,
-    isMenuOpen, menuUserId, isConfirmDialogOpen,
-    // Export new state and setters
+    // Original State
+    inviteEmail, setInviteEmail,
+    selectedUser, 
+    newTask, setNewTask, 
+    anchorEl, isMenuOpen, 
+    menuUserId, isConfirmDialogOpen,
+    
+    // New Client Form State
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
-    apiError, setApiError, // Export the error state
-    handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
-    handleAssignTask, handleRemoveUser, handleUpdateRole,
-    handleCloseConfirmDialog, handleConfirmRemove,
+    
+    // Error State
+    apiError, setApiError,
+    
+    // Data from useQuery
+    users,
+    tasks,
+    isLoading, // Export loading state
+    isError,   // Export error state
+
+    // Handlers
+    handleInviteUser, 
+    handleAddTask, 
+    handleMenuOpen, 
+    handleMenuClose,
+    handleAssignTask, 
+    handleRemoveUser, 
+    handleUpdateRole,
+    handleCloseConfirmDialog, 
+    handleConfirmRemove,
+    
+    // Mutation loading states
+    isInviting: inviteUserMutation.isPending,
+    isRemoving: removeUserMutation.isPending,
+    isUpdatingRole: updateRoleMutation.isPending,
+    isAddingTask: addTaskMutation.isPending,
   };
 };

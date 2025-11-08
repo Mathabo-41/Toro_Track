@@ -1,11 +1,10 @@
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'; // Removed useEffect
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { createSupabaseClient } from '@/lib/supabase/client';
+// Removed createSupabaseClient
 import {
   Box, Typography, Button, Card, CardContent, Stack, Avatar, List, ListItem,
   ListItemButton, ListItemText, Drawer, Grid, Paper, Table, TableBody,
@@ -24,533 +23,67 @@ import { Snackbar, Alert } from '@mui/material';
 
 import { styles } from './styles';
 import LoadingScreen from '../common/LoadingScreen';
+import { useReports } from './useReports/useReports'; // Import the hook
 
 export default function PerformanceReports() {
   const router = useRouter();
-  const supabase = createSupabaseClient();
   
-  // State management
-  const [currentUser, setCurrentUser] = useState(null);
-  const [reports, setReports] = useState({});
-  const [projects, setProjects] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
-  const [openTaskDialog, setOpenTaskDialog] = useState(false);
-  const [currentTask, setCurrentTask] = useState(null);
-  const [currentColumn, setCurrentColumn] = useState('backlog');
-  const [isEditing, setIsEditing] = useState(false);
-  const [projectMenuAnchor, setProjectMenuAnchor] = useState(null);
-  const [viewMode, setViewMode] = useState('kanban');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // --- All state and logic is now imported from the hook ---
+  const {
+    // State
+    reports, 
+    projects, 
+    teamMembers, 
+    loading, 
+    error, 
+    menu,
+    currentProjectIndex, 
+    currentProject, 
+    viewMode, 
+    projectMenuAnchor, 
+    openTaskDialog, 
+    isEditing, 
+    openSnackbar, 
+    snackbarSeverity, 
+    snackbarMessage,
+    isLogoutSnackbar,
+    currentTask,
+    currentColumn,
+    currentUser,
+    
+    // Actions
+    handleNextProject, 
+    handlePreviousProject, 
+    handleProjectMenuClose,
+    handleProjectMenuOpen,
+    handleProjectSelect,
+    setOpenTaskDialog,
+    handleAddTaskClick,
+    handleEditTaskClick,
+    handleDeleteTaskClick,
+    handleSaveTask,
+    moveTask,
+    handleSnackbarClose,
+    handleViewModeChange,
+    handleLogout,
+    
+    // Setters for form state
+    setCurrentTask,
+    setCurrentColumn,
+    
+    // Getters
+    getAssigneeColor,
+    getAssigneeName,
+    getAssigneeRole,
+    getColumnColor,
+    getColumnIcon,
+    getTotalTasks
+  } = useReports();
 
-  // Snackbar state
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
-
-  // Menu data
-  const menu = [
-    { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
-    { name: 'Projects', path: '/dashboard/admin/projects' },
-    { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-    { name: 'Invite Users', path: '/dashboard/admin/users' },
-    { name: 'Settings', path: '/dashboard/admin/settings' }
-  ];
-
-  // mobile drawer
+  // mobile drawer state
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
-  };
-
-// Helper function to create empty metrics
-  const createEmptyMetrics = React.useCallback(() => ({
-    totalProjects: {
-      title: 'Total Projects',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <ProjectIcon />
-    },
-    completedTasks: {
-      title: 'Completed Tasks',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <DoneIcon />
-    },
-    inProgress: {
-      title: 'In Progress',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <InProgressIcon />
-    },
-    teamMembers: {
-      title: 'Team Members',
-      value: 0,
-      trend: 'neutral',
-      change: '0',
-      icon: <PersonIcon />
-    },
-    backlog: {
-      title: 'Backlog Tasks',
-      value: 0,
-      trend: 'neutral',
-      change: '0%',
-      icon: <BacklogIcon />
-    }
-  }), []);
-
-  const getTotalTasks = React.useCallback((project) => {
-    if (!project?.columns) return 0;
-    return Object.values(project.columns).reduce((total, column) => {
-      return total + (column?.tasks?.length || 0);
-    }, 0);
-  }, []);
-
-  // Helper function to create metrics data
-  const createMetricsData = React.useCallback((projects, members) => {
-    const totalTasks = projects.reduce((total, project) => total + getTotalTasks(project), 0);
-    const completedTasks = projects.reduce((total, project) => total + (project.columns?.done?.tasks?.length || 0), 0);
-    const inProgressTasks = projects.reduce((total, project) => total + (project.columns?.inProgress?.tasks?.length || 0), 0);
-    const backlogTasks = projects.reduce((total, project) => total + (project.columns?.backlog?.tasks?.length || 0), 0);
-
-    return {
-      totalProjects: {
-        title: 'Total Projects',
-        value: projects.length,
-        trend: projects.length > 0 ? 'up' : 'neutral',
-        change: projects.length > 0 ? '+100%' : '0%',
-        icon: <ProjectIcon />
-      },
-      completedTasks: {
-        title: 'Completed Tasks',
-        value: completedTasks,
-        trend: completedTasks > 0 ? 'up' : 'neutral',
-        change: completedTasks > 0 ? '+100%' : '0%',
-        icon: <DoneIcon />
-      },
-      inProgress: {
-        title: 'In Progress',
-        value: inProgressTasks,
-        trend: inProgressTasks > 0 ? 'up' : 'neutral',
-        change: inProgressTasks > 0 ? '+100%' : '0%',
-        icon: <InProgressIcon />
-      },
-      teamMembers: {
-        title: 'Team Members',
-        value: members.length,
-        trend: members.length > 0 ? 'up' : 'neutral',
-        change: members.length > 0 ? '+100%' : '0',
-        icon: <PersonIcon />
-      },
-      backlog: {
-        title: 'Backlog Tasks',
-        value: backlogTasks,
-        trend: backlogTasks > 0 ? 'up' : 'neutral',
-        change: backlogTasks > 0 ? '+100%' : '0%',
-        icon: <BacklogIcon />
-      }
-    };
-  }, [getTotalTasks]);
-
-  // Helper function to create project with empty tasks
-  const createProjectWithEmptyTasks = React.useCallback((project) => {
-    return {
-      id: project.id,
-      name: project.project_name || 'Unnamed Project',
-      description: project.description || 'No description available',
-      progress: 0,
-      columns: {
-        backlog: { title: 'Backlog', tasks: [] },
-        inProgress: { title: 'In Progress', tasks: [] },
-        done: { title: 'Done', tasks: [] }
-      },
-      created_at: project.created_at,
-      updated_at: project.updated_at
-    };
-  }, []);
-
-  // Current project
-  const currentProject = projects[currentProjectIndex];
-
-  // Fetch initial data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch user
-        const { data: { user } } = await supabase.auth.getUser();
-        setCurrentUser(user);
-
-        // Fetch projects from database
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (projectsError) {
-          console.error('Error fetching projects:', projectsError);
-          throw new Error('Failed to fetch projects: ' + projectsError.message);
-        }
-
-        console.log('Fetched projects:', projectsData);
-
-        // If no projects found, create empty state
-        if (!projectsData || projectsData.length === 0) {
-          console.log('No projects found in database');
-          setProjects([]);
-          setReports(createEmptyMetrics());
-          setTeamMembers([]);
-          setLoading(false);
-          return;
-        }
-
-        // Try to fetch tasks for each project
-        const projectsWithTasks = await Promise.all(
-          projectsData.map(async (project) => {
-            try {
-              const { data: tasks, error: tasksError } = await supabase
-                .from('project_tasks')
-                .select('*')
-                .eq('project_id', project.id)
-                .limit(1);
-
-              if (tasksError) {
-                console.warn(`Tasks table not accessible for project ${project.id}:`, tasksError.message);
-                return createProjectWithEmptyTasks(project);
-              }
-
-              const { data: allTasks, error: allTasksError } = await supabase
-                .from('project_tasks')
-                .select('*')
-                .eq('project_id', project.id);
-
-              if (allTasksError) {
-                console.warn(`Error fetching tasks for project ${project.id}:`, allTasksError.message);
-                return createProjectWithEmptyTasks(project);
-              }
-
-              const columns = {
-                backlog: {
-                  title: 'Backlog',
-                  tasks: allTasks?.filter(task => task.status === 'backlog' || !task.status) || []
-                },
-                in_progress: {
-                  title: 'In Progress',
-                  tasks: allTasks?.filter(task => task.status === 'in_progress') || [] 
-                },
-                done: {
-                  title: 'Done',
-                  tasks: allTasks?.filter(task => task.status === 'done') || []
-                }
-              };
-
-              const totalTasks = allTasks?.length || 0;
-              const completedTasks = columns.done.tasks.length;
-              const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-              return {
-                id: project.id,
-                name: project.project_name || 'Unnamed Project',
-                description: project.description || 'No description available',
-                progress: progress,
-                columns: columns,
-                created_at: project.created_at,
-                updated_at: project.updated_at
-              };
-            } catch (err) {
-              console.error(`Error processing project ${project.id}:`, err);
-              return createProjectWithEmptyTasks(project);
-            }
-          })
-        );
-
-        // Fetch team members
-        let formattedMembers = [];
-        try {
-          const { data: membersData, error: membersError } = await supabase
-            .from('users')
-            .select('id, email, name, role')
-            .neq('role', 'client');
-
-          if (membersError) {
-            console.warn('Error fetching team members:', membersError.message);
-          }
-
-          formattedMembers = (membersData || []).map((member, index) => ({
-            id: member.id,
-            name: member.name || member.email,
-            role: member.role || 'team_member',
-            color: ['#f3722c', '#2ec4b6', '#e71d36', '#ff9f1c', '#6b705c'][index % 5]
-          }));
-        } catch (err) {
-          console.warn('Error processing team members:', err);
-        }
-
-        const metricsData = createMetricsData(projectsWithTasks, formattedMembers);
-
-        setReports(metricsData);
-        setProjects(projectsWithTasks);
-        setTeamMembers(formattedMembers);
-        
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message);
-        showSnackbar('Error loading data: ' + err.message, 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [supabase, createEmptyMetrics, createProjectWithEmptyTasks, createMetricsData]);
-
-  // Helper functions
-  const showSnackbar = (message, severity = 'success') => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setIsLogoutSnackbar(false);
-    setOpenSnackbar(true);
-  };
-
-  const getAssigneeColor = (assigneeId) => {
-    if (!assigneeId) return '#888';
-    const member = teamMembers.find(m => m.id === assigneeId);
-    return member ? member.color : '#888';
-  };
-
-  // Paste this new, corrected function
-  const getAssigneeName = (task) => {
-    const userName = teamMembers.find(m => m.id === task.assignee_id)?.name;
-    return userName || task.assignee_team || 'Unassigned';
-  };
-
-  const getAssigneeRole = (task) => {
-    if (task.assignee_team) return 'Team';
-    if (task.assignee_id) {
-        const member = teamMembers.find(m => m.id === task.assignee_id);
-        return member ? member.role : 'unassigned';
-    }
-    return 'unassigned';
-  };
-
-  const getColumnColor = (columnId) => {
-    const colors = {
-      backlog: '#E71D36',
-      in_progress: '#FF9F1C', 
-      done: '#2EC4B6'
-    };
-    return colors[columnId] || '#6b705c';
-  };
-
-  const getColumnIcon = (columnId) => {
-    const icons = {
-      backlog: <BacklogIcon />,
-      in_progress: <InProgressIcon />, 
-      done: <DoneIcon />
-    };
-    return icons[columnId] || <BacklogIcon />;
-  };
-
-  // Event handlers
-  const handleLogout = async () => {
-    setSnackbarMessage('Logging out...');
-    setSnackbarSeverity('success');
-    setIsLogoutSnackbar(true);
-    setOpenSnackbar(true);
-    
-    setTimeout(async () => {
-      await supabase.auth.signOut();
-      router.push('/login');
-    }, 1500);
-  };
-
-  const handleProjectMenuOpen = (event) => {
-    setProjectMenuAnchor(event.currentTarget);
-  };
-
-  const handleProjectMenuClose = () => {
-    setProjectMenuAnchor(null);
-  };
-
-  const handleProjectSelect = (index) => {
-    setCurrentProjectIndex(index);
-    handleProjectMenuClose();
-  };
-
-  const handleNextProject = () => {
-    if (currentProjectIndex < projects.length - 1) {
-      setCurrentProjectIndex(currentProjectIndex + 1);
-    }
-  };
-
-  const handlePreviousProject = () => {
-    if (currentProjectIndex > 0) {
-      setCurrentProjectIndex(currentProjectIndex - 1);
-    }
-  };
-
-  const handleAddTaskClick = (columnId) => {
-    setCurrentColumn('backlog');
-    setCurrentTask({
-      title: '',
-      description: '',
-      assignee: '',
-      dueDate: ''
-    });
-    setIsEditing(false);
-    setOpenTaskDialog(true);
-  };
-
-  const handleEditTaskClick = (task, columnId) => {
-    setCurrentColumn(columnId);
-    setCurrentTask({
-      ...task,
-      assignee: task.assignee_id || task.assignee
-    });
-    setIsEditing(true);
-    setOpenTaskDialog(true);
-  };
-
-  const handleDeleteTaskClick = async (taskId, columnId) => {
-    try {
-      try {
-        const { error } = await supabase
-          .from('project_tasks')
-          .delete()
-          .eq('id', taskId);
-        
-        if (error) {
-          console.warn('Error deleting task from database:', error);
-        }
-      } catch (dbError) {
-        console.warn('Tasks table might not exist:', dbError);
-      }
-      
-      const updatedProjects = [...projects];
-      const column = updatedProjects[currentProjectIndex].columns[columnId];
-      column.tasks = column.tasks.filter(task => task.id !== taskId);
-      setProjects(updatedProjects);
-      
-      showSnackbar('Task deleted successfully');
-    } catch (err) {
-      showSnackbar('Error deleting task: ' + err.message, 'error');
-    }
-  };
-
-  const handleSaveTask = async () => {
-    if (!currentTask || !currentTask.title) {
-      showSnackbar('Task title is required', 'error');
-      return;
-    }
-
-    if (!currentProject) {
-      showSnackbar('No project selected', 'error');
-      return;
-    }
-
-    try {
-      if (isEditing) {
-        const { data: updatedTask, error } = await supabase
-            .from('project_tasks')
-            .update({
-              title: currentTask.title,
-              description: currentTask.description,
-              due_date: currentTask.dueDate,
-              status: currentColumn,
-              assignee_team: currentTask.assignee_team,
-              assignee_id: currentTask.assignee_id,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentTask.id)
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        const updatedProjects = [...projects];
-        const project = updatedProjects[currentProjectIndex];
-        
-        Object.keys(project.columns).forEach(key => {
-            project.columns[key].tasks = project.columns[key].tasks.filter(t => t.id !== updatedTask.id);
-        });
-        
-        project.columns[currentColumn].tasks.push(updatedTask);
-        setProjects(updatedProjects);
-        showSnackbar('Task updated successfully');
-
-      } else {
-        const { data: savedTask, error } = await supabase
-            .from('project_tasks')
-            .insert({
-              title: currentTask.title,
-              description: currentTask.description,
-              due_date: currentTask.dueDate,
-              status: 'backlog',
-              project_id: currentProject.id,
-              assignee_team: currentTask.assignee_team,
-              assignee_id: currentTask.assignee_id
-            })
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        const updatedProjects = [...projects];
-        updatedProjects[currentProjectIndex].columns.backlog.tasks.push(savedTask);
-        setProjects(updatedProjects);
-        showSnackbar('Task added successfully');
-      }
-
-      setOpenTaskDialog(false);
-
-    } catch (err) {
-      console.error(`Error saving task:`, err);
-      showSnackbar(`Error: ${err.message}`, 'error');
-    }
-  };
-
-  const moveTask = async (taskId, fromColumn, toColumn) => {
-    const updatedProjects = JSON.parse(JSON.stringify(projects)); 
-    const projectToUpdate = updatedProjects[currentProjectIndex];
-    const fromCol = projectToUpdate.columns[fromColumn];
-    const taskIndex = fromCol.tasks.findIndex(t => t.id === taskId);
-
-    if (taskIndex === -1) {
-      console.error("Task not found for moving.");
-      return;
-    }
-
-    const [movedTask] = fromCol.tasks.splice(taskIndex, 1);
-    movedTask.status = toColumn;
-    projectToUpdate.columns[toColumn].tasks.push(movedTask);
-    setProjects(updatedProjects);
-
-    try {
-      const { error } = await supabase
-        .from('project_tasks')
-        .update({
-          status: toColumn,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', taskId);
-
-      if (error) {
-        throw error;
-      }
-      
-      showSnackbar('Task status updated!', 'success');
-
-    } catch (err) {
-      console.error('Failed to move task in database:', err);
-      showSnackbar(`Error: Could not update task status. Reverting.`, 'error');
-      setProjects(projects); 
-    }
   };
 
   // Kanban board styles
@@ -582,15 +115,16 @@ export default function PerformanceReports() {
     }
   });
 
-  // REPLACE DEFAULT LOADING WITH CUSTOM LOADING SCREEN
+  // Use the loading state from the hook
   if (loading) {
     return <LoadingScreen message="Loading Reports..." />;
   }
 
+  // Use the error state from the hook
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">{error}</Alert>
+      <Box sx={{ ...styles.mainContainer, ...styles.mainContent, alignItems: 'center', justifyContent: 'center' }}>
+        <Alert severity="error">Error loading data: {error.message}</Alert>
       </Box>
     );
   }
@@ -638,7 +172,7 @@ export default function PerformanceReports() {
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
+        ModalProps={{ keepMounted: true }} 
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { ...styles.sidebarDrawer['& .MuiDrawer-paper'], boxSizing: 'border-box' }
@@ -675,7 +209,7 @@ export default function PerformanceReports() {
             position: 'absolute',
             top: 16,
             left: 16,
-            zIndex: 1 // Ensure it's above content
+            zIndex: 1 
           }}
         >
           <MenuIcon />
@@ -690,7 +224,7 @@ export default function PerformanceReports() {
         {/* Key Metrics Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {Object.entries(reports).map(([key, metric]) => (
-            <Grid item xs={12} sm={6} md={4} lg={2} key={key}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} key={key}> {/* Adjusted lg for 5 items */}
               <Card sx={styles.metricCard}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between">
@@ -716,11 +250,12 @@ export default function PerformanceReports() {
         {projects.length > 0 ? (
           <Card sx={{ mb: 4, boxShadow: 3, bgcolor:'#BDB76B' }}>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, fontWeight: 'bold' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, fontWeight: 'bold', flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h6" sx={styles.chartTitle}><ProjectIcon sx={styles.headerIcon} />Project Task Board</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Tabs value={viewMode} onChange={(e, newValue) => setViewMode(newValue)} sx={{ minHeight: '40px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  <Tabs value={viewMode} onChange={handleViewModeChange} sx={{ minHeight: '40px' }}>
                     <Tab value="kanban" label="Kanban" icon={<DashboardIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
+                    <Tab value="list" label="List" icon={<ProjectListIcon />} iconPosition="start" sx={{ minHeight: '40px', py: 0 }} />
                   </Tabs>
                   
                   <Button 
@@ -764,11 +299,8 @@ export default function PerformanceReports() {
               {currentProject && (
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                   <Typography variant="body2" sx={{ color: 'maroon', fontWeight: 'bold' }}>
-                    {currentProject?.name || 'No Project Selected'}
+                    {currentProject?.description || 'No description available.'}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  
-                  </Box>
                 </Box>
               )}
 
@@ -798,7 +330,7 @@ export default function PerformanceReports() {
                         <Box key={task.id} sx={kanbanCardStyles(getColumnColor(columnId))} onClick={() => handleEditTaskClick(task, columnId)}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography variant="body2" sx={{ fontWeight: '500' }}>{task.title}</Typography>
-                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteTaskClick(task.id, columnId); }}>
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteTaskClick(task.id); }}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Box>
@@ -856,7 +388,7 @@ export default function PerformanceReports() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {Object.values(currentProject.columns || {}).flatMap(column => 
+                      {Object.entries(currentProject.columns).flatMap(([columnId, column]) => 
                         (column?.tasks || []).map(task => (
                           <TableRow key={task.id}>
                             <TableCell>
@@ -866,22 +398,22 @@ export default function PerformanceReports() {
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Avatar sx={{ width: 24, height: 24, mr: 1, backgroundColor: getAssigneeColor(task.assignee_id), fontSize: '0.8rem' }}>
-                                  {getAssigneeName(task.assignee_id).charAt(0)}
+                                  {getAssigneeName(task)?.charAt(0)}
                                 </Avatar>
-                                {getAssigneeName(task.assignee_id)}
+                                {getAssigneeName(task)}
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip label={column?.title || 'Unknown'} size="small" sx={{ backgroundColor: getColumnColor(column?.id), color: 'white' }} />
+                              <Chip label={column?.title || 'Unknown'} size="small" sx={{ backgroundColor: getColumnColor(columnId), color: 'white' }} />
                             </TableCell>
                             <TableCell>
                               {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
                             </TableCell>
                             <TableCell>
-                              <IconButton size="small" onClick={() => handleEditTaskClick(task, column?.id)}>
+                              <IconButton size="small" onClick={() => handleEditTaskClick(task, columnId)}>
                                 <EditIcon />
                               </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteTaskClick(task.id, column?.id)}>
+                              <IconButton size="small" onClick={() => handleDeleteTaskClick(task.id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </TableCell>
@@ -906,7 +438,7 @@ export default function PerformanceReports() {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               There are no projects in the database yet. Create your first project to get started.
             </Typography>
-            <Button variant="contained" color="primary">
+            <Button variant="contained" color="primary" onClick={() => router.push('/dashboard/admin/projects')}>
               Create First Project
             </Button>
           </Card>
@@ -1011,10 +543,11 @@ export default function PerformanceReports() {
       <Snackbar 
         open={openSnackbar} 
         autoHideDuration={1500} 
-        onClose={() => setOpenSnackbar(false)} 
+        onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
+          onClose={handleSnackbarClose}
           severity={snackbarSeverity} 
           sx={{ 
             width: '100%', 
@@ -1022,7 +555,7 @@ export default function PerformanceReports() {
             fontSize: '1.2rem',
             ...(isLogoutSnackbar && {
                backgroundColor: '#5caa93ff',
-            color: 'black',
+               color: 'black',
               '& .MuiAlert-icon': {
                 color: 'white'
               }

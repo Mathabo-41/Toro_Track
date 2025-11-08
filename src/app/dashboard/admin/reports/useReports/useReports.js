@@ -1,16 +1,18 @@
 "use client";
 // Contains all the logic and instructions for this feature.
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import * as service from '../reportsService/service';
 
 export const useReports = () => {
-  const [reports, setReports] = useState({});
-  const [projects, setProjects] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const supabase = createSupabaseClient();
+  
+  // --- Page State ---
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
   const [viewMode, setViewMode] = useState('kanban');
   const [projectMenuAnchor, setProjectMenuAnchor] = useState(null);
@@ -21,44 +23,82 @@ export const useReports = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [currentTask, setCurrentTask] = useState(null);
   const [currentColumn, setCurrentColumn] = useState('backlog');
+  const [isLogoutSnackbar, setIsLogoutSnackbar] = useState(false);
 
-  const router = useRouter();
+  // --- Data Fetching with useQuery ---
+  const { data, isLoading: loading, error } = useQuery({
+    queryKey: ['performanceReportsData'],
+    queryFn: service.getPerformanceReportsData,
+    // Add staleTime to avoid refetching on every navigation
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // --- Memoized Data (derived from useQuery) ---
+  const reports = useMemo(() => data?.reports || service.createEmptyMetrics(), [data]);
+  const projects = useMemo(() => data?.projects || [], [data]);
+  const teamMembers = useMemo(() => data?.teamMembers || [], [data]);
+  const currentUser = useMemo(() => data?.currentUser || null, [data]);
   
-  const currentUser = { id: 'user-uuid-admin', role: 'admin' };
-  const rolePermissions = {
-      admin: { canEdit: true, canDelete: true, canMove: true, canAdd: true },
-      auditor: { canEdit: true, canDelete: false, canMove: true, canAdd: true },
-      client: { canEdit: true, canDelete: false, canMove: false, canAdd: true }
+  const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
+
+  // --- Snackbar Helper ---
+  const showSnackbar = (message, severity = 'success', isLogout = false) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setIsLogoutSnackbar(isLogout);
+    setOpenSnackbar(true);
   };
 
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [
-        reportsData, 
-        kanbanData, 
-        membersData
-      ] = await Promise.all([
-        service.fetchReportMetrics(),
-        service.fetchKanbanData(),
-        service.fetchTeamMembers()
-      ]);
-      
-      setReports(reportsData || {});
-      setProjects(kanbanData || []);
-      setTeamMembers(membersData || []);
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // --- Mutations (for Create, Update, Delete) ---
   
+  // Save Task (Create/Update)
+  const saveTaskMutation = useMutation({
+    mutationFn: async ({ task, columnId, isEditing, projectId }) => {
+      if (isEditing) {
+        return service.updateTask(task.id, { ...task, status: columnId, due_date: task.dueDate });
+      } else {
+        return service.createTask({ ...task, projectId: projectId, status: 'backlog' });
+      }
+    },
+    onSuccess: () => {
+      // Refetch all data to stay in sync
+      queryClient.invalidateQueries({ queryKey: ['performanceReportsData'] });
+      showSnackbar(isEditing ? 'Task updated successfully' : 'Task added successfully');
+      setOpenTaskDialog(false);
+    },
+    onError: (err) => {
+      showSnackbar(isEditing ? `Error updating task: ${err.message}` : `Error adding task: ${err.message}`, 'error');
+    }
+  });
+
+  // Delete Task
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId) => service.deleteTask(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['performanceReportsData'] });
+      showSnackbar('Task deleted successfully');
+    },
+    onError: (err) => {
+      showSnackbar(`Error deleting task: ${err.message}`, 'error');
+    }
+  });
+
+  // Move Task
+  const moveTaskMutation = useMutation({
+    mutationFn: ({ taskId, toColumn }) => service.updateTask(taskId, { status: toColumn }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['performanceReportsData'] });
+      showSnackbar('Task status updated!', 'success');
+    },
+    onError: (err) => {
+      showSnackbar(`Error: Could not update task status.`, 'error');
+      // Invalidate to revert optimistic update
+      queryClient.invalidateQueries({ queryKey: ['performanceReportsData'] });
+    }
+  });
+
+  // --- Event Handlers (Logic) ---
+
   const handleNextProject = () => {
     if (currentProjectIndex < projects.length - 1) {
         setCurrentProjectIndex(prevIndex => prevIndex + 1);
@@ -71,219 +111,154 @@ export const useReports = () => {
       }
   };
   
-  const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
-
   const handleProjectMenuClose = () => setProjectMenuAnchor(null);
-
-  // NEW: Handle project selection from dropdown
   const handleProjectSelect = (index) => {
     setCurrentProjectIndex(index);
     handleProjectMenuClose();
   };
+  const handleProjectMenuOpen = (event) => setProjectMenuAnchor(event.currentTarget);
 
-  // NEW: Handle opening project menu
-  const handleProjectMenuOpen = (event) => {
-    setProjectMenuAnchor(event.currentTarget);
-  };
-
-  // NEW: Handle adding a new task
-  const handleAddTask = (columnId) => {
-    if (!rolePermissions[currentUser.role].canAdd) {
-      setSnackbarMessage('You do not have permission to add tasks');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
-    
-    setCurrentColumn('backlog'); // Always set to backlog for new tasks
+  const handleAddTaskClick = (columnId) => {
+    setCurrentColumn('backlog');
     setCurrentTask({
-      id: 0,
       title: '',
-      assignee: '',
-      assigneeRole: '',
       description: '',
+      assignee_id: null,
+      assignee_team: null,
       dueDate: ''
     });
     setIsEditing(false);
     setOpenTaskDialog(true);
   };
 
-  // NEW: Handle editing a task
-  const handleEditTask = (task, columnId) => {
-    // Check if current user can edit this task
-    const canEdit = rolePermissions[currentUser.role].canEdit || 
-                   (task.assignee === currentUser.name && rolePermissions[task.assigneeRole]?.canEdit);
-    
-    if (!canEdit) {
-      setSnackbarMessage('You do not have permission to edit this task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
-    
+  const handleEditTaskClick = (task, columnId) => {
     setCurrentColumn(columnId);
-    setCurrentTask(task);
+    setCurrentTask({
+      ...task,
+      assignee_id: task.assignee_id || null,
+      dueDate: task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '' // Format for date input
+    });
     setIsEditing(true);
     setOpenTaskDialog(true);
   };
 
-  // NEW: Handle deleting a task
-  const handleDeleteTask = async (taskId, columnId) => {
-    const task = currentProject.columns[columnId].tasks.find(t => t.id === taskId);
-    
-    // Check permissions
-    const canDelete = rolePermissions[currentUser.role].canDelete || 
-                     (task.assignee === currentUser.name && rolePermissions[task.assigneeRole]?.canDelete);
-    
-    if (!canDelete) {
-      setSnackbarMessage('You do not have permission to delete this task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
-
-    try {
-      // Call service to delete task from database
-      await service.deleteTask(taskId);
-      
-      // Update local state
-      const updatedProjects = [...projects];
-      const column = updatedProjects[currentProjectIndex].columns[columnId];
-      column.tasks = column.tasks.filter(task => task.id !== taskId);
-      setProjects(updatedProjects);
-      
-      setSnackbarMessage('Task deleted successfully');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-    } catch (error) {
-      setSnackbarMessage('Failed to delete task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+  const handleDeleteTaskClick = (taskId) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      deleteTaskMutation.mutate(taskId);
     }
   };
 
-  // NEW: Handle saving a task (both new and edited)
-  const handleSaveTask = async (task, columnId, isEditing) => {
-    if (!task || !task.title) {
-      setSnackbarMessage('Task title is required');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+  const handleSaveTask = () => {
+    if (!currentTask || !currentTask.title) {
+      showSnackbar('Task title is required', 'error');
+      return;
+    }
+    if (!currentProject) {
+      showSnackbar('No project selected', 'error');
       return;
     }
 
-    try {
-      if (isEditing) {
-        // Update existing task in database
-        await service.updateTask(task.id, {
-          ...task,
-          status: columnId // Update the task status/column
-        });
-        
-        // Update local state
-        const updatedProjects = [...projects];
-        const project = updatedProjects[currentProjectIndex];
-        
-        // Remove from current column and add to new column
-        let found = false;
-        for (const columnKey in project.columns) {
-          const column = project.columns[columnKey];
-          const taskIndex = column.tasks.findIndex(t => t.id === task.id);
-          if (taskIndex !== -1) {
-            column.tasks.splice(taskIndex, 1);
-            found = true;
-            break;
-          }
-        }
-        // Add to new column
-        project.columns[columnId].tasks.push(task);
-        
-        setProjects(updatedProjects);
-        setSnackbarMessage('Task updated successfully');
-      } else {
-        // Add new task to database - ALWAYS to backlog
-        const newTaskData = {
-          ...task,
-          projectId: currentProject.id,
-          status: 'backlog' // Always set to backlog for new tasks
-        };
-        
-        const savedTask = await service.createTask(newTaskData);
-        
-        // Update local state
-        const updatedProjects = [...projects];
-        const project = updatedProjects[currentProjectIndex];
-        project.columns.backlog.tasks.push(savedTask);
-        
-        setProjects(updatedProjects);
-        setSnackbarMessage('Task added to backlog successfully');
-      }
-      
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-      setOpenTaskDialog(false);
-    } catch (error) {
-      setSnackbarMessage(isEditing ? 'Failed to update task' : 'Failed to create task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-    }
+    saveTaskMutation.mutate({
+      task: currentTask,
+      columnId: currentColumn,
+      isEditing: isEditing,
+      projectId: currentProject.id
+    });
   };
 
-  // NEW: Move task between columns
-  const moveTask = async (taskId, fromColumn, toColumn) => {
-    const task = currentProject.columns[fromColumn].tasks.find(t => t.id === taskId);
-    
-    // Check permissions
-    const canMove = rolePermissions[currentUser.role].canMove || 
-                   (task.assignee === currentUser.name && rolePermissions[task.assigneeRole]?.canMove);
-    
-    if (!canMove) {
-      setSnackbarMessage('You do not have permission to move this task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
-      return;
-    }
+  const moveTask = (taskId, fromColumn, toColumn) => {
+    // Optimistic update
+    queryClient.setQueryData(['performanceReportsData'], (oldData) => {
+      if (!oldData) return;
+      const updatedProjects = [...oldData.projects];
+      const projectToUpdate = updatedProjects[currentProjectIndex];
+      if (!projectToUpdate) return oldData;
 
-    try {
-      // Update task status in database
-      await service.updateTask(taskId, { status: toColumn });
+      const fromCol = projectToUpdate.columns[fromColumn];
+      if (!fromCol) return oldData;
       
-      // Update local state
-      const updatedProjects = [...projects];
-      const project = updatedProjects[currentProjectIndex];
-      
-      // Find task
-      const fromCol = project.columns[fromColumn];
       const taskIndex = fromCol.tasks.findIndex(t => t.id === taskId);
+      if (taskIndex === -1) return oldData;
+
+      const [movedTask] = fromCol.tasks.splice(taskIndex, 1);
+      movedTask.status = toColumn;
       
-      if (taskIndex !== -1) {
-        const task = fromCol.tasks[taskIndex];
-        // Remove from source column
-        fromCol.tasks.splice(taskIndex, 1);
-        // Add to target column
-        project.columns[toColumn].tasks.push(task);
-        
-        setProjects(updatedProjects);
-        setSnackbarMessage(`Task moved to ${toColumn === 'inProgress' ? 'In Progress' : toColumn === 'done' ? 'Done' : 'Backlog'}`);
-        setSnackbarSeverity('success');
-        setOpenSnackbar(true);
+      if (projectToUpdate.columns[toColumn]) {
+        projectToUpdate.columns[toColumn].tasks.push(movedTask);
+      } else if (projectToUpdate.columns['in_progress']) {
+        // Handle 'inProgress' vs 'in_progress' mismatch
+        projectToUpdate.columns['in_progress'].tasks.push(movedTask);
       }
-    } catch (error) {
-      setSnackbarMessage('Failed to move task');
-      setSnackbarSeverity('error');
-      setOpenSnackbar(true);
+
+      return { ...oldData, projects: updatedProjects };
+    });
+    
+    // Call mutation to update the backend
+    moveTaskMutation.mutate({ taskId, toColumn });
+  };
+
+  const handleSnackbarClose = () => setOpenSnackbar(false);
+  const handleViewModeChange = (e, newViewMode) => {
+    if (newViewMode) {
+      setViewMode(newViewMode);
     }
   };
 
-  // NEW: Handle snackbar close
-  const handleSnackbarClose = () => {
-    setOpenSnackbar(false);
+  const handleLogout = async () => {
+    showSnackbar('Logging out...', 'success', true);
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      router.push('/login');
+    }, 1500);
+  };
+  
+  // --- Getters (Formatting) ---
+  const getAssigneeColor = (assigneeId) => {
+    if (!assigneeId) return '#888';
+    const member = teamMembers.find(m => m.id === assigneeId);
+    return member ? member.color : '#888';
   };
 
-  // NEW: Handle view mode change
-  const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode);
+  const getAssigneeName = (task) => {
+    const userName = teamMembers.find(m => m.id === task.assignee_id)?.name;
+    return userName || task.assignee_team || 'Unassigned';
   };
 
+  const getAssigneeRole = (task) => {
+    if (task.assignee_team) return 'Team';
+    if (task.assignee_id) {
+        const member = teamMembers.find(m => m.id === task.assignee_id);
+        return member ? (member.role || 'member') : 'unassigned';
+    }
+    return 'unassigned';
+  };
+
+  const getColumnColor = (columnId) => {
+    const colors = {
+      backlog: '#E71D36',
+      in_progress: '#FF9F1C', 
+      done: '#2EC4B6'
+    };
+    return colors[columnId] || '#6b705c';
+  };
+
+  const getColumnIcon = (columnId) => {
+    const icons = {
+      backlog: <service.BacklogIcon />,
+      in_progress: <service.InProgressIcon />, 
+      done: <service.DoneIcon />
+    };
+    return icons[columnId] || <service.BacklogIcon />;
+  };
+
+  const getTotalTasksForProject = (project) => {
+    if (!project || !project.columns) return 0;
+    return Object.values(project.columns).reduce((total, column) => {
+      return total + (column?.tasks?.length || 0);
+    }, 0);
+  };
+
+  // Return all state and handlers for the component to use
   return {
     // State
     reports, 
@@ -296,14 +271,15 @@ export const useReports = () => {
     currentProject, 
     viewMode, 
     projectMenuAnchor, 
-    rolePermissions,
     openTaskDialog, 
     isEditing, 
     openSnackbar, 
     snackbarSeverity, 
     snackbarMessage,
+    isLogoutSnackbar,
     currentTask,
     currentColumn,
+    currentUser,
     
     // Actions
     handleNextProject, 
@@ -312,17 +288,25 @@ export const useReports = () => {
     handleProjectMenuOpen,
     handleProjectSelect,
     setOpenTaskDialog,
-    handleAddTask,
-    handleEditTask,
-    handleDeleteTask,
+    handleAddTaskClick,
+    handleEditTaskClick,
+    handleDeleteTaskClick,
     handleSaveTask,
     moveTask,
     handleSnackbarClose,
     handleViewModeChange,
+    handleLogout,
     
     // Setters for form state
     setCurrentTask,
     setCurrentColumn,
-    setIsEditing
+    
+    // Getters
+    getAssigneeColor,
+    getAssigneeName,
+    getAssigneeRole,
+    getColumnColor,
+    getColumnIcon,
+    getTotalTasks: getTotalTasksForProject
   };
 };
