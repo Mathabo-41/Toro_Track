@@ -29,7 +29,7 @@ import {
   tablePaperStyles,
   tableCellHeaderStyles,
   tableCellBodyStyles,
-  modalStyles,
+  modalStyles,AppBar, Toolbar
 } from './styles';
 import useAuditTrail from './useAudit-Trail/useAudit-Trail';
 
@@ -408,32 +408,47 @@ export default function AuditTrailContent() {
           ...commonStyles.mainContentBox,
           ml: { xs: 0, md: `${drawerWidth}px` }, // Apply margin only on desktop
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, // Adjust width
+          p: 0
         }}
       >
-
-        {/* Header */}
-        <Box
+        {/* --- ADD THIS APP BAR --- */}
+        <AppBar
+          position="static"
           sx={{
-            ...headerBoxStyles,
-            flexDirection: { xs: 'column', md: 'row' }, // Stack on mobile
-            alignItems: { xs: 'flex-start', md: 'center' }, // Align items
-            gap: 2,
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)'
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <Toolbar>
             <IconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{
-                mr: 2,
-                color: '#fefae0',
-                display: { md: 'none' }, // Only show on mobile
-              }}
+              sx={{ mr: 2 }}
             >
               <MenuIcon />
             </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Audit Trail
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+
+        {/* Header */}
+        <Box
+          sx={{
+            ...headerBoxStyles,
+            flexDirection: { xs: 'column', md: 'row' }, 
+            alignItems: { xs: 'flex-start', md: 'center' }, 
+            gap: 2,
+            display: { xs: 'none', md: 'flex' }, // <-- HIDE ON MOBILE
+            p: 3 // <-- ADD PADDING
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <Typography
               variant="h4"
               sx={{
@@ -476,6 +491,7 @@ export default function AuditTrailContent() {
         </Box>
 
         {/* Table */}
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         <Box
           component={Paper}
           sx={{ ...tablePaperStyles, overflowX: 'auto' }} // Allows horizontal scroll
@@ -560,7 +576,7 @@ export default function AuditTrailContent() {
           </Table>
         </Box>
       </Box>
-
+    </Box>
       {/* Modal */}
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         <Box

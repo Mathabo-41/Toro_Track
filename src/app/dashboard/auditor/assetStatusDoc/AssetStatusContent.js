@@ -11,7 +11,7 @@ import {
   ListItemText, Drawer, ListItemButton,
   Paper, TextField, Button, IconButton,
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, useTheme, useMediaQuery, Tooltip
+  TableHead, TableRow, useTheme, useMediaQuery, Tooltip, AppBar, Toolbar
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -105,25 +105,14 @@ const Header = ({ search, handleSearchChange, isMobile, handleDrawerToggle }) =>
     <Box
       sx={{
         ...globalStyles.pageHeader,
-        flexDirection: { xs: 'column', md: 'row' }, // Stack on mobile
-        alignItems: { xs: 'flex-start', md: 'center' }, // Align items
+        flexDirection: { xs: 'column', md: 'row' }, 
+        alignItems: { xs: 'flex-start', md: 'center' }, 
         gap: 2,
+        display: { xs: 'none', md: 'flex' }, // HIDE ON MOBILE
+        p: 3 // ADD PADDING
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
-          sx={{
-            mr: 2,
-            color: '#fefae0',
-            display: { md: 'none' }, // Only show on mobile
-          }}
-        >
-          <MenuIcon />
-        </IconButton>
         <Box sx={{ flexGrow: 1 }}>
           <Typography
             variant="h4"
@@ -215,8 +204,35 @@ export default function AssetStatusContent() {
           ...globalStyles.mainContentBox,
           ml: { xs: 0, md: `${drawerWidth}px` }, // Apply margin only on desktop
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, // Adjust width
+          p : 0
         }}
       >
+
+        {/* --- APP BAR --- */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)' 
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Asset Status
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
         <Header
           search={state.search}
           handleSearchChange={handlers.handleSearchChange}

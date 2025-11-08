@@ -11,7 +11,7 @@ import {
   Grid, MenuItem, Button, Select, Box, Typography, Paper, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, List,
   ListItem, ListItemText, Drawer, ListItemButton, Card, TextField, FormControl, InputLabel,
-  useTheme, useMediaQuery
+  useTheme, useMediaQuery, AppBar, Toolbar
 } from '@mui/material';
 import {
   Add as AddIcon, Download as DownloadIcon, Close as CloseIcon, WarningAmber as WarningAmberIcon,
@@ -302,31 +302,47 @@ export default function LicenseConfigContent() {
           ...mainContentBoxStyles,
           ml: { xs: 0, md: `${drawerWidth}px` },
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-          p: { xs: 2, md: 3 } // Add responsive padding
+          p: { xs: 2, md: 3 }, // Add responsive padding
+          p: 0
         }}
       >
+
+        {/* --- ADD THIS APP BAR --- */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)' // <-- ADD THIS
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              License & Configuration
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
         <Box
           sx={{
             ...headerBoxStyles,
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'flex-start', md: 'center' },
             gap: 2,
+            display: { xs: 'none', md: 'flex' }, // HIDE ON MOBILE
+            p: 3 // ADD PADDING
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{
-                mr: 2,
-                color: '#fefae0', // Use a visible color
-                display: { md: 'none' },
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
             <Typography
               variant="h4"
               sx={{
@@ -390,6 +406,7 @@ export default function LicenseConfigContent() {
           </Box>
         </Box>
 
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         <Grid container spacing={3} sx={{ mt: { xs: 0, md: 2 }, px: { xs: 0, md: 2 } }}>
           <Grid item xs={12} md={6}>
             <Paper elevation={1} sx={perClientLicenseRegisterStyles}>
@@ -430,6 +447,7 @@ export default function LicenseConfigContent() {
             </Paper>
           </Grid>
         </Grid>
+      </Box>
       </Box>
 
       <Dialog open={isDialogOpen} onClose={handleCloseDialog} fullWidth maxWidth="sm">

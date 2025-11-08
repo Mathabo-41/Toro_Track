@@ -9,7 +9,7 @@ import { createSupabaseClient } from '@/lib/supabase/client';
 import {
   Box, Typography, List, ListItem, ListItemText, Drawer,
   ListItemButton, Stack, TextField, MenuItem, FormControlLabel,
-  Checkbox, Button, IconButton, useTheme, useMediaQuery, Tooltip
+  Checkbox, Button, IconButton, useTheme, useMediaQuery, Tooltip, AppBar, Toolbar
 } from '@mui/material';
 import { FormProvider, Controller } from 'react-hook-form';
 import { Logout as LogoutIcon, Menu as MenuIcon } from '@mui/icons-material';
@@ -159,31 +159,47 @@ export default function SettingsContent() {
           ...mainContentBoxStyles,
           ml: { xs: 0, md: `${drawerWidth}px` },
           width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-          p: { xs: 2, md: 3 } // Add responsive padding
+          p: { xs: 2, md: 3 }, // Add responsive padding
+          p: 0
         }}
       >
+        {/* --- ADD THIS APP BAR --- */}
+        <AppBar
+          position="static"
+          sx={{
+            display: { xs: 'flex', md: 'none' }, 
+            backgroundColor: '#283618',
+            paddingTop: 'env(safe-area-inset-top)' 
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
+              Auditor Settings
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        {/* --- Header--- */}
         <Box
           sx={{
             ...headerBoxStyles,
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'flex-start', md: 'center' },
             gap: 2,
+            display: { xs: 'none', md: 'flex' }, // HIDE ON MOBILE
+            p: 3 // ADD PADDING
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{
-                mr: 2,
-                color: '#fefae0', // Use a visible color
-                display: { md: 'none' },
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
             <Typography
               variant="h4"
               sx={{
@@ -212,7 +228,8 @@ export default function SettingsContent() {
             />
           </Box>
         </Box>
-
+        
+        <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}>
         <Box sx={settingsContainerStyles}>
           <FormProvider {...methods}>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -230,6 +247,7 @@ export default function SettingsContent() {
               </Stack>
             </form>
           </FormProvider>
+        </Box>
         </Box>
       </Box>
 
