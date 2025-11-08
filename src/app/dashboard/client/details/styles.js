@@ -9,7 +9,6 @@ export const mainContentStyles = {
     p: 3,
     backgroundColor: '#fefaf0',
     color: '#525252',
-    marginLeft: 30
   },
 };
 

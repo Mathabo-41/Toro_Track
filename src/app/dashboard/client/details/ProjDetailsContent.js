@@ -48,6 +48,9 @@ const COLUMN_COLORS = {
   done: '#2EC4B6'
 };
 
+// Added the drawerWidth constant
+const drawerWidth = 260;
+
 // Application color theme
 const COLORS = {
   primary: '#283618',
@@ -1196,9 +1199,15 @@ export default function ProjDetailsContent() {
       </Drawer>
 
       {/* Main Content Area */}
-      <Box component="main" sx={mainContentStyles.mainBox}>
+      <Box component="main" sx={{
+          ...mainContentStyles.mainBox,
+          flexGrow: 1,
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          ml: { xs: 0, md: `${drawerWidth}px` },
+          p: 0 // Use p: 0 here if inner content has padding
+        }}>
         
-        {/* ADD THIS IconButton FOR MOBILE */}
+        {/* IconButton FOR MOBILE */}
         <IconButton
           color="inherit"
           aria-label="open drawer"

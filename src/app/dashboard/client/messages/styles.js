@@ -1,7 +1,7 @@
 // MODIFIED: styles.js
 
 // --- General Page and Tab Styles (Unchanged) ---
-export const mainContentBox = { flexGrow: 1, p: 3, backgroundColor: '#fefaf0', color: '#525252', marginLeft: 30 };
+export const mainContentBox = { flexGrow: 1, p: 3, backgroundColor: '#fefaf0', color: '#525252'};
 export const pageHeader = { mb: 4 };
 export const pageHeaderText = { color: '#525252', fontWeight: 500 };
 export const pageHeaderIcon = { mr: 1, verticalAlign: 'middle', color: '#f3722c' };

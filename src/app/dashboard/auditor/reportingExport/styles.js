@@ -45,7 +45,6 @@ export const mainContentBoxStyles = {
   p: 3,
   backgroundColor: '#fefaf0',
   color: '#525252',
-  marginLeft: 30
 };
 
 export const headerBoxStyles = {

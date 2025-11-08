@@ -37,7 +37,6 @@ export const mainContentBox = {
   flexGrow: 1,
   p: 3,
   color: '#525252',
-  marginLeft: 30, 
 };
 
 export const pageHeader = {

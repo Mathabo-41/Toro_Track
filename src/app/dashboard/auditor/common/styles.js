@@ -37,7 +37,6 @@ export const mainContentBox = {
   p: 3,
   color: '#525252',
   backgroundColor: '#fefaf0',
-  marginLeft: 30, 
 };
 
 export const pageHeader = {

@@ -6,7 +6,6 @@ export const clientSettingsStyles = {
         p: 3,
         backgroundColor: '#fefaf0',
         color: '#525252',
-        marginLeft: 30
     },
     // Header styles
     headerIcon: {

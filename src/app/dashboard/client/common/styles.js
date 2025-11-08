@@ -7,7 +7,7 @@ export const rootBox = {
 };
 
 export const drawerPaper = {
-  width: 240,
+  width: 260,
   boxSizing: 'border-box',
   backgroundColor:'#283618'
 };
@@ -35,8 +35,7 @@ export const activeListItemButton = {
 export const mainContentBox = {
   flexGrow: 1,
   p: 3,
-  color: '#525252',
-  marginLeft: 30, 
+  color: '#525252', 
 };
 
 export const pageHeader = {
