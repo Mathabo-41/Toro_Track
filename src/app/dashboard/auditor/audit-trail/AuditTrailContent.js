@@ -33,6 +33,14 @@ import {
 } from './styles';
 import useAuditTrail from './useAudit-Trail/useAudit-Trail';
 
+const initialFormState = {
+    signOff: '',
+    status: 'Pending',
+    receiver: '',
+    type: 'Hardware',
+    serial: '',
+  };
+
 export default function AuditTrailContent() {
   const supabase = createSupabaseClient();
   const {
@@ -73,13 +81,6 @@ export default function AuditTrailContent() {
   // Logout snackbar state
   const [logoutSnackbar, setLogoutSnackbar] = useState(false);
 
-  const initialFormState = {
-    signOff: '',
-    status: 'Pending',
-    receiver: '',
-    type: 'Hardware',
-    serial: '',
-  };
   const [formState, setFormState] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
