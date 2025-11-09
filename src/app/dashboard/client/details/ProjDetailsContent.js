@@ -14,8 +14,9 @@ import {
   Tabs, Tab, IconButton, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Snackbar, Alert,
-  Paper, AppBar, Toolbar,
-  LinearProgress
+  Paper,
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import {
   Assignment as ProjectIcon,
@@ -32,7 +33,9 @@ import {
   Chat as ChatIcon,
   ViewKanban as KanbanIcon,
   CalendarToday as CalendarIcon,
-  Menu as MenuIcon
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  Flag as FlagIcon
 } from '@mui/icons-material';
 
 // Import styles
@@ -47,9 +50,6 @@ const COLUMN_COLORS = {
   in_progress: '#FF9F1C',
   done: '#2EC4B6'
 };
-
-// Added the drawerWidth constant
-const drawerWidth = 260;
 
 // Application color theme
 const COLORS = {
@@ -159,12 +159,10 @@ export default function ProjDetailsContent() {
   const [clientProfile, setClientProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
   const [sidebarOpen] = React.useState(true);
-
-  // mobile drawer
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  
+  // Milestone state management - simplified local storage
+  const [milestones, setMilestones] = useState([]);
+  const [showMilestones, setShowMilestones] = useState(false);
 
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
@@ -174,131 +172,12 @@ export default function ProjDetailsContent() {
     handleTabChange,
   } = useDetails(currentProject?.id);
 
- /**
-   * Initialize empty columns
-   */
-  const initializeEmptyColumns = React.useCallback(() => {
-    const emptyColumns = {
-      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
-      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
-      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
-    };
-    setKanbanColumns(emptyColumns);
-  }, []); // No dependencies
-
-  /**
-   * Organize tasks into Kanban columns
-   */
-  const organizeTasksIntoColumns = React.useCallback((tasks) => {
-    const columns = {
-      backlog: {
-        id: 'backlog',
-        title: 'Backlog',
-        color: COLUMN_COLORS.backlog,
-        icon: <BacklogIcon />,
-        tasks: []
-      },
-      in_progress: {
-        id: 'in_progress',
-        title: 'In Progress',
-        color: COLUMN_COLORS.in_progress,
-        icon: <InProgressIcon />,
-        tasks: []
-      },
-      done: {
-        id: 'done',
-        title: 'Done',
-        color: COLUMN_COLORS.done,
-        icon: <DoneIcon />,
-        tasks: []
-      }
-    };
-
-    if (tasks && tasks.length > 0) {
-      tasks.forEach(task => {
-        let columnId = 'backlog';
-
-        if (task.status === 'in_progress' || task.status === 'in progress') {
-          columnId = 'in_progress';
-        } else if (task.status === 'done' || task.status === 'completed') {
-          columnId = 'done';
-        } else if (task.status === 'backlog' || task.status === 'todo') {
-          columnId = 'backlog';
-        }
-
-        if (columns[columnId]) {
-          columns[columnId].tasks.push(task);
-        }
-      });
-    }
-
-    setKanbanColumns(columns);
-  }, []); // No dependencies
-
-  /**
-   * Fetch tasks for a specific project
-   */
-  const fetchTasksForProject = React.useCallback(async (projectId) => {
-    try {
-      const { data: tasks, error } = await supabase
-        .from('project_tasks')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        initializeEmptyColumns();
-        return;
-      }
-
-      organizeTasksIntoColumns(tasks || []);
-    } catch (error) {
-      console.error('Error in fetchTasksForProject:', error);
-      initializeEmptyColumns();
-    }
-  }, [supabase, organizeTasksIntoColumns, initializeEmptyColumns]); // Added dependencies
-
-  /**
-   * Fetch project files
-   */
-  const fetchProjectFiles = React.useCallback(async (projectId) => {
-    try {
-      const { data: files, error } = await supabase
-        .from('project_files')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.log('Error fetching project files:', error);
-        return;
-      }
-
-      if (files) {
-        setProjectFiles(files);
-      }
-    } catch (error) {
-      console.error('Error fetching project files:', error);
-    }
-  }, [supabase]); // Added supabase dependency
-
-  /**
-   * Fetch additional project data (tasks, team, files)
-   */
-  const fetchAdditionalProjectData = React.useCallback(async (projectId) => {
-    try {
-      // Fetch tasks
-      await fetchTasksForProject(projectId);
-
-      // Fetch project files
-      await fetchProjectFiles(projectId);
-
-    } catch (error) {
-      console.error('Error fetching additional project data:', error);
-    }
-  }, [fetchTasksForProject, fetchProjectFiles]); // Dependencies are now declared
-
+  // Helper function to show snackbar messages
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
 
   // Fetch current user from Supabase
   useEffect(() => {
@@ -493,7 +372,132 @@ export default function ProjDetailsContent() {
     };
 
     initializeData();
-  }, [supabase, router,fetchAdditionalProjectData]);
+  }, [supabase, router]);
+
+  /**
+   * Fetch additional project data (tasks, team, files)
+   */
+  const fetchAdditionalProjectData = async (projectId) => {
+    try {
+      // Fetch tasks
+      await fetchTasksForProject(projectId);
+
+      // Fetch project files
+      await fetchProjectFiles(projectId);
+
+    } catch (error) {
+      console.error('Error fetching additional project data:', error);
+    }
+  };
+
+  /**
+   * Fetch tasks for a specific project
+   */
+  const fetchTasksForProject = async (projectId) => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from('project_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        initializeEmptyColumns();
+        return;
+      }
+
+      organizeTasksIntoColumns(tasks || []);
+    } catch (error) {
+      console.error('Error in fetchTasksForProject:', error);
+      initializeEmptyColumns();
+    }
+  };
+
+  /**
+   * Fetch project files
+   */
+  const fetchProjectFiles = async (projectId) => {
+    try {
+      const { data: files, error } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Error fetching project files:', error);
+        return;
+      }
+
+      if (files) {
+        setProjectFiles(files);
+      }
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+    }
+  };
+
+  /**
+   * Organize tasks into Kanban columns
+   */
+  const organizeTasksIntoColumns = (tasks) => {
+    const columns = {
+      backlog: {
+        id: 'backlog',
+        title: 'Backlog',
+        color: COLUMN_COLORS.backlog,
+        icon: <BacklogIcon />,
+        tasks: []
+      },
+      in_progress: {
+        id: 'in_progress',
+        title: 'In Progress',
+        color: COLUMN_COLORS.in_progress,
+        icon: <InProgressIcon />,
+        tasks: []
+      },
+      done: {
+        id: 'done',
+        title: 'Done',
+        color: COLUMN_COLORS.done,
+        icon: <DoneIcon />,
+        tasks: []
+      }
+    };
+
+    if (tasks && tasks.length > 0) {
+      tasks.forEach(task => {
+        let columnId = 'backlog';
+
+        if (task.status === 'in_progress' || task.status === 'in progress') {
+          columnId = 'in_progress';
+        } else if (task.status === 'done' || task.status === 'completed') {
+          columnId = 'done';
+        } else if (task.status === 'backlog' || task.status === 'todo') {
+          columnId = 'backlog';
+        }
+
+        if (columns[columnId]) {
+          columns[columnId].tasks.push(task);
+        }
+      });
+    }
+
+    setKanbanColumns(columns);
+  };
+
+  /**
+   * Initialize empty columns
+   */
+  const initializeEmptyColumns = () => {
+    const emptyColumns = {
+      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
+      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
+      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
+    };
+    setKanbanColumns(emptyColumns);
+  };
 
   /**
    * Handle project change
@@ -562,6 +566,39 @@ export default function ProjDetailsContent() {
   };
 
   /**
+   * Handle marking task as milestone
+   */
+  const handleMarkAsMilestone = (task) => {
+    if (!task || !currentProject) return;
+
+    // Check if this task is already a milestone
+    const existingMilestoneIndex = milestones.findIndex(m => m.task_id === task.id);
+    
+    if (existingMilestoneIndex !== -1) {
+      // Remove from milestones
+      const updatedMilestones = milestones.filter((_, index) => index !== existingMilestoneIndex);
+      setMilestones(updatedMilestones);
+      showSnackbar('Milestone removed successfully', 'success');
+    } else {
+      // Add as milestone
+      const newMilestone = {
+        id: `milestone-${Date.now()}`,
+        project_id: currentProject.id,
+        task_id: task.id,
+        title: task.title,
+        description: task.description || `Milestone: ${task.title}`,
+        completed_at: new Date().toISOString(),
+        is_approved: true,
+        approved_by: clientProfile?.name || currentUser?.email || 'Client',
+        created_at: new Date().toISOString()
+      };
+
+      setMilestones(prev => [newMilestone, ...prev]);
+      showSnackbar('Task marked as milestone!', 'success');
+    }
+  };
+
+  /**
    * Format status for display
    */
   const formatStatus = (status) => {
@@ -580,7 +617,7 @@ export default function ProjDetailsContent() {
   };
 
   /**
-   * Render Kanban Board Tab
+   * Render Kanban Board Tab with milestone functionality
    */
   const renderKanbanTab = () => {
     if (!currentProject || !kanbanColumns) {
@@ -593,14 +630,106 @@ export default function ProjDetailsContent() {
 
     const progress = getProjectProgress();
 
-   
-
-      return (
+    return (
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <KanbanIcon />
-          Project Kanban Board
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" sx={{ color: COLORS.primary, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <KanbanIcon />
+            Project Kanban Board
+          </Typography>
+          
+          {/* Milestones Toggle Button */}
+          <Button
+            variant={showMilestones ? "contained" : "outlined"}
+            startIcon={<FlagIcon />}
+            onClick={() => setShowMilestones(!showMilestones)}
+            sx={{
+              backgroundColor: showMilestones ? COLORS.accent : 'transparent',
+              color: showMilestones ? COLORS.background : COLORS.accent,
+              borderColor: COLORS.accent,
+              '&:hover': {
+                backgroundColor: showMilestones ? '#e06522' : `${COLORS.accent}20`
+              }
+            }}
+          >
+            {showMilestones ? 'Hide Milestones' : `Show Milestones (${milestones.length})`}
+          </Button>
+        </Box>
+
+        {/* Milestones Panel */}
+        {showMilestones && (
+          <Paper sx={{ p: 3, mb: 3, backgroundColor: `${COLORS.accent}10`, border: `1px solid ${COLORS.accent}30` }}>
+            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FlagIcon />
+              Project Milestones ({milestones.length})
+            </Typography>
+
+            {milestones.length > 0 ? (
+              <Grid container spacing={2}>
+                {milestones.map((milestone) => (
+                  <Grid item xs={12} md={6} key={milestone.id}>
+                    <Card sx={{ 
+                      p: 2, 
+                      borderLeft: `4px solid ${COLORS.accent}`,
+                      backgroundColor: 'white'
+                    }}>
+                      <CardContent sx={{ p: '8px !important' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ color: COLORS.primary, fontWeight: 'bold', flex: 1 }}>
+                            {milestone.title}
+                          </Typography>
+                          <Tooltip title="Remove milestone">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleMarkAsMilestone({ id: milestone.task_id })}
+                              sx={{
+                                color: COLORS.accent,
+                                '&:hover': {
+                                  backgroundColor: `${COLORS.accent}20`
+                                }
+                              }}
+                            >
+                              <StarIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                        
+                        {milestone.description && (
+                          <Typography variant="body2" sx={{ color: COLORS.text, mb: 1, fontSize: '0.8rem' }}>
+                            {milestone.description}
+                          </Typography>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="caption" sx={{ color: COLORS.border }}>
+                            Approved: {new Date(milestone.completed_at).toLocaleDateString()}
+                          </Typography>
+                          <Chip 
+                            label="Milestone" 
+                            size="small" 
+                            sx={{ 
+                              backgroundColor: COLORS.accent, 
+                              color: 'white',
+                              fontSize: '0.6rem',
+                              height: '20px'
+                            }} 
+                          />
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 2 }}>
+                <FlagIcon sx={{ fontSize: 48, color: COLORS.border, mb: 1, opacity: 0.5 }} />
+                <Typography variant="body2" sx={{ color: COLORS.border }}>
+                  No milestones yet. Mark completed tasks as milestones to track important achievements.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        )}
 
         {/* Progress Summary */}
         <Paper sx={{ p: 2, mb: 3, backgroundColor: COLORS.lightBackground }}>
@@ -625,6 +754,9 @@ export default function ProjDetailsContent() {
             <Grid item xs={12} md={6}>
               <Typography variant="body2" sx={{ color: COLORS.text }}>
                 Tasks: {kanbanColumns.done.tasks.length} completed of {Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0)} total
+              </Typography>
+              <Typography variant="body2" sx={{ color: COLORS.text }}>
+                Milestones: {milestones.length} achieved
               </Typography>
             </Grid>
           </Grid>
@@ -667,51 +799,93 @@ export default function ProjDetailsContent() {
                   No tasks in {column.title.toLowerCase()}
                 </Typography>
               ) : (
-                column.tasks.map((task) => (
-                  <Paper
-                    key={task.id}
-                    sx={{
-                      p: 2,
-                      mb: 2,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      borderLeft: `4px solid ${column.color}`,
-                      '&:hover': {
-                        boxShadow: 3,
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                    onClick={() => handleViewTask(task, column.id)}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, mb: 1 }}>
-                      {task.title}
-                    </Typography>
-                    {task.description && (
-                      <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                        {task.description.length > 80
-                          ? `${task.description.substring(0, 80)}...`
-                          : task.description
+                column.tasks.map((task) => {
+                  const isMilestone = milestones.some(m => m.task_id === task.id);
+                  const isDone = column.id === 'done';
+
+                  return (
+                    <Paper
+                      key={task.id}
+                      sx={{
+                        p: 2,
+                        mb: 2,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        borderLeft: `4px solid ${column.color}`,
+                        backgroundColor: isMilestone ? `${COLORS.accent}15` : COLORS.background,
+                        '&:hover': {
+                          boxShadow: 3,
+                          transform: 'translateY(-2px)'
                         }
-                      </Typography>
-                    )}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
-                      </Typography>
-                      {task.priority && (
-                        <Chip
-                          label={task.priority}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            height: '20px',
-                            fontSize: '0.6rem'
-                          }}
-                        />
+                      }}
+                      onClick={() => handleViewTask(task, column.id)}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, flex: 1 }}>
+                          {task.title}
+                        </Typography>
+                        {isMilestone && (
+                          <FlagIcon 
+                            sx={{ 
+                              color: COLORS.accent, 
+                              fontSize: '1rem',
+                              ml: 1
+                            }} 
+                          />
+                        )}
+                      </Box>
+                      
+                      {task.description && (
+                        <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                          {task.description.length > 80
+                            ? `${task.description.substring(0, 80)}...`
+                            : task.description
+                          }
+                        </Typography>
                       )}
-                    </Box>
-                  </Paper>
-                ))
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
+                        </Typography>
+                        {task.priority && (
+                          <Chip
+                            label={task.priority}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              height: '20px',
+                              fontSize: '0.6rem'
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      {/* Milestone Button for Done Tasks */}
+                      {isDone && (
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                          <Tooltip title={isMilestone ? "Remove milestone" : "Mark as milestone"}>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsMilestone(task);
+                              }}
+                              sx={{
+                                color: isMilestone ? COLORS.accent : COLORS.border,
+                                '&:hover': {
+                                  color: COLORS.accent
+                                }
+                              }}
+                            >
+                              {isMilestone ? <StarIcon /> : <StarBorderIcon />}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      )}
+                    </Paper>
+                  );
+                })
               )}
             </Box>
           ))}
@@ -898,6 +1072,110 @@ export default function ProjDetailsContent() {
   };
 
   /**
+   * Render Milestones Tab
+   */
+  const renderMilestonesTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FlagIcon />
+          Project Milestones ({milestones.length})
+        </Typography>
+
+        {milestones.length > 0 ? (
+          <Grid container spacing={2}>
+            {milestones.map((milestone) => (
+              <Grid item xs={12} md={6} key={milestone.id}>
+                <Card sx={{ 
+                  p: 2, 
+                  borderLeft: `4px solid ${COLORS.accent}`,
+                  backgroundColor: `${COLORS.accent}08`
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="h6" sx={{ color: COLORS.primary, fontWeight: 'bold' }}>
+                        {milestone.title}
+                      </Typography>
+                      <Chip 
+                        label="Milestone" 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: COLORS.accent, 
+                          color: 'white',
+                          fontWeight: 'bold'
+                        }} 
+                      />
+                    </Box>
+                    
+                    {milestone.description && (
+                      <Typography variant="body2" sx={{ color: COLORS.text, mb: 2 }}>
+                        {milestone.description}
+                      </Typography>
+                    )}
+                    
+                    <Stack spacing={1}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                          COMPLETED:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.text }}>
+                          {milestone.completed_at ? new Date(milestone.completed_at).toLocaleDateString() : 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                          APPROVED BY:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.text }}>
+                          {milestone.approved_by || 'Client'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                      <Button
+                        size="small"
+                        onClick={() => handleMarkAsMilestone({ id: milestone.task_id })}
+                        startIcon={<StarIcon />}
+                        sx={{
+                          color: COLORS.accent,
+                          '&:hover': {
+                            backgroundColor: `${COLORS.accent}20`
+                          }
+                        }}
+                      >
+                        Remove Milestone
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+            <FlagIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+            <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+              No Milestones Yet
+            </Typography>
+            <Typography variant="body2" sx={{ color: COLORS.border, mb: 3 }}>
+              Mark completed tasks as milestones to track important project achievements.
+            </Typography>
+            <Button 
+              variant="outlined" 
+              sx={{ color: COLORS.primary, borderColor: COLORS.primary }}
+              onClick={() => handleTabChange(null, 5)} // Switch to Kanban tab
+            >
+              View Completed Tasks
+            </Button>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  /**
    * Render Team Tab
    */
   const renderTeamTab = () => {
@@ -1015,29 +1293,6 @@ export default function ProjDetailsContent() {
   };
 
   /**
-   * Render Milestones Tab
-   */
-  const renderMilestonesTab = () => {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <KanbanIcon />
-          Project Milestones
-        </Typography>
-        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
-          <KanbanIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
-          <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
-            Milestones Coming Soon
-          </Typography>
-          <Typography variant="body2" sx={{ color: COLORS.border }}>
-            Track major project milestones and deliverables here.
-          </Typography>
-        </Paper>
-      </Box>
-    );
-  };
-
-  /**
    * Render project selector
    */
   const renderProjectSelector = () => {
@@ -1093,77 +1348,6 @@ export default function ProjDetailsContent() {
     }
   };
 
- // ADD THIS REUSABLE DRAWER CONTENT
-  const drawerContent = (
-    <>
-      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Link href="/dashboard/client/details" passHref>
-          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-            <DashboardIcon />
-          </IconButton>
-        </Link>
-        <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
-      </Box>
-      <List>
-        {clientMenu.map((item) => (
-          <ListItem key={item.path} disablePadding>
-            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
-              <ListItemText primary={item.name} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Profile Section */}
-      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-            <Image
-              src={profilePicture}
-              alt="User Profile"
-              fill
-              style={{ objectFit: 'cover' }}
-              onError={(e) => {
-                e.target.src = '/toroLogo.jpg';
-              }}
-            />
-          </Box>
-          {sidebarOpen && ( 
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-        <Button
-          onClick={handleLogout}
-          fullWidth
-          sx={{
-            padding: '0.75rem',
-            background: 'transparent',
-            border: '1px solid #fefae0',
-            borderRadius: '8px',
-            color: '#fefae0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            '&:hover': { background: '#6b705c' }
-          }}
-        >
-          {sidebarOpen ? 'Logout' : <LogoutIcon />}
-        </Button>
-      </Box>
-    </>
-  );
-
   // Show loading state
   if (loading) {
     return <LoadingScreen message="Loading Project Details..." />;
@@ -1171,96 +1355,110 @@ export default function ProjDetailsContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation */}
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { ...globalStyles.drawerPaper, boxSizing: 'border-box' }
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Desktop Drawer */}
+      {/* Sidebar Navigation - EXACT SAME AS SETTINGS SCREEN */}
       <Drawer
         variant="permanent"
         anchor="left"
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          '& .MuiDrawer-paper': globalStyles.drawerPaper
-        }}
+        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        {drawerContent}
+        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Link href="/dashboard/client/details" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
+        </Box>
+        <List>
+          {clientMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
+              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+
+        {/* Profile Section - EXACT SAME AS SETTINGS SCREEN */}
+        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+              <Image
+                src={profilePicture}
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.src = '/toroLogo.jpg';
+                }}
+              />
+            </Box>
+            {sidebarOpen && (
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                  {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                  {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+          <Button
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              '&:hover': { background: '#6b705c' }
+            }}
+          >
+            {sidebarOpen ? 'Logout' : <LogoutIcon />}
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content Area */}
-      <Box component="main" sx={{
-          ...mainContentStyles.mainBox,
-          flexGrow: 1,
-          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-          ml: { xs: 0, md: `${drawerWidth}px` },
-          p: 0 // Use p: 0 here if inner content has padding
-        }}>
-
-          {/* ---APP BAR --- */}
-        <AppBar
-          position="static"
-          sx={{
-            display: { xs: 'flex', md: 'none' }, // Only show on mobile
-            backgroundColor: '#283618', // Match drawer header
-            paddingTop: 'env(safe-area-inset-top)'
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
-              Project Details
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        
+      <Box component="main" sx={mainContentStyles.mainBox}>
         {currentProject ? (
-         <>
-            {/* --- MODIFY THIS DESKTOP HEADER --- */}
-            <Box sx={{ 
-                ...headerStyles.headerBox, 
-                p: 3, // Add padding for desktop
-                display: { xs: 'none', md: 'block' } // Hide on mobile
-            }}>
+          <>
+            {/* Project Header with Refresh Button */}
+            <Box sx={headerStyles.headerBox}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h4" sx={headerStyles.headerTitle}>
                   <ProjectIcon sx={headerStyles.projectIcon} />
-                  {currentProject.project_name || currentProject.name || 'Project Details'}
+                  {currentProject.project_name || currentProject.name}
                 </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={formatStatus(currentProject.status)} sx={headerStyles.chip(currentProject.status)} />
+                  <IconButton onClick={handleRefresh} sx={{ color: COLORS.primary }}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Stack>
               </Stack>
               <Typography variant="body1" sx={headerStyles.headerSubtext}>
-                {currentProject.description || 'View project overview, tasks, files, and team members.'}
+                {currentProject.description || 'Project details'}
               </Typography>
             </Box>
 
             {/* Project Selector */}
-            {/* --- WRAPPING THE REST OF THE CONTENT --- */}
-            <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}> 
-              {renderProjectSelector()}
+            {renderProjectSelector()}
 
             {/* Navigation Tabs */}
             <Paper sx={{ mb: 2 }}>
               <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
                 <Tab label="Overview" icon={<DescriptionIcon />} iconPosition="start" sx={tabsStyles.tab} />
-                <Tab label="Milestones" icon={<KanbanIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Milestones" icon={<FlagIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Team" icon={<PersonIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Files" icon={<FolderIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Discussion" icon={<ChatIcon />} iconPosition="start" sx={tabsStyles.tab} />
@@ -1270,12 +1468,9 @@ export default function ProjDetailsContent() {
 
             {/* Tab Content */}
             <Box>{renderTabContent()}</Box>
-            </Box>
           </>
         ) : (
           // Empty state when no projects exist
-          // --- WRAPPING THE EMPTY STATE CONTENT --- */}
-          <Box sx={{ p: { xs: 2, md: 3 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center', flexDirection: 'column', gap: 3 }}>
             <ProjectIcon sx={{ fontSize: 64, color: COLORS.border }} />
             <Box>
@@ -1314,7 +1509,6 @@ export default function ProjDetailsContent() {
                 Return to Dashboard
               </Button>
             </Stack>
-          </Box>
           </Box>
         )}
       </Box>
@@ -1424,7 +1618,7 @@ export default function ProjDetailsContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Global Snackbar for notifications */}
+      {/* Global Snackbar for notifications - EXACT SAME AS SETTINGS SCREEN */}
       <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           {snackbarMessage}
