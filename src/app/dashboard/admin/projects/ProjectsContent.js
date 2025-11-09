@@ -34,6 +34,16 @@ const formatStatus = (status) => {
   return status.split(/[\s_]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
+// Helper function to get today's date in YYYY-MM-DD format
+const getTodayDate = () => {
+  return new Date().toISOString().split('T')[0];
+};
+
+// Helper function to validate due date
+const validateDueDate = (dueDate, creationDate = getTodayDate()) => {
+  return dueDate >= creationDate;
+};
+
 // Sidebar menu items
 export const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
@@ -93,6 +103,7 @@ export default function ProjectsContent() {
   const [openProgressDialog, setOpenProgressDialog] = useState(false);
   const [progressProject, setProgressProject] = useState(null);
   const [progressValue, setProgressValue] = useState(0);
+  const [dueDateError, setDueDateError] = useState('');
 
   // mobile drawer
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -203,6 +214,13 @@ export default function ProjectsContent() {
       showSnackbar('Please fill all required fields!', 'error');
       return;
     }
+
+    // Validate due date
+    if (!validateDueDate(newProject.dueDate)) {
+      showSnackbar('Due date cannot be in the past!', 'error');
+      return;
+    }
+
     await handleCreateProject();
     showSnackbar('Project created successfully!');
     setOpenCreateDialog(false);
@@ -219,6 +237,7 @@ export default function ProjectsContent() {
         team: projectToEdit.team || []
       });
       setOpenEditDialog(true);
+      setDueDateError(''); // Reset error when opening dialog
     }
     handleMenuClose();
   };
@@ -226,16 +245,30 @@ export default function ProjectsContent() {
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditProject(prev => ({ ...prev, [name]: value }));
+
+    // Validate due date in real-time
+    if (name === 'dueDate') {
+      if (!validateDueDate(value)) {
+        setDueDateError('Due date cannot be in the past');
+      } else {
+        setDueDateError('');
+      }
+    }
   };
 
-  // The handleEditTeamChange function is no longer needed and can be removed.
   const handleSaveEdit = async () => {
     if (!editProject.name || !editProject.client || !editProject.status || !editProject.dueDate) {
       showSnackbar('Please fill all required fields!', 'error');
       return;
     }
     
-    // MODIFICATION: Convert the team string into an array
+    // Validate due date
+    if (!validateDueDate(editProject.dueDate)) {
+      showSnackbar('Due date cannot be in the past!', 'error');
+      return;
+    }
+    
+    // Convert the team string into an array
     const projectToUpdate = {
       ...editProject,
       team: typeof editProject.team === 'string' 
@@ -247,6 +280,7 @@ export default function ProjectsContent() {
     showSnackbar('Project updated successfully!', 'success');
     setOpenEditDialog(false);
     setEditProject(null);
+    setDueDateError('');
   };
 
   // ----------------------------
@@ -663,12 +697,22 @@ export default function ProjectsContent() {
                     type="date" 
                     label="Due Date" 
                     name="dueDate" 
-                    InputLabelProps={{ shrink: true, sx: { fontSize: '1rem' } }} 
+                    InputLabelProps={{ 
+                      shrink: true, 
+                      sx: { fontSize: '1rem' } 
+                    }} 
                     value={editProject.dueDate} 
                     onChange={handleEditInputChange} 
                     required
                     sx={styles.dialogTextField}
-                    InputProps={{ sx: { fontSize: '1rem' } }}
+                    InputProps={{ 
+                      sx: { fontSize: '1rem' },
+                      inputProps: { 
+                        min: getTodayDate() // Set min date to today
+                      } 
+                    }}
+                    error={!!dueDateError}
+                    helperText={dueDateError || "Due date must be today or in the future"}
                   />
                 </Stack>
               </Grid>
@@ -676,7 +720,7 @@ export default function ProjectsContent() {
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" sx={{ color: '#283618', mb: 2, fontSize: '1.1rem' }}>
-                      Progress Percentage:
+                      Current Progress: {getSafeProgress(editProject.progress)}%
                     </Typography>
                     <Button 
                       variant="outlined" 
@@ -696,7 +740,7 @@ export default function ProjectsContent() {
                   </Box>
                   <TextField 
                     fullWidth 
-                    label="Team" 
+                    label="Team Members" 
                     name="team" 
                     value={Array.isArray(editProject.team) ? editProject.team.join(', ') : editProject.team} 
                     onChange={handleEditInputChange} 
@@ -705,7 +749,10 @@ export default function ProjectsContent() {
                     InputProps={{ sx: { fontSize: '1rem' } }}
                     InputLabelProps={{ sx: { fontSize: '1rem' } }}
                     helperText="Enter team roles separated by commas."
+                    multiline
+                    rows={3}
                   />
+                 
                 </Stack>
               </Grid>
             </Grid>
@@ -713,7 +760,10 @@ export default function ProjectsContent() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
           <Button 
-            onClick={() => setOpenEditDialog(false)}
+            onClick={() => {
+              setOpenEditDialog(false);
+              setDueDateError('');
+            }}
             sx={styles.dialogCancelButton}
             size="large"
           >
@@ -722,7 +772,11 @@ export default function ProjectsContent() {
           <Button 
             variant="contained" 
             onClick={handleSaveEdit}
-            sx={styles.dialogConfirmButton}
+            disabled={!!dueDateError}
+            sx={{
+              ...styles.dialogConfirmButton,
+              opacity: dueDateError ? 0.6 : 1
+            }}
             size="large"
           >
             Save Changes
@@ -822,12 +876,21 @@ export default function ProjectsContent() {
                   type="date" 
                   label="Due Date" 
                   name="dueDate" 
-                  InputLabelProps={{ shrink: true, sx: { fontSize: '1rem' } }} 
+                  InputLabelProps={{ 
+                    shrink: true, 
+                    sx: { fontSize: '1rem' } 
+                  }} 
                   value={newProject.dueDate} 
                   onChange={handleInputChange} 
                   required
                   sx={styles.dialogTextField}
-                  InputProps={{ sx: { fontSize: '1rem' } }}
+                  InputProps={{ 
+                    sx: { fontSize: '1rem' },
+                    inputProps: { 
+                      min: getTodayDate() // Set min date to today
+                    } 
+                  }}
+                  helperText="Due date must be today or in the future"
                 />
               </Stack>
             </Grid>
@@ -867,6 +930,8 @@ export default function ProjectsContent() {
                   InputProps={{ sx: { fontSize: '1rem' } }}
                   InputLabelProps={{ sx: { fontSize: '1rem' } }}
                   helperText="Enter team roles separated by commas."
+                  multiline
+                  rows={3}
                 />
               </Stack>
             </Grid>
