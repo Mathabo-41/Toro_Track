@@ -14,8 +14,9 @@ import {
   Tabs, Tab, IconButton, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Snackbar, Alert,
-  Paper, AppBar, Toolbar,
-  LinearProgress
+  Paper,
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import {
   Assignment as ProjectIcon,
@@ -32,7 +33,9 @@ import {
   Chat as ChatIcon,
   ViewKanban as KanbanIcon,
   CalendarToday as CalendarIcon,
-  Menu as MenuIcon
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  Flag as FlagIcon
 } from '@mui/icons-material';
 
 // Import styles
@@ -47,9 +50,6 @@ const COLUMN_COLORS = {
   in_progress: '#FF9F1C',
   done: '#2EC4B6'
 };
-
-// Added the drawerWidth constant
-const drawerWidth = 260;
 
 // Application color theme
 const COLORS = {
@@ -159,12 +159,10 @@ export default function ProjDetailsContent() {
   const [clientProfile, setClientProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState('/toroLogo.jpg');
   const [sidebarOpen] = React.useState(true);
-
-  // mobile drawer
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  
+  // Milestone state management - simplified local storage
+  const [milestones, setMilestones] = useState([]);
+  const [showMilestones, setShowMilestones] = useState(false);
 
   const currentProject = projects.length > 0 ? projects[currentProjectIndex] : null;
 
@@ -174,131 +172,12 @@ export default function ProjDetailsContent() {
     handleTabChange,
   } = useDetails(currentProject?.id);
 
- /**
-   * Initialize empty columns
-   */
-  const initializeEmptyColumns = React.useCallback(() => {
-    const emptyColumns = {
-      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
-      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
-      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
-    };
-    setKanbanColumns(emptyColumns);
-  }, []); // No dependencies
-
-  /**
-   * Organize tasks into Kanban columns
-   */
-  const organizeTasksIntoColumns = React.useCallback((tasks) => {
-    const columns = {
-      backlog: {
-        id: 'backlog',
-        title: 'Backlog',
-        color: COLUMN_COLORS.backlog,
-        icon: <BacklogIcon />,
-        tasks: []
-      },
-      in_progress: {
-        id: 'in_progress',
-        title: 'In Progress',
-        color: COLUMN_COLORS.in_progress,
-        icon: <InProgressIcon />,
-        tasks: []
-      },
-      done: {
-        id: 'done',
-        title: 'Done',
-        color: COLUMN_COLORS.done,
-        icon: <DoneIcon />,
-        tasks: []
-      }
-    };
-
-    if (tasks && tasks.length > 0) {
-      tasks.forEach(task => {
-        let columnId = 'backlog';
-
-        if (task.status === 'in_progress' || task.status === 'in progress') {
-          columnId = 'in_progress';
-        } else if (task.status === 'done' || task.status === 'completed') {
-          columnId = 'done';
-        } else if (task.status === 'backlog' || task.status === 'todo') {
-          columnId = 'backlog';
-        }
-
-        if (columns[columnId]) {
-          columns[columnId].tasks.push(task);
-        }
-      });
-    }
-
-    setKanbanColumns(columns);
-  }, []); // No dependencies
-
-  /**
-   * Fetch tasks for a specific project
-   */
-  const fetchTasksForProject = React.useCallback(async (projectId) => {
-    try {
-      const { data: tasks, error } = await supabase
-        .from('project_tasks')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching tasks:', error);
-        initializeEmptyColumns();
-        return;
-      }
-
-      organizeTasksIntoColumns(tasks || []);
-    } catch (error) {
-      console.error('Error in fetchTasksForProject:', error);
-      initializeEmptyColumns();
-    }
-  }, [supabase, organizeTasksIntoColumns, initializeEmptyColumns]); // Added dependencies
-
-  /**
-   * Fetch project files
-   */
-  const fetchProjectFiles = React.useCallback(async (projectId) => {
-    try {
-      const { data: files, error } = await supabase
-        .from('project_files')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.log('Error fetching project files:', error);
-        return;
-      }
-
-      if (files) {
-        setProjectFiles(files);
-      }
-    } catch (error) {
-      console.error('Error fetching project files:', error);
-    }
-  }, [supabase]); // Added supabase dependency
-
-  /**
-   * Fetch additional project data (tasks, team, files)
-   */
-  const fetchAdditionalProjectData = React.useCallback(async (projectId) => {
-    try {
-      // Fetch tasks
-      await fetchTasksForProject(projectId);
-
-      // Fetch project files
-      await fetchProjectFiles(projectId);
-
-    } catch (error) {
-      console.error('Error fetching additional project data:', error);
-    }
-  }, [fetchTasksForProject, fetchProjectFiles]); // Dependencies are now declared
-
+  // Helper function to show snackbar messages
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
 
   // Fetch current user from Supabase
   useEffect(() => {
@@ -493,7 +372,132 @@ export default function ProjDetailsContent() {
     };
 
     initializeData();
-  }, [supabase, router,fetchAdditionalProjectData]);
+  }, [supabase, router]);
+
+  /**
+   * Fetch additional project data (tasks, team, files)
+   */
+  const fetchAdditionalProjectData = async (projectId) => {
+    try {
+      // Fetch tasks
+      await fetchTasksForProject(projectId);
+
+      // Fetch project files
+      await fetchProjectFiles(projectId);
+
+    } catch (error) {
+      console.error('Error fetching additional project data:', error);
+    }
+  };
+
+  /**
+   * Fetch tasks for a specific project
+   */
+  const fetchTasksForProject = async (projectId) => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from('project_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        initializeEmptyColumns();
+        return;
+      }
+
+      organizeTasksIntoColumns(tasks || []);
+    } catch (error) {
+      console.error('Error in fetchTasksForProject:', error);
+      initializeEmptyColumns();
+    }
+  };
+
+  /**
+   * Fetch project files
+   */
+  const fetchProjectFiles = async (projectId) => {
+    try {
+      const { data: files, error } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Error fetching project files:', error);
+        return;
+      }
+
+      if (files) {
+        setProjectFiles(files);
+      }
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+    }
+  };
+
+  /**
+   * Organize tasks into Kanban columns
+   */
+  const organizeTasksIntoColumns = (tasks) => {
+    const columns = {
+      backlog: {
+        id: 'backlog',
+        title: 'Backlog',
+        color: COLUMN_COLORS.backlog,
+        icon: <BacklogIcon />,
+        tasks: []
+      },
+      in_progress: {
+        id: 'in_progress',
+        title: 'In Progress',
+        color: COLUMN_COLORS.in_progress,
+        icon: <InProgressIcon />,
+        tasks: []
+      },
+      done: {
+        id: 'done',
+        title: 'Done',
+        color: COLUMN_COLORS.done,
+        icon: <DoneIcon />,
+        tasks: []
+      }
+    };
+
+    if (tasks && tasks.length > 0) {
+      tasks.forEach(task => {
+        let columnId = 'backlog';
+
+        if (task.status === 'in_progress' || task.status === 'in progress') {
+          columnId = 'in_progress';
+        } else if (task.status === 'done' || task.status === 'completed') {
+          columnId = 'done';
+        } else if (task.status === 'backlog' || task.status === 'todo') {
+          columnId = 'backlog';
+        }
+
+        if (columns[columnId]) {
+          columns[columnId].tasks.push(task);
+        }
+      });
+    }
+
+    setKanbanColumns(columns);
+  };
+
+  /**
+   * Initialize empty columns
+   */
+  const initializeEmptyColumns = () => {
+    const emptyColumns = {
+      backlog: { id: 'backlog', title: 'Backlog', color: COLUMN_COLORS.backlog, icon: <BacklogIcon />, tasks: [] },
+      in_progress: { id: 'in_progress', title: 'In Progress', color: COLUMN_COLORS.in_progress, icon: <InProgressIcon />, tasks: [] },
+      done: { id: 'done', title: 'Done', color: COLUMN_COLORS.done, icon: <DoneIcon />, tasks: [] }
+    };
+    setKanbanColumns(emptyColumns);
+  };
 
   /**
    * Handle project change
@@ -626,9 +630,7 @@ export default function ProjDetailsContent() {
 
     const progress = getProjectProgress();
 
-   
-
-      return (
+    return (
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" sx={{ color: COLORS.primary, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1346,77 +1348,6 @@ export default function ProjDetailsContent() {
     }
   };
 
- // ADD THIS REUSABLE DRAWER CONTENT
-  const drawerContent = (
-    <>
-      <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Link href="/dashboard/client/details" passHref>
-          <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
-            <DashboardIcon />
-          </IconButton>
-        </Link>
-        <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
-      </Box>
-      <List>
-        {clientMenu.map((item) => (
-          <ListItem key={item.path} disablePadding>
-            <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
-              <ListItemText primary={item.name} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Profile Section */}
-      <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
-          <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
-            <Image
-              src={profilePicture}
-              alt="User Profile"
-              fill
-              style={{ objectFit: 'cover' }}
-              onError={(e) => {
-                e.target.src = '/toroLogo.jpg';
-              }}
-            />
-          </Box>
-          {sidebarOpen && ( 
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
-                {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
-                {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-        <Button
-          onClick={handleLogout}
-          fullWidth
-          sx={{
-            padding: '0.75rem',
-            background: 'transparent',
-            border: '1px solid #fefae0',
-            borderRadius: '8px',
-            color: '#fefae0',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            '&:hover': { background: '#6b705c' }
-          }}
-        >
-          {sidebarOpen ? 'Logout' : <LogoutIcon />}
-        </Button>
-      </Box>
-    </>
-  );
-
   // Show loading state
   if (loading) {
     return <LoadingScreen message="Loading Project Details..." />;
@@ -1424,90 +1355,104 @@ export default function ProjDetailsContent() {
 
   return (
     <Box sx={globalStyles.rootBox}>
-      {/* Sidebar Navigation */}
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }} // Better open performance on mobile.
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { ...globalStyles.drawerPaper, boxSizing: 'border-box' }
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Desktop Drawer */}
+      {/* Sidebar Navigation - EXACT SAME AS SETTINGS SCREEN */}
       <Drawer
         variant="permanent"
         anchor="left"
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          '& .MuiDrawer-paper': globalStyles.drawerPaper
-        }}
+        sx={{ '& .MuiDrawer-paper': globalStyles.drawerPaper }}
       >
-        {drawerContent}
+        <Box sx={{ p: 1, borderBottom: '2px solid #6b705c', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Link href="/dashboard/client/details" passHref>
+            <IconButton sx={{ color: 'green' }} aria-label="Go to Dashboard">
+              <DashboardIcon />
+            </IconButton>
+          </Link>
+          <Typography variant="h5" sx={{ color: '#fefae0'}}>Client Portal</Typography>
+        </Box>
+        <List>
+          {clientMenu.map((item) => (
+            <ListItem key={item.path} disablePadding>
+              <ListItemButton component={Link} href={item.path} sx={globalStyles.listItemButton}>
+                <ListItemText primary={item.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+
+        {/* Profile Section - EXACT SAME AS SETTINGS SCREEN */}
+        <Box sx={{ padding: '1rem', borderTop: '2px solid #6b705c', marginTop: 'auto' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', overflow: 'hidden', gap: '0.75rem' }}>
+            <Box sx={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, border: '2px solid #f3722c' }}>
+              <Image
+                src={profilePicture}
+                alt="User Profile"
+                fill
+                style={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.src = '/toroLogo.jpg';
+                }}
+              />
+            </Box>
+            {sidebarOpen && (
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: '600', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fefae0' }}>
+                  {clientProfile?.name || profile?.name || currentUser?.user_metadata?.full_name || 'Client Name'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'rgba(254, 250, 224, 0.7)' }}>
+                  {clientProfile?.email || profile?.email || currentUser?.email || 'client@email.com'}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+          <Button
+            onClick={handleLogout}
+            fullWidth
+            sx={{
+              padding: '0.75rem',
+              background: 'transparent',
+              border: '1px solid #fefae0',
+              borderRadius: '8px',
+              color: '#fefae0',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              '&:hover': { background: '#6b705c' }
+            }}
+          >
+            {sidebarOpen ? 'Logout' : <LogoutIcon />}
+          </Button>
+        </Box>
       </Drawer>
 
       {/* Main Content Area */}
-      <Box component="main" sx={{
-          ...mainContentStyles.mainBox,
-          flexGrow: 1,
-          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-          ml: { xs: 0, md: `${drawerWidth}px` },
-          p: 0 // Use p: 0 here if inner content has padding
-        }}>
-
-          {/* ---APP BAR --- */}
-        <AppBar
-          position="static"
-          sx={{
-            display: { xs: 'flex', md: 'none' }, // Only show on mobile
-            backgroundColor: '#283618', // Match drawer header
-            paddingTop: 'env(safe-area-inset-top)'
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ color: '#fefae0' }}>
-              Project Details
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        
+      <Box component="main" sx={mainContentStyles.mainBox}>
         {currentProject ? (
-         <>
-            {/* --- MODIFY THIS DESKTOP HEADER --- */}
-            <Box sx={{ 
-                ...headerStyles.headerBox, 
-                p: 3, // Add padding for desktop
-                display: { xs: 'none', md: 'block' } // Hide on mobile
-            }}>
+          <>
+            {/* Project Header with Refresh Button */}
+            <Box sx={headerStyles.headerBox}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h4" sx={headerStyles.headerTitle}>
                   <ProjectIcon sx={headerStyles.projectIcon} />
-                  {currentProject.project_name || currentProject.name || 'Project Details'}
+                  {currentProject.project_name || currentProject.name}
                 </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Chip label={formatStatus(currentProject.status)} sx={headerStyles.chip(currentProject.status)} />
+                  <IconButton onClick={handleRefresh} sx={{ color: COLORS.primary }}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Stack>
               </Stack>
               <Typography variant="body1" sx={headerStyles.headerSubtext}>
-                {currentProject.description || 'View project overview, tasks, files, and team members.'}
+                {currentProject.description || 'Project details'}
               </Typography>
             </Box>
 
             {/* Project Selector */}
-            {/* --- WRAPPING THE REST OF THE CONTENT --- */}
-            <Box sx={{ p: { xs: 2, md: 3 }, pt: { md: 0 } }}> 
-              {renderProjectSelector()}
+            {renderProjectSelector()}
 
             {/* Navigation Tabs */}
             <Paper sx={{ mb: 2 }}>
@@ -1523,12 +1468,9 @@ export default function ProjDetailsContent() {
 
             {/* Tab Content */}
             <Box>{renderTabContent()}</Box>
-            </Box>
           </>
         ) : (
           // Empty state when no projects exist
-          // --- WRAPPING THE EMPTY STATE CONTENT --- */}
-          <Box sx={{ p: { xs: 2, md: 3 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center', flexDirection: 'column', gap: 3 }}>
             <ProjectIcon sx={{ fontSize: 64, color: COLORS.border }} />
             <Box>
@@ -1567,7 +1509,6 @@ export default function ProjDetailsContent() {
                 Return to Dashboard
               </Button>
             </Stack>
-          </Box>
           </Box>
         )}
       </Box>
@@ -1677,7 +1618,7 @@ export default function ProjDetailsContent() {
         </DialogActions>
       </Dialog>
 
-      {/* Global Snackbar for notifications */}
+      {/* Global Snackbar for notifications - EXACT SAME AS SETTINGS SCREEN */}
       <Snackbar open={openSnackbar} autoHideDuration={1500} onClose={() => setOpenSnackbar(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         <Alert severity={snackbarSeverity} sx={{ width: '100%', fontWeight: 'bold', fontSize: '1.2rem' }}>
           {snackbarMessage}
