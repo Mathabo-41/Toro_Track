@@ -480,9 +480,17 @@ export default function PerformanceReports() {
       </Box>
 
       {/* Task Dialog */}
-      <Dialog open={openTaskDialog} onClose={() => setOpenTaskDialog(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{isEditing ? 'Edit Task' : 'Add New Task to Backlog'}</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={openTaskDialog} 
+        onClose={() => setOpenTaskDialog(false)} 
+        fullWidth 
+        maxWidth="sm"
+        PaperProps={{ sx: dialogStyles.dialogPaper }}
+      >
+        <DialogTitle sx={dialogStyles.dialogTitle}>
+          {isEditing ? 'Edit Task' : 'Add New Task to Backlog'}
+        </DialogTitle>
+        <DialogContent sx={dialogStyles.dialogContent}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField 
               label="Task Title" 
@@ -490,6 +498,7 @@ export default function PerformanceReports() {
               onChange={(e) => setCurrentTask({ ...currentTask, title: e.target.value })}
               fullWidth 
               required 
+              sx={dialogStyles.textField}
             />
             <FormControl fullWidth>
               <InputLabel id="assign-to-label">Assign to</InputLabel>
@@ -520,6 +529,7 @@ export default function PerformanceReports() {
               multiline 
               rows={3} 
               fullWidth 
+              sx={dialogStyles.textField}
             />
             <TextField 
               label="Due Date" 
@@ -528,9 +538,15 @@ export default function PerformanceReports() {
               onChange={(e) => setCurrentTask({ ...currentTask, dueDate: e.target.value })}
               InputLabelProps={{ shrink: true }} 
               fullWidth 
+              inputProps={{ 
+                min: getTodayDate() // Prevent selecting past dates
+              }}
+              sx={dialogStyles.textField}
+              error={currentTask?.dueDate && !validateDueDate(currentTask.dueDate)}
+              helperText={currentTask?.dueDate && !validateDueDate(currentTask.dueDate) ? "Due date cannot be in the past" : ""}
             />
             {isEditing && (
-              <FormControl fullWidth>
+              <FormControl fullWidth sx={dialogStyles.select}>
                 <InputLabel>Status</InputLabel>
                 <Select value={currentColumn} onChange={(e) => setCurrentColumn(e.target.value)} label="Status">
                   <MenuItem value="backlog">
@@ -553,9 +569,22 @@ export default function PerformanceReports() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTaskDialog(false)}>Cancel</Button>
-          <Button onClick={handleSaveTask} variant="contained">Save</Button>
+        <DialogActions sx={dialogStyles.dialogActions}>
+          <Button 
+            onClick={() => setOpenTaskDialog(false)} 
+            sx={dialogStyles.cancelButton}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveTask} 
+            variant="contained" 
+            sx={dialogStyles.button}
+            disabled={currentTask?.dueDate && !validateDueDate(currentTask.dueDate)}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
 

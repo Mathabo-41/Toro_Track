@@ -562,6 +562,39 @@ export default function ProjDetailsContent() {
   };
 
   /**
+   * Handle marking task as milestone
+   */
+  const handleMarkAsMilestone = (task) => {
+    if (!task || !currentProject) return;
+
+    // Check if this task is already a milestone
+    const existingMilestoneIndex = milestones.findIndex(m => m.task_id === task.id);
+    
+    if (existingMilestoneIndex !== -1) {
+      // Remove from milestones
+      const updatedMilestones = milestones.filter((_, index) => index !== existingMilestoneIndex);
+      setMilestones(updatedMilestones);
+      showSnackbar('Milestone removed successfully', 'success');
+    } else {
+      // Add as milestone
+      const newMilestone = {
+        id: `milestone-${Date.now()}`,
+        project_id: currentProject.id,
+        task_id: task.id,
+        title: task.title,
+        description: task.description || `Milestone: ${task.title}`,
+        completed_at: new Date().toISOString(),
+        is_approved: true,
+        approved_by: clientProfile?.name || currentUser?.email || 'Client',
+        created_at: new Date().toISOString()
+      };
+
+      setMilestones(prev => [newMilestone, ...prev]);
+      showSnackbar('Task marked as milestone!', 'success');
+    }
+  };
+
+  /**
    * Format status for display
    */
   const formatStatus = (status) => {
@@ -580,7 +613,7 @@ export default function ProjDetailsContent() {
   };
 
   /**
-   * Render Kanban Board Tab
+   * Render Kanban Board Tab with milestone functionality
    */
   const renderKanbanTab = () => {
     if (!currentProject || !kanbanColumns) {
@@ -597,10 +630,104 @@ export default function ProjDetailsContent() {
 
       return (
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <KanbanIcon />
-          Project Kanban Board
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" sx={{ color: COLORS.primary, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <KanbanIcon />
+            Project Kanban Board
+          </Typography>
+          
+          {/* Milestones Toggle Button */}
+          <Button
+            variant={showMilestones ? "contained" : "outlined"}
+            startIcon={<FlagIcon />}
+            onClick={() => setShowMilestones(!showMilestones)}
+            sx={{
+              backgroundColor: showMilestones ? COLORS.accent : 'transparent',
+              color: showMilestones ? COLORS.background : COLORS.accent,
+              borderColor: COLORS.accent,
+              '&:hover': {
+                backgroundColor: showMilestones ? '#e06522' : `${COLORS.accent}20`
+              }
+            }}
+          >
+            {showMilestones ? 'Hide Milestones' : `Show Milestones (${milestones.length})`}
+          </Button>
+        </Box>
+
+        {/* Milestones Panel */}
+        {showMilestones && (
+          <Paper sx={{ p: 3, mb: 3, backgroundColor: `${COLORS.accent}10`, border: `1px solid ${COLORS.accent}30` }}>
+            <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FlagIcon />
+              Project Milestones ({milestones.length})
+            </Typography>
+
+            {milestones.length > 0 ? (
+              <Grid container spacing={2}>
+                {milestones.map((milestone) => (
+                  <Grid item xs={12} md={6} key={milestone.id}>
+                    <Card sx={{ 
+                      p: 2, 
+                      borderLeft: `4px solid ${COLORS.accent}`,
+                      backgroundColor: 'white'
+                    }}>
+                      <CardContent sx={{ p: '8px !important' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ color: COLORS.primary, fontWeight: 'bold', flex: 1 }}>
+                            {milestone.title}
+                          </Typography>
+                          <Tooltip title="Remove milestone">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleMarkAsMilestone({ id: milestone.task_id })}
+                              sx={{
+                                color: COLORS.accent,
+                                '&:hover': {
+                                  backgroundColor: `${COLORS.accent}20`
+                                }
+                              }}
+                            >
+                              <StarIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                        
+                        {milestone.description && (
+                          <Typography variant="body2" sx={{ color: COLORS.text, mb: 1, fontSize: '0.8rem' }}>
+                            {milestone.description}
+                          </Typography>
+                        )}
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="caption" sx={{ color: COLORS.border }}>
+                            Approved: {new Date(milestone.completed_at).toLocaleDateString()}
+                          </Typography>
+                          <Chip 
+                            label="Milestone" 
+                            size="small" 
+                            sx={{ 
+                              backgroundColor: COLORS.accent, 
+                              color: 'white',
+                              fontSize: '0.6rem',
+                              height: '20px'
+                            }} 
+                          />
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 2 }}>
+                <FlagIcon sx={{ fontSize: 48, color: COLORS.border, mb: 1, opacity: 0.5 }} />
+                <Typography variant="body2" sx={{ color: COLORS.border }}>
+                  No milestones yet. Mark completed tasks as milestones to track important achievements.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        )}
 
         {/* Progress Summary */}
         <Paper sx={{ p: 2, mb: 3, backgroundColor: COLORS.lightBackground }}>
@@ -625,6 +752,9 @@ export default function ProjDetailsContent() {
             <Grid item xs={12} md={6}>
               <Typography variant="body2" sx={{ color: COLORS.text }}>
                 Tasks: {kanbanColumns.done.tasks.length} completed of {Object.values(kanbanColumns).reduce((total, col) => total + col.tasks.length, 0)} total
+              </Typography>
+              <Typography variant="body2" sx={{ color: COLORS.text }}>
+                Milestones: {milestones.length} achieved
               </Typography>
             </Grid>
           </Grid>
@@ -667,51 +797,93 @@ export default function ProjDetailsContent() {
                   No tasks in {column.title.toLowerCase()}
                 </Typography>
               ) : (
-                column.tasks.map((task) => (
-                  <Paper
-                    key={task.id}
-                    sx={{
-                      p: 2,
-                      mb: 2,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      borderLeft: `4px solid ${column.color}`,
-                      '&:hover': {
-                        boxShadow: 3,
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                    onClick={() => handleViewTask(task, column.id)}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, mb: 1 }}>
-                      {task.title}
-                    </Typography>
-                    {task.description && (
-                      <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                        {task.description.length > 80
-                          ? `${task.description.substring(0, 80)}...`
-                          : task.description
+                column.tasks.map((task) => {
+                  const isMilestone = milestones.some(m => m.task_id === task.id);
+                  const isDone = column.id === 'done';
+
+                  return (
+                    <Paper
+                      key={task.id}
+                      sx={{
+                        p: 2,
+                        mb: 2,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        borderLeft: `4px solid ${column.color}`,
+                        backgroundColor: isMilestone ? `${COLORS.accent}15` : COLORS.background,
+                        '&:hover': {
+                          boxShadow: 3,
+                          transform: 'translateY(-2px)'
                         }
-                      </Typography>
-                    )}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
-                      </Typography>
-                      {task.priority && (
-                        <Chip
-                          label={task.priority}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            height: '20px',
-                            fontSize: '0.6rem'
-                          }}
-                        />
+                      }}
+                      onClick={() => handleViewTask(task, column.id)}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: '500', color: COLORS.text, flex: 1 }}>
+                          {task.title}
+                        </Typography>
+                        {isMilestone && (
+                          <FlagIcon 
+                            sx={{ 
+                              color: COLORS.accent, 
+                              fontSize: '1rem',
+                              ml: 1
+                            }} 
+                          />
+                        )}
+                      </Box>
+                      
+                      {task.description && (
+                        <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                          {task.description.length > 80
+                            ? `${task.description.substring(0, 80)}...`
+                            : task.description
+                          }
+                        </Typography>
                       )}
-                    </Box>
-                  </Paper>
-                ))
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {task.due_date ? new Date(task.due_date).toLocaleDateString("en-GB") : 'No due date'}
+                        </Typography>
+                        {task.priority && (
+                          <Chip
+                            label={task.priority}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              height: '20px',
+                              fontSize: '0.6rem'
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      {/* Milestone Button for Done Tasks */}
+                      {isDone && (
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                          <Tooltip title={isMilestone ? "Remove milestone" : "Mark as milestone"}>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsMilestone(task);
+                              }}
+                              sx={{
+                                color: isMilestone ? COLORS.accent : COLORS.border,
+                                '&:hover': {
+                                  color: COLORS.accent
+                                }
+                              }}
+                            >
+                              {isMilestone ? <StarIcon /> : <StarBorderIcon />}
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      )}
+                    </Paper>
+                  );
+                })
               )}
             </Box>
           ))}
@@ -898,6 +1070,110 @@ export default function ProjDetailsContent() {
   };
 
   /**
+   * Render Milestones Tab
+   */
+  const renderMilestonesTab = () => {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FlagIcon />
+          Project Milestones ({milestones.length})
+        </Typography>
+
+        {milestones.length > 0 ? (
+          <Grid container spacing={2}>
+            {milestones.map((milestone) => (
+              <Grid item xs={12} md={6} key={milestone.id}>
+                <Card sx={{ 
+                  p: 2, 
+                  borderLeft: `4px solid ${COLORS.accent}`,
+                  backgroundColor: `${COLORS.accent}08`
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="h6" sx={{ color: COLORS.primary, fontWeight: 'bold' }}>
+                        {milestone.title}
+                      </Typography>
+                      <Chip 
+                        label="Milestone" 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: COLORS.accent, 
+                          color: 'white',
+                          fontWeight: 'bold'
+                        }} 
+                      />
+                    </Box>
+                    
+                    {milestone.description && (
+                      <Typography variant="body2" sx={{ color: COLORS.text, mb: 2 }}>
+                        {milestone.description}
+                      </Typography>
+                    )}
+                    
+                    <Stack spacing={1}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                          COMPLETED:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.text }}>
+                          {milestone.completed_at ? new Date(milestone.completed_at).toLocaleDateString() : 'Not specified'}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ color: COLORS.border, fontWeight: 'bold' }}>
+                          APPROVED BY:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.text }}>
+                          {milestone.approved_by || 'Client'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                      <Button
+                        size="small"
+                        onClick={() => handleMarkAsMilestone({ id: milestone.task_id })}
+                        startIcon={<StarIcon />}
+                        sx={{
+                          color: COLORS.accent,
+                          '&:hover': {
+                            backgroundColor: `${COLORS.accent}20`
+                          }
+                        }}
+                      >
+                        Remove Milestone
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
+            <FlagIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
+            <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
+              No Milestones Yet
+            </Typography>
+            <Typography variant="body2" sx={{ color: COLORS.border, mb: 3 }}>
+              Mark completed tasks as milestones to track important project achievements.
+            </Typography>
+            <Button 
+              variant="outlined" 
+              sx={{ color: COLORS.primary, borderColor: COLORS.primary }}
+              onClick={() => handleTabChange(null, 5)} // Switch to Kanban tab
+            >
+              View Completed Tasks
+            </Button>
+          </Paper>
+        )}
+      </Box>
+    );
+  };
+
+  /**
    * Render Team Tab
    */
   const renderTeamTab = () => {
@@ -1009,29 +1285,6 @@ export default function ProjDetailsContent() {
           <Button variant="outlined" sx={{ color: COLORS.primary, borderColor: COLORS.primary }}>
             Notify Me When Ready
           </Button>
-        </Paper>
-      </Box>
-    );
-  };
-
-  /**
-   * Render Milestones Tab
-   */
-  const renderMilestonesTab = () => {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: COLORS.primary, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <KanbanIcon />
-          Project Milestones
-        </Typography>
-        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: COLORS.lightBackground }}>
-          <KanbanIcon sx={{ fontSize: 48, color: COLORS.border, mb: 2 }} />
-          <Typography variant="h6" sx={{ color: COLORS.border, mb: 1 }}>
-            Milestones Coming Soon
-          </Typography>
-          <Typography variant="body2" sx={{ color: COLORS.border }}>
-            Track major project milestones and deliverables here.
-          </Typography>
         </Paper>
       </Box>
     );
@@ -1260,7 +1513,7 @@ export default function ProjDetailsContent() {
             <Paper sx={{ mb: 2 }}>
               <Tabs value={activeTab} onChange={handleTabChange} sx={tabsStyles.tabs}>
                 <Tab label="Overview" icon={<DescriptionIcon />} iconPosition="start" sx={tabsStyles.tab} />
-                <Tab label="Milestones" icon={<KanbanIcon />} iconPosition="start" sx={tabsStyles.tab} />
+                <Tab label="Milestones" icon={<FlagIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Team" icon={<PersonIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Files" icon={<FolderIcon />} iconPosition="start" sx={tabsStyles.tab} />
                 <Tab label="Discussion" icon={<ChatIcon />} iconPosition="start" sx={tabsStyles.tab} />
