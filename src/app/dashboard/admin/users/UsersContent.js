@@ -113,7 +113,9 @@ export default function TeamsAndUsers() {
   };
   
   // Updated validation logic for the new fields
-  const isInviteDisabled = !inviteEmail || (selectedRole === 'Client' && (!clientName || !contactNumber));
+  const isInviteDisabled =
+  !inviteEmail ||
+  (selectedRole === 'Client' && (!clientName || contactNumber.length !== 10));
 
   return (
     <Box sx={styles.mainContainer}>
@@ -262,22 +264,35 @@ export default function TeamsAndUsers() {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <TextField
-                        fullWidth
-                        required
-                        label="Contact Number"
-                        type="number"
-                        variant="outlined"
-                        value={contactNumber}
-                        onChange={(e) => setContactNumber(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <PhoneIcon sx={styles.emailIcon} />
-                            </InputAdornment>
-                          ),
-                          sx: styles.emailInput,
-                        }}
-                      />
+  fullWidth
+  required
+  label="Contact Number"
+  variant="outlined"
+  value={contactNumber}
+  onChange={(e) => {
+    // Remove all non-numeric characters
+    const input = e.target.value.replace(/\D/g, '');
+    // Limit to 10 digits
+    if (input.length <= 10) {
+      setContactNumber(input);
+    }
+  }}
+  error={contactNumber && contactNumber.length !== 10}
+  helperText={
+    contactNumber && contactNumber.length !== 10
+      ? 'South African phone numbers must be exactly 10 digits'
+      : ''
+  }
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <PhoneIcon sx={styles.emailIcon} />
+      </InputAdornment>
+    ),
+    sx: styles.emailInput,
+  }}
+/>
+
                     </Grid>
                     <Grid item xs={12}>
                       <TextField

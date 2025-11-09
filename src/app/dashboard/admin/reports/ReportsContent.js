@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -53,14 +52,28 @@ export default function PerformanceReports() {
   // Menu data
   const menu = [
     { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+    { name: 'Invite Users', path: '/dashboard/admin/users' },
     { name: 'Projects', path: '/dashboard/admin/projects' },
     { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-    { name: 'Invite Users', path: '/dashboard/admin/users' },
     { name: 'Settings', path: '/dashboard/admin/settings' }
   ];
 
   // Current project
   const currentProject = projects[currentProjectIndex];
+
+  // Get today's date in YYYY-MM-DD format for date input min attribute
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  // Validate due date - cannot be before today
+  const validateDueDate = (dateString) => {
+    if (!dateString) return true; // Empty date is valid
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to beginning of day for accurate comparison
+    return selectedDate >= today;
+  };
 
   // Fetch initial data
   useEffect(() => {
@@ -451,6 +464,12 @@ export default function PerformanceReports() {
       return;
     }
 
+    // Validate due date
+    if (currentTask.dueDate && !validateDueDate(currentTask.dueDate)) {
+      showSnackbar('Due date cannot be in the past', 'error');
+      return;
+    }
+
     try {
       if (isEditing) {
         const { data: updatedTask, error } = await supabase
@@ -577,6 +596,85 @@ export default function PerformanceReports() {
     }
   });
 
+  // Dialog styles with proper colors
+  const dialogStyles = {
+    dialogPaper: {
+      backgroundColor: '#fefae0',
+      borderRadius: '12px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+    },
+    dialogTitle: {
+      backgroundColor: '#6b705c',
+      color: '#fefae0',
+      fontWeight: 'bold',
+      padding: '16px 24px'
+    },
+    dialogContent: {
+      backgroundColor: '#fefae0',
+      padding: '24px'
+    },
+    dialogActions: {
+      backgroundColor: '#fefae0',
+      padding: '16px 24px',
+      borderTop: '1px solid #d4a574'
+    },
+    textField: {
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: 'white',
+        '& fieldset': {
+          borderColor: '#d4a574'
+        },
+        '&:hover fieldset': {
+          borderColor: '#6b705c'
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#6b705c'
+        }
+      },
+      '& .MuiInputLabel-root': {
+        color: '#6b705c'
+      },
+      '& .MuiInputLabel-root.Mui-focused': {
+        color: '#6b705c'
+      }
+    },
+    select: {
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: 'white',
+        '& fieldset': {
+          borderColor: '#d4a574'
+        },
+        '&:hover fieldset': {
+          borderColor: '#6b705c'
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#6b705c'
+        }
+      },
+      '& .MuiInputLabel-root': {
+        color: '#6b705c'
+      },
+      '& .MuiInputLabel-root.Mui-focused': {
+        color: '#6b705c'
+      }
+    },
+    button: {
+      backgroundColor: '#6b705c',
+      color: '#fefae0',
+      '&:hover': {
+        backgroundColor: '#5a5e4f'
+      }
+    },
+    cancelButton: {
+      color: '#6b705c',
+      borderColor: '#6b705c',
+      '&:hover': {
+        backgroundColor: 'rgba(107, 112, 92, 0.1)',
+        borderColor: '#5a5e4f'
+      }
+    }
+  };
+
   // REPLACE DEFAULT LOADING WITH CUSTOM LOADING SCREEN
   if (loading) {
     return <LoadingScreen message="Loading Reports..." />;
@@ -589,7 +687,6 @@ export default function PerformanceReports() {
       </Box>
     );
   }
-
 
   return (
     <Box sx={styles.mainContainer}>
@@ -875,9 +972,17 @@ export default function PerformanceReports() {
       </Box>
 
       {/* Task Dialog */}
-      <Dialog open={openTaskDialog} onClose={() => setOpenTaskDialog(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{isEditing ? 'Edit Task' : 'Add New Task to Backlog'}</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={openTaskDialog} 
+        onClose={() => setOpenTaskDialog(false)} 
+        fullWidth 
+        maxWidth="sm"
+        PaperProps={{ sx: dialogStyles.dialogPaper }}
+      >
+        <DialogTitle sx={dialogStyles.dialogTitle}>
+          {isEditing ? 'Edit Task' : 'Add New Task to Backlog'}
+        </DialogTitle>
+        <DialogContent sx={dialogStyles.dialogContent}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField 
               label="Task Title" 
@@ -885,8 +990,9 @@ export default function PerformanceReports() {
               onChange={(e) => setCurrentTask({ ...currentTask, title: e.target.value })}
               fullWidth 
               required 
+              sx={dialogStyles.textField}
             />
-            <FormControl fullWidth>
+            <FormControl fullWidth sx={dialogStyles.select}>
               <InputLabel id="team-select-label">Team</InputLabel>
               <Select
                 labelId="team-select-label"
@@ -915,6 +1021,7 @@ export default function PerformanceReports() {
               multiline 
               rows={3} 
               fullWidth 
+              sx={dialogStyles.textField}
             />
             <TextField 
               label="Due Date" 
@@ -923,9 +1030,15 @@ export default function PerformanceReports() {
               onChange={(e) => setCurrentTask({ ...currentTask, dueDate: e.target.value })}
               InputLabelProps={{ shrink: true }} 
               fullWidth 
+              inputProps={{ 
+                min: getTodayDate() // Prevent selecting past dates
+              }}
+              sx={dialogStyles.textField}
+              error={currentTask?.dueDate && !validateDueDate(currentTask.dueDate)}
+              helperText={currentTask?.dueDate && !validateDueDate(currentTask.dueDate) ? "Due date cannot be in the past" : ""}
             />
             {isEditing && (
-              <FormControl fullWidth>
+              <FormControl fullWidth sx={dialogStyles.select}>
                 <InputLabel>Status</InputLabel>
                 <Select value={currentColumn} onChange={(e) => setCurrentColumn(e.target.value)} label="Status">
                   <MenuItem value="backlog">
@@ -948,9 +1061,22 @@ export default function PerformanceReports() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTaskDialog(false)}>Cancel</Button>
-          <Button onClick={handleSaveTask} variant="contained">Save</Button>
+        <DialogActions sx={dialogStyles.dialogActions}>
+          <Button 
+            onClick={() => setOpenTaskDialog(false)} 
+            sx={dialogStyles.cancelButton}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveTask} 
+            variant="contained" 
+            sx={dialogStyles.button}
+            disabled={currentTask?.dueDate && !validateDueDate(currentTask.dueDate)}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
 

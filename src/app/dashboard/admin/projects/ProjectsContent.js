@@ -62,9 +62,9 @@ const validateDueDate = (dueDate, creationDate = null) => {
 // Sidebar menu items
 export const adminMenu = [
   { name: 'Dashboard Overview', path: '/dashboard/admin/overview' },
+  { name: 'Invite Users', path: '/dashboard/admin/users' },
   { name: 'Projects', path: '/dashboard/admin/projects' },
   { name: 'Performance Reports', path: '/dashboard/admin/reports' },
-  { name: 'Invite Users', path: '/dashboard/admin/users' },
   { name: 'Settings', path: '/dashboard/admin/settings' }
 ];
 
