@@ -20,7 +20,7 @@ export const useLogin = () => {
   */
   const { mutate: handleLogin, isPending: isLoading, error } = useMutation({
     mutationFn: async () => {
-      // Sign in the user
+      // 1. Sign in the user
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -28,7 +28,7 @@ export const useLogin = () => {
 
       if (signInError) throw signInError;
 
-      // Fetch the user's profile to get their role
+      // 2. Fetch the user's profile to get their role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
@@ -40,7 +40,7 @@ export const useLogin = () => {
       return profile.role; // Return the role on success
     },
     onSuccess: (role) => {
-      // Redirect based on the user's role
+      // 3. Redirect based on the user's role
       switch (role) {
         case 'admin':
           router.push('/dashboard/admin/overview');
@@ -63,7 +63,7 @@ export const useLogin = () => {
   */
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (loading) return;
     handleLogin();
   };
   
