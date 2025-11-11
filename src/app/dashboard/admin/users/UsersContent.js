@@ -51,9 +51,12 @@ export default function TeamsAndUsers() {
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
+<<<<<<< HEAD
     apiError, setApiError,
     isLoading, // Import the loading state from the hook
     isInviting, // Import mutation loading state
+=======
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
   } = useUsers();
 
   const router = useRouter();
@@ -584,21 +587,6 @@ export default function TeamsAndUsers() {
         </MenuItem>
       </Menu>
       
-      {/* Snackbar: API Error */}
-      <Snackbar
-        open={!!apiError}
-        autoHideDuration={6000}
-        onClose={() => setApiError(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setApiError(null)}
-          severity="error"
-          sx={{ width: '100%', fontWeight: 'bold' }}
-        >
-          {apiError}
-        </Alert>
-      </Snackbar>
 
       {/* Snackbar: invite success */}
       <Snackbar

@@ -132,40 +132,12 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Permission denied. Admin role required.' }, { status: 403 });
     }
 
-    // --- START: UPDATED DELETE LOGIC ---
-
-    // Step 1: Delete records from 'clients' that reference this user.
-    // This removes the foreign key constraint that blocks the auth user deletion.
-    const { error: clientDeleteError } = await supabaseAdmin
-      .from('clients')
-      .delete()
-      .eq('managed_by', userIdToDelete);
-
-    if (clientDeleteError) {
-      // Throw a specific error if this fails
-      throw new Error(`Failed to delete user's client records: ${clientDeleteError.message}`);
-    }
-
-    // Step 2: Delete the user from auth.
-    // This will cascade and delete the user's 'profiles' record automatically
-    // (assuming the default Supabase trigger/foreign key is in place).
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userIdToDelete);
     if (deleteError) throw deleteError;
-    
-    // --- END: UPDATED DELETE LOGIC ---
 
     return NextResponse.json({ message: 'User deleted successfully.' });
   } catch (error) {
-    // Log the full error on the server for debugging
-    console.error('Full error in DELETE /api/admin/users:', error); 
-    
-    // Send only serializable and useful error details to the client
-    return NextResponse.json({ 
-      message: "Failed to delete user. See server logs for details.",
-      error: error.message, 
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    }, { status: 500 });
+    console.error('Error in DELETE /api/admin/users:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

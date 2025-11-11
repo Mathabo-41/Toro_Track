@@ -24,7 +24,6 @@ export const useUsers = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuUserId, setMenuUserId] = useState(null);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [apiError, setApiError] = useState(null);
 
   // Client form state
   const [clientName, setClientName] = useState('');
@@ -32,6 +31,7 @@ export const useUsers = () => {
   const [companyName, setCompanyName] = useState('');
 
   const isMenuOpen = Boolean(anchorEl);
+<<<<<<< HEAD
 
   // --- Data Fetching with useQuery ---
   // Replaces the useEffect and useState for users/tasks
@@ -49,6 +49,20 @@ export const useUsers = () => {
   // Helper function to refresh data and handle errors
   const onMutationSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['allUsersAndTasks'] });
+=======
+  
+  /**
+  * Fetches the initial list of users and tasks from the server.
+  */
+  const loadInitialData = async () => {
+    try {
+      const { users, tasks } = await fetchAllData();
+      setUsers(users || []);
+      setTasks(tasks || []);
+    } catch (error) {
+        console.error("Failed to load initial data:", error);
+    }
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
   };
 
   const onMutationError = (error) => {
@@ -56,6 +70,7 @@ export const useUsers = () => {
     setApiError(error.message || 'An operation failed. Please try again.');
   };
 
+<<<<<<< HEAD
   // Mutation for Inviting a User
   const inviteUserMutation = useMutation({
     mutationFn: ({ email, role, password, clientData }) => inviteUser(email, role, password, clientData),
@@ -64,11 +79,36 @@ export const useUsers = () => {
         onMutationError(result.error);
       } else {
         onMutationSuccess();
+=======
+/**
+* Handles the user invitation process, including client creation.
+* @param {string} role - The role assigned to the new user.
+* @param {string} password - The temporary password for the new user.
+*/
+const handleInviteUser = async (role, password) => {
+    if (!inviteEmail) return;
+
+    try {
+      // Package client data with updated field names for the API
+      const clientData = role === 'Client' 
+        ? { 
+            client_name: clientName, 
+            contact_number: contactNumber, 
+            company_name: companyName, 
+            contact_email: inviteEmail 
+          } 
+        : null;
+
+      const { error } = await inviteUser(inviteEmail, role, password, clientData);
+      
+      if (!error) {
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
         // Reset all form fields on success
         setInviteEmail('');
         setClientName('');
         setContactNumber('');
         setCompanyName('');
+<<<<<<< HEAD
         // This will be caught by the UsersContent component to show the success snackbar
       }
     },
@@ -131,6 +171,23 @@ export const useUsers = () => {
     if (newTask) {
       setApiError(null);
       addTaskMutation.mutate({ userId: userId, taskDescription: newTask });
+=======
+        loadInitialData(); // Refresh the user list
+      } else {
+        console.error("Invitation failed:", error.message || error);
+      }
+    } catch (error) {
+        console.error("An unexpected error occurred during invitation:", error);
+    }
+};
+
+  const handleAddTask = async (userId) => {
+    if (newTask) {
+      await assignTask(userId, newTask);
+      setNewTask('');
+      setSelectedUser(null);
+      loadInitialData();
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
     }
   };
 
@@ -171,6 +228,24 @@ export const useUsers = () => {
     setMenuUserId(null);
   };
 
+<<<<<<< HEAD
+=======
+  const handleConfirmRemove = async () => {
+    if (!menuUserId) return;
+    
+    const { error } = await removeUserService(menuUserId);
+    if (!error) {
+      setUsers(currentUsers => currentUsers.filter(user => user.id !== menuUserId));
+    }
+    handleCloseConfirmDialog();
+  };
+
+  const handleUpdateRole = async (userId, newRole) => {
+    await updateUserRole(userId, newRole);
+    loadInitialData();
+  };
+
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
   return {
     // Original State
     inviteEmail, setInviteEmail,
@@ -183,6 +258,7 @@ export const useUsers = () => {
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
+<<<<<<< HEAD
     
     // Error State
     apiError, setApiError,
@@ -209,5 +285,10 @@ export const useUsers = () => {
     isRemoving: removeUserMutation.isPending,
     isUpdatingRole: updateRoleMutation.isPending,
     isAddingTask: addTaskMutation.isPending,
+=======
+    handleInviteUser, handleAddTask, handleMenuOpen, handleMenuClose,
+    handleAssignTask, handleRemoveUser, handleUpdateRole,
+    handleCloseConfirmDialog, handleConfirmRemove,
+>>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
   };
 };

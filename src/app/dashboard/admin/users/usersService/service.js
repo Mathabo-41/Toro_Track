@@ -57,34 +57,13 @@ export const removeUser = async (userId) => {
     });
 
     const result = await response.json();
-    // Paste this new code block
     if (!response.ok) {
-      // Throw the entire JSON object from the server
-      throw result; 
+      throw new Error(result.error);
     }
     return { success: true };
-  // Paste this new code block
   } catch (error) {
-    // 'error' is the JSON response from the API route.
-    // We log the specific database error and hint if they exist.
-    console.error(
-      'Server failed to remove user. Message: %s, DB-Error: %s, DB-Hint: %s',
-      error.message, // Generic route message
-      error.error,   // Specific Supabase error message
-      error.hint     // Specific Supabase hint
-    );
-
-    // Determine the most user-friendly message to send to the UI.
-    // Prioritize the database hint, then the database error, then the generic message.
-    const userMessage = error.hint || error.error || error.message || 'An unknown error occurred.';
-
-    return { 
-      error: { 
-        message: userMessage, 
-        details: error.details, 
-        hint: error.hint 
-      } 
-    };
+    console.error('Error removing user:', error.message);
+    return { error: { message: error.message } };
   }
 };
 
