@@ -51,12 +51,9 @@ export default function TeamsAndUsers() {
     clientName, setClientName,
     contactNumber, setContactNumber,
     companyName, setCompanyName,
-<<<<<<< HEAD
     apiError, setApiError,
     isLoading, // Import the loading state from the hook
     isInviting, // Import mutation loading state
-=======
->>>>>>> parent of 7de0553 (Ensured user can be successfully deleted by the admin)
   } = useUsers();
 
   const router = useRouter();
